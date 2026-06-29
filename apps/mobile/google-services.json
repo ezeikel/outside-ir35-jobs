@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "879908866637",
+    "project_id": "outsideir35-jobs",
+    "storage_bucket": "outsideir35-jobs.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:879908866637:android:c73c4674fd730f4e79ea04",
+        "android_client_info": {
+          "package_name": "com.chewybytes.outsideir35jobs.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzl26qxyheLXAoj4_cWGv_s_2Ut9IatwY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:879908866637:android:4ea7d5fe9f11d13d79ea04",
+        "android_client_info": {
+          "package_name": "com.chewybytes.outsideir35jobs.app.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzl26qxyheLXAoj4_cWGv_s_2Ut9IatwY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:879908866637:android:dbe01488ed2de56b79ea04",
+        "android_client_info": {
+          "package_name": "com.chewybytes.outsideir35jobs.app.internal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzl26qxyheLXAoj4_cWGv_s_2Ut9IatwY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
