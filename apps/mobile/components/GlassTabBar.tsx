@@ -132,6 +132,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
+    // Cap the pill and centre it so on a tablet it stays a snug, phone-width
+    // floating bar instead of stretching edge-to-edge (which spreads the tabs
+    // far apart and reads as empty). On a phone the cap exceeds the width, so
+    // it's full-bleed as before. Mirrors the ContentColumn treatment.
+    width: "100%",
+    maxWidth: 440,
+    alignSelf: "center",
     borderRadius: 28,
     paddingVertical: 10,
     paddingHorizontal: 8,
