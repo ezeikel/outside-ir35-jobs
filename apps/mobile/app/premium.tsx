@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import ContentColumn from "@/components/ContentColumn";
 import Paywall from "@/components/Paywall";
 import { useAuth } from "@/contexts/AuthContext";
 import { useViewMode } from "@/hooks/useViewMode";
@@ -61,10 +62,12 @@ const PremiumScreen = () => {
         paddingBottom: insets.bottom + 24,
       }}
     >
-      <Text className="mb-4 text-xs font-sans-semibold uppercase tracking-wide text-muted-foreground">
-        Premium
-      </Text>
-      <Paywall />
+      <ContentColumn maxWidth={520}>
+        <Text className="mb-4 text-xs font-sans-semibold uppercase tracking-wide text-muted-foreground">
+          Premium
+        </Text>
+        <Paywall />
+      </ContentColumn>
     </ScrollView>
   );
 };

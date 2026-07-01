@@ -8,7 +8,10 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { toast } from "sonner-native";
 import { z } from "zod";
+import ContentColumn from "@/components/ContentColumn";
 import FormField from "@/components/FormField";
+import DayRateField from "@/components/post/DayRateField";
+import PostLocationField from "@/components/post/PostLocationField";
 import RichTextField from "@/components/RichTextField";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -16,6 +19,8 @@ import {
   type PostJobInput,
   postJob,
 } from "@/lib/api-jobs";
+import type { GeoSuggestion } from "@/lib/api-mapbox";
+import { parseDayRate } from "@/lib/day-rate";
 
 // Post a contract from mobile (any onboarded user). Mirrors the web PostJobForm but
 // mobile-focused: the description + how-to-apply are Enriched rich text (HTML out,
@@ -63,6 +68,15 @@ const PostJobScreen = () => {
     useState<PostJobInput["workMode"]>("REMOTE");
   const [ir35Signal, setIr35Signal] = useState("CLIENT_INTENDS_OUTSIDE");
   const [attested, setAttested] = useState(false);
+
+  // Day rate as raw text (min required, max optional for a range). Parsed into
+  // the Int[] payload on submit. A single min → [min]; min + max → [min, max].
+  const [rateMin, setRateMin] = useState("");
+  const [rateMax, setRateMax] = useState("");
+  const [rateError, setRateError] = useState<string | null>(null);
+
+  // Full geocoded location (address + Mapbox id + coords). Null = UK-wide default.
+  const [location, setLocation] = useState<GeoSuggestion | null>(null);
 
   const post = useMutation({
     // 1) Create the unpaid (PENDING) job → get its id. 2) Open the native Stripe
@@ -131,6 +145,18 @@ const PostJobScreen = () => {
         toast.error("Add a job description.");
         return;
       }
+      const dayRate = parseDayRate(rateMin, rateMax);
+      if (!dayRate) {
+        setRateError(
+          rateMin && rateMax
+            ? "Max must be greater than or equal to min."
+            : "Enter a day rate above £0.",
+        );
+        toast.error("Add a valid day rate to continue.");
+        return;
+      }
+      setRateError(null);
+
       post.mutate({
         companyName: value.companyName.trim(),
         position: value.position.trim(),
@@ -140,14 +166,20 @@ const PostJobScreen = () => {
         applicationEmail: value.applicationEmail.trim(),
         workMode,
         ir35Signal,
-        // Location is required by the API; mobile v1 ships a remote-first default
-        // (Mapbox geocoder is the web flow — a follow-up adds it here).
-        location: {
-          address: "United Kingdom",
-          placeId: "",
-          coordinates: { lat: null, lng: null },
-        },
-        dayRate: [0],
+        // A picked place stores its full geo (address + Mapbox id + coords) so the
+        // board search + day-rates benchmark can use it. Left blank = UK-wide.
+        location: location
+          ? {
+              address: location.label,
+              placeId: location.id,
+              coordinates: { lat: location.lat, lng: location.lng },
+            }
+          : {
+              address: "United Kingdom",
+              placeId: "",
+              coordinates: { lat: null, lng: null },
+            },
+        dayRate,
       });
     },
   });
@@ -183,7 +215,6 @@ const PostJobScreen = () => {
           paddingTop: insets.top + 12,
           paddingHorizontal: 20,
           paddingBottom: insets.bottom + 40,
-          gap: 14,
         }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -191,6 +222,7 @@ const PostJobScreen = () => {
         // keyboard so the bottom of the form stays reachable.
         bottomOffset={24}
       >
+        <ContentColumn style={{ gap: 14 }}>
         <Text className="font-display text-3xl text-foreground">
           Post a contract
         </Text>
@@ -213,6 +245,26 @@ const PostJobScreen = () => {
             />
           )}
         </form.Field>
+
+        <DayRateField
+          min={rateMin}
+          max={rateMax}
+          onChangeMin={(t) => {
+            setRateMin(t);
+            if (rateError) setRateError(null);
+          }}
+          onChangeMax={(t) => {
+            setRateMax(t);
+            if (rateError) setRateError(null);
+          }}
+          error={rateError}
+        />
+
+        <PostLocationField
+          value={location?.place ?? ""}
+          onPick={setLocation}
+          onClear={() => setLocation(null)}
+        />
 
         <RichTextField
           label="Job description"
@@ -329,7 +381,11 @@ const PostJobScreen = () => {
             // it (not just the form) so the blocker is obvious — the button greys
             // out and the helper line below names what's missing.
             const ready =
-              canSubmit && attested && !!description.trim() && !post.isPending;
+              canSubmit &&
+              attested &&
+              !!description.trim() &&
+              parseDayRate(rateMin, rateMax) !== null &&
+              !post.isPending;
             return (
             <Pressable
               className={`mt-3 rounded-lg p-4 ${
@@ -352,7 +408,11 @@ const PostJobScreen = () => {
 
         {/* Name the remaining blocker right under the button, so it's obvious why
             Continue is disabled (no more far-away toast). */}
-        {!attested ? (
+        {parseDayRate(rateMin, rateMax) === null ? (
+          <Text className="-mt-1 text-center text-xs text-muted-foreground">
+            Add a day rate to continue.
+          </Text>
+        ) : !attested ? (
           <Text className="-mt-1 text-center text-xs text-muted-foreground">
             Confirm the IR35 position above to continue.
           </Text>
@@ -366,6 +426,7 @@ const PostJobScreen = () => {
           Pay securely by card (company cards welcome). You’ll get a receipt, and
           your listing goes live once payment clears.
         </Text>
+        </ContentColumn>
       </KeyboardAwareScrollView>
     </View>
   );

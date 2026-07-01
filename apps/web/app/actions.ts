@@ -419,11 +419,24 @@ const JOB_CARD_COLUMNS = Prisma.sql`
 // the two. boardVisible is the absolute gate — a not-board-visible job (e.g. a
 // worker-ingested Inside-IR35 listing) never matches anywhere. See
 // docs/ir35-trust-model.md.
-const buildJobFilterConds = (f: SearchFilters): Prisma.Sql[] => {
+// `opts.earlyAccessHours` (when set) hides jobs newer than that window — the
+// premium early-access gate. Defaults to undefined (no gate), so every existing
+// caller (saved-search matching, web board, SEO) behaves EXACTLY as before; only
+// the mobile/live board explicitly opts a free seeker in.
+const buildJobFilterConds = (
+  f: SearchFilters,
+  opts?: { earlyAccessHours?: number },
+): Prisma.Sql[] => {
   const conds: Prisma.Sql[] = [
     Prisma.sql`"isActive" = true`,
     Prisma.sql`"boardVisible" = true`,
   ];
+  if (opts?.earlyAccessHours && opts.earlyAccessHours > 0) {
+    // Hide contracts newer than the early-access window from this (free) viewer.
+    conds.push(
+      Prisma.sql`"createdAt" <= now() - make_interval(hours => ${opts.earlyAccessHours})`,
+    );
+  }
   if (f.workMode)
     conds.push(Prisma.sql`"workMode" = ${f.workMode}::"WorkMode"`);
   if (f.ir35Outside || f.ir35OutsideOnly) {
@@ -456,9 +469,13 @@ const buildJobFilterConds = (f: SearchFilters): Prisma.Sql[] => {
 
 export const searchJobs = async (
   params: SearchParams,
+  // Optional early-access gate: pass { earlyAccessHours } to hide contracts newer
+  // than that window (the premium perk — only the live board opts a free seeker in;
+  // omitted everywhere else, so behaviour is unchanged for all existing callers).
+  opts?: { earlyAccessHours?: number },
 ): Promise<JobSearchRow[]> => {
   const f = normalizeFilters(params);
-  const conds = buildJobFilterConds(f);
+  const conds = buildJobFilterConds(f, opts);
   const where = Prisma.join(conds, ' AND ');
 
   // Hybrid ranking when a query is present: fuse lexical (FTS) + semantic
@@ -1745,6 +1762,131 @@ export const getMyJobsWithApplicants = async (): Promise<DashboardJob[]> => {
   }));
 };
 
+export type CallerJobSummary = {
+  id: string;
+  position: string;
+  companyName: string;
+  isActive: boolean;
+  paymentStatus: 'FREE' | 'PENDING' | 'PAID';
+  createdAt: Date;
+  // How many applications this listing has received (all statuses), and how many
+  // are still untriaged (NEW) — so the Listings tab can surface "3 new" at a glance.
+  applicantCount: number;
+  newApplicantCount: number;
+};
+
+/**
+ * The caller's own listings, summarised for the mobile Listings tab. Mirrors
+ * getMyJobsWithApplicants but bearer-scoped (userId arg, not session) and returns
+ * COUNTS rather than the full applicant list — the Listings tab shows the poster's
+ * jobs with their live/pending state and applicant tallies; the Applicants deck
+ * (getMyApplicantsForCaller) handles the people. Scoped to jobs the caller posted.
+ */
+export const getMyJobsForCaller = async (
+  userId: string,
+): Promise<CallerJobSummary[]> => {
+  const jobs = await prisma.job.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      position: true,
+      companyName: true,
+      isActive: true,
+      paymentStatus: true,
+      createdAt: true,
+      _count: { select: { applications: true } },
+      // A second scoped count for the untriaged (NEW) queue only.
+      applications: {
+        where: { status: 'NEW' },
+        select: { id: true },
+      },
+    },
+  });
+
+  return jobs.map((j) => ({
+    id: j.id,
+    position: j.position,
+    companyName: j.companyName,
+    isActive: j.isActive,
+    paymentStatus: j.paymentStatus as CallerJobSummary['paymentStatus'],
+    createdAt: j.createdAt,
+    applicantCount: j._count.applications,
+    newApplicantCount: j.applications.length,
+  }));
+};
+
+export type ListingAnalytics = {
+  jobId: string;
+  position: string;
+  // The applicant funnel — first-party counts about the recruiter's OWN listing.
+  // No IR35 surface, no candidate judgement: just how the listing is performing.
+  total: number; // all applicants
+  viewed: number; // profiles the recruiter opened (Application.viewedAt)
+  shortlisted: number; // status = SHORTLISTED
+  passed: number; // status = PASSED
+  neww: number; // status = NEW (untriaged)
+  // Applications per day over the trailing 14 days, oldest-first — for a trend
+  // chart. Days with no applications are included as zero (a continuous series).
+  daily: { date: string; count: number }[];
+};
+
+/**
+ * Per-listing analytics for the recruiter's OWN job — the applicant funnel +
+ * a 14-day applications trend. OWNERSHIP-GATED: returns null unless the caller
+ * posted this job. First-party performance data about the listing (how many
+ * applied / were viewed / shortlisted) — never a candidate ranking or an IR35
+ * assertion (docs/ir35-trust-model.md). Powers the premium "Recruiter Insights".
+ */
+export const getListingAnalytics = async (
+  userId: string,
+  jobId: string,
+  now: Date = new Date(),
+): Promise<ListingAnalytics | null> => {
+  const job = await prisma.job.findFirst({
+    where: { id: jobId, userId },
+    select: { id: true, position: true },
+  });
+  if (!job) return null; // not the caller's listing → no access
+
+  const apps = await prisma.application.findMany({
+    where: { jobId },
+    select: { status: true, viewedAt: true, createdAt: true },
+  });
+
+  const viewed = apps.filter((a) => a.viewedAt != null).length;
+  const shortlisted = apps.filter((a) => a.status === 'SHORTLISTED').length;
+  const passed = apps.filter((a) => a.status === 'PASSED').length;
+  const neww = apps.filter((a) => a.status === 'NEW').length;
+
+  // 14-day continuous daily series (oldest-first), each day midnight-keyed.
+  const DAYS = 14;
+  const dayKey = (d: Date) => d.toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
+  const counts = new Map<string, number>();
+  for (let i = 0; i < DAYS; i += 1) {
+    const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    counts.set(dayKey(d), 0);
+  }
+  for (const a of apps) {
+    const key = dayKey(new Date(a.createdAt));
+    if (counts.has(key)) counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  const daily = Array.from(counts.entries())
+    .map(([date, count]) => ({ date, count }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  return {
+    jobId: job.id,
+    position: job.position,
+    total: apps.length,
+    viewed,
+    shortlisted,
+    passed,
+    neww,
+    daily,
+  };
+};
+
 /**
  * A poster views one applicant's verified profile — ONLY when that applicant has
  * applied to a job the poster owns. The ownership check is the access gate: no
@@ -1830,6 +1972,51 @@ export const getMyApplications = async (): Promise<string[]> => {
   return apps.map((a) => a.jobId);
 };
 
+// A profile "view" = one of this contractor's applications that a hirer has opened
+// (Application.viewedAt stamped). This is the honest, already-captured signal — we
+// count DISTINCT viewed applications, not raw impressions (a true repeat-view count
+// would need a ProfileView event table; that's a v2). Powers the "who viewed you"
+// premium perk: free contractors know only IF they were viewed (the existing
+// per-application "Viewed" badge); premium sees the aggregate count + recency + the
+// roles. This action returns the FULL data; the route decides free-vs-premium
+// shaping. Scoped to the caller (their own applications only).
+export type ProfileViews = {
+  total: number; // distinct viewed applications, all time
+  last7Days: number; // viewed in the trailing 7 days
+  // The most recently-viewed roles (position + company + when), newest first.
+  recent: { jobPosition: string; companyName: string; viewedAt: Date }[];
+};
+
+export const getProfileViewsForCaller = async (
+  userId: string,
+  now: Date = new Date(),
+): Promise<ProfileViews> => {
+  const viewed = await prisma.application.findMany({
+    where: { applicantId: userId, viewedAt: { not: null } },
+    orderBy: { viewedAt: 'desc' },
+    select: {
+      viewedAt: true,
+      job: { select: { position: true, companyName: true } },
+    },
+  });
+
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const last7Days = viewed.filter(
+    (v) => v.viewedAt && v.viewedAt >= sevenDaysAgo,
+  ).length;
+
+  return {
+    total: viewed.length,
+    last7Days,
+    recent: viewed.slice(0, 10).map((v) => ({
+      jobPosition: v.job.position,
+      companyName: v.job.companyName,
+      // viewedAt is non-null here (where-filtered), but TS sees it as nullable.
+      viewedAt: v.viewedAt as Date,
+    })),
+  };
+};
+
 // ───────────────────────── Recruiter applicant triage (swipe deck) ───────────
 // A poster shortlists / passes on the contractors who applied to THEIR jobs. The
 // access gate is ownership (job.userId === caller) — a poster can only see/triage
@@ -1848,6 +2035,12 @@ const CANDIDATE_APPLICANT_SELECT = {
   limitedCompanies: {
     where: { companyVerifiedAt: { not: null } },
     select: { name: true, companyVerifiedAt: true },
+  },
+  // Premium contractors surface FIRST in the employer deck ("profile prominence").
+  // We read the subscription to compute isPremium() (date-aware), then sort in code
+  // — everyone is still shown, premium just gets seen first. Ordering, not hiding.
+  subscription: {
+    select: { status: true, currentPeriodEnd: true },
   },
 } as const;
 
@@ -1880,7 +2073,7 @@ export const getMyApplicantsForCaller = async (
     },
   });
 
-  return rows.map((r) => ({
+  const mapped = rows.map((r) => ({
     applicationId: r.id,
     applicantId: r.applicantId,
     status: r.status as ApplicantStatus,
@@ -1894,7 +2087,17 @@ export const getMyApplicantsForCaller = async (
     holdsIR35Insurance: r.applicant.holdsIR35Insurance,
     parsedProfile: r.applicant.parsedProfile,
     verifiedCompanies: r.applicant.limitedCompanies,
+    // "Profile prominence" — a premium contractor surfaces above non-premium
+    // applicants AND carries a "Featured" badge on the card (the visible half of
+    // the perk). A paid signal-boost the contractor bought, never a quality claim.
+    featured: isPremium(r.applicant.subscription),
   }));
+
+  // Featured (premium) first, preserving the DB's createdAt-desc order within each
+  // group (Array.prototype.sort is stable). Ordering only — every applicant is
+  // still returned; featured ones are simply seen first. The `featured` flag flows
+  // through to the candidate DTO so the card can badge it.
+  return mapped.sort((a, b) => Number(b.featured) - Number(a.featured));
 };
 
 /**

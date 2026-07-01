@@ -15,6 +15,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { toast } from "sonner-native";
 import AIPitchUpsell from "@/components/AIPitchUpsell";
+import ContentColumn from "@/components/ContentColumn";
 import RichText from "@/components/RichText";
 import SaveHeart from "@/components/SaveHeart";
 import { useAuth } from "@/contexts/AuthContext";
@@ -69,6 +70,7 @@ const JobDetailScreen = () => {
       className="flex-1 bg-background"
       contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom + 32 }}
     >
+      <ContentColumn>
       <View className="flex-row items-start justify-between gap-3">
         <View className="min-w-0 flex-1">
           <Text className="text-xs text-muted-foreground">
@@ -127,6 +129,7 @@ const JobDetailScreen = () => {
         sourceUrl={job.sourceUrl}
         eligibility={apply}
       />
+      </ContentColumn>
     </ScrollView>
   );
 };

@@ -1,6 +1,15 @@
+import { faLock } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "@tanstack/react-query";
-import { ActivityIndicator, RefreshControl, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  Text,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ErrorState from "@/components/ErrorState";
 import { type DayRateRow, fetchDayRates } from "@/lib/api-day-rates";
@@ -13,6 +22,7 @@ const fmt = (n: number) => `£${n.toLocaleString("en-GB")}`;
 
 const DayRatesScreen = () => {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ["dayRates"],
     queryFn: fetchDayRates,
@@ -83,7 +93,14 @@ const DayRatesScreen = () => {
         data={data.rows}
         keyExtractor={(r) => `${r.skill}-${r.ir35Bucket}`}
         renderItem={({ item }) => <RateRow row={item} />}
-        ListHeaderComponent={Header}
+        ListHeaderComponent={
+          <>
+            {Header}
+            {data.locked ? (
+              <UpsellBanner onPress={() => router.push("/premium")} />
+            ) : null}
+          </>
+        }
         ListFooterComponent={<Disclaimer totalSample={data.totalSample} />}
         contentContainerStyle={{
           paddingHorizontal: 16,
@@ -97,33 +114,79 @@ const DayRatesScreen = () => {
   );
 };
 
-const RateRow = ({ row }: { row: DayRateRow }) => (
-  <View className="mb-2 rounded-lg border border-border bg-card p-4">
-    <View className="flex-row items-start justify-between gap-3">
-      <View className="min-w-0 flex-1">
-        <Text className="font-sans-semibold text-foreground" numberOfLines={1}>
-          {row.skillLabel}
-        </Text>
-        <Text
-          className={`mt-0.5 text-xs ${row.tone === "verified" ? "text-verified" : "text-muted-foreground"}`}
-        >
-          {row.ir35Label}
-        </Text>
+const RateRow = ({ row }: { row: DayRateRow }) => {
+  // Premium withheld → p25/p75/min/max/sampleSize come back null. Show the median
+  // (always free) and a subtle locked hint where the range would be.
+  const locked = row.p25 === null;
+  return (
+    <View className="mb-2 rounded-lg border border-border bg-card p-4">
+      <View className="flex-row items-start justify-between gap-3">
+        <View className="min-w-0 flex-1">
+          <Text
+            className="font-sans-semibold text-foreground"
+            numberOfLines={1}
+          >
+            {row.skillLabel}
+          </Text>
+          <Text
+            className={`mt-0.5 text-xs ${row.tone === "verified" ? "text-verified" : "text-muted-foreground"}`}
+          >
+            {row.ir35Label}
+          </Text>
+        </View>
+        <View className="items-end">
+          <Text className="font-sans-semibold font-mono text-lg text-foreground">
+            {fmt(row.median)}
+          </Text>
+          {locked ? (
+            <View className="mt-0.5 flex-row items-center gap-1">
+              <FontAwesomeIcon icon={faLock} size={9} color="#a3a09e" />
+              <Text className="font-mono text-xs text-muted-foreground">
+                range
+              </Text>
+            </View>
+          ) : (
+            <Text className="font-mono text-xs text-muted-foreground">
+              {fmt(row.p25 as number)}–{fmt(row.p75 as number)}
+            </Text>
+          )}
+        </View>
       </View>
-      <View className="items-end">
-        <Text className="font-sans-semibold font-mono text-lg text-foreground">
-          {fmt(row.median)}
+      {locked ? (
+        <Text className="mt-2 text-xs text-muted-foreground">
+          Median day rate. Unlock the full range and sample size with Premium.
         </Text>
-        <Text className="font-mono text-xs text-muted-foreground">
-          {fmt(row.p25)}–{fmt(row.p75)}
+      ) : (
+        <Text className="mt-2 text-xs text-muted-foreground">
+          Median of {row.sampleSize} listing
+          {row.sampleSize === 1 ? "" : "s"} · range {fmt(row.min as number)}–
+          {fmt(row.max as number)}
         </Text>
-      </View>
+      )}
     </View>
-    <Text className="mt-2 text-xs text-muted-foreground">
-      Median of {row.sampleSize} listing{row.sampleSize === 1 ? "" : "s"} · range{" "}
-      {fmt(row.min)}–{fmt(row.max)}
-    </Text>
-  </View>
+  );
+};
+
+// Shown above the list when the spread is locked (free/not-premium). Taps through
+// to the paywall. Honest framing: the median is free; Premium adds the detail.
+const UpsellBanner = ({ onPress }: { onPress: () => void }) => (
+  <Pressable
+    className="mb-3 mt-1 flex-row items-center gap-3 rounded-lg border border-border bg-secondary/50 px-4 py-3 active:opacity-80"
+    onPress={onPress}
+    accessibilityRole="button"
+    accessibilityLabel="Unlock full day-rate data with Premium"
+  >
+    <FontAwesomeIcon icon={faLock} size={14} color="#1f5d43" />
+    <View className="flex-1">
+      <Text className="font-sans-semibold text-sm text-foreground">
+        You’re seeing median rates
+      </Text>
+      <Text className="text-xs text-muted-foreground">
+        Premium unlocks the full range (p25–p75), min/max, and sample size.
+      </Text>
+    </View>
+    <Text className="font-sans-semibold text-sm text-verified">Unlock →</Text>
+  </Pressable>
 );
 
 const Disclaimer = ({ totalSample }: { totalSample: number }) => (

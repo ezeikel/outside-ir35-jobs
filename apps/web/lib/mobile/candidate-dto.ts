@@ -27,6 +27,10 @@ export type MobileCandidateCard = {
   status: 'NEW' | 'SHORTLISTED' | 'PASSED';
   appliedAt: string; // ISO
   message: string | null; // the contractor's optional cover note
+  // The applicant is a premium contractor — shows a "Featured" badge and sorts
+  // first. A PAID signal-boost the contractor bought, NOT a quality/IR35 claim:
+  // the label is "Featured", never "better" or anything about their status.
+  featured: boolean;
   // Objective identity facts (never PII).
   name: string;
   trustTier: ContractorTrustTier;
@@ -58,6 +62,9 @@ export type CandidateRow = {
   status: 'NEW' | 'SHORTLISTED' | 'PASSED';
   appliedAt: Date | string;
   message: string | null;
+  // Optional so callers that don't compute premium status just get an un-featured
+  // card (the flag defaults to false in the mapper).
+  featured?: boolean;
   name: string | null;
   trustTier: ContractorTrustTier;
   rightToWorkConfirmed: boolean;
@@ -81,6 +88,7 @@ export const toMobileCandidateCard = (
     status: row.status,
     appliedAt: new Date(row.appliedAt).toISOString(),
     message: row.message,
+    featured: row.featured ?? false,
     name: row.name ?? 'A contractor',
     trustTier: row.trustTier,
     trustTierLabel: TRUST_TIER_LABELS[row.trustTier] ?? 'Profile',

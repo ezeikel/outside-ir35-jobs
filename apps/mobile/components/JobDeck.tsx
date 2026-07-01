@@ -132,17 +132,16 @@ const JobDeck = ({
     [dismiss],
   );
 
+  // No Pressable wrapper: opening the card is a tap COMPOSED with the deck's pan
+  // (see onCardPress below), so a swipe is never hijacked into an open. A bare
+  // Pressable here races the pan independently and steals fast swipes.
   const renderCard = useCallback(
-    (job: MobileJobCard) => (
-      <Pressable
-        className="flex-1"
-        onPress={() => router.push(`/job/${job.id}`)}
-        accessibilityRole="button"
-        accessibilityLabel={`Open ${job.position}`}
-      >
-        <JobSwipeCard job={job} />
-      </Pressable>
-    ),
+    (job: MobileJobCard) => <JobSwipeCard job={job} />,
+    [],
+  );
+
+  const onCardPress = useCallback(
+    (job: MobileJobCard) => router.push(`/job/${job.id}`),
     [router],
   );
 
@@ -200,19 +199,20 @@ const JobDeck = ({
 
   return (
     <View className="flex-1" style={{ paddingBottom: bottomInset }}>
-      {/* The deck. Capped width + height and centred so it stays a comfortable
-          card on a tablet (otherwise it stretches to the full iPad height with a
-          big empty middle). On a phone the caps exceed the screen, so it's
-          effectively full-bleed there. */}
-      <View className="flex-1 items-center px-5 pb-3 pt-2">
+      {/* The deck. Capped width + height and centred on BOTH axes so it stays a
+          comfortable card on a tablet (otherwise it stretches to the full iPad
+          height with a big empty middle). On a phone the caps exceed the screen,
+          so it's effectively full-bleed there. */}
+      <View className="flex-1 items-center justify-center px-5 pb-3 pt-2">
         <View
           className="w-full flex-1"
-          style={{ maxWidth: 520, maxHeight: 680 }}
+          style={{ maxWidth: 500, maxHeight: 560 }}
         >
           <SwipeDeck<MobileJobCard>
           items={deck}
           keyExtractor={(j) => j.id}
           renderCard={renderCard}
+          onCardPress={onCardPress}
           onSwipeRight={onSwipeRight}
           onSwipeLeft={onSwipeLeft}
           // Fires when the LAST card is swiped, in EITHER direction — the reliable

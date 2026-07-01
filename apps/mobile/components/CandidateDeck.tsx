@@ -152,8 +152,8 @@ const CandidateDeck = ({ bottomInset }: { bottomInset: number }) => {
 
   return (
     <View className="flex-1" style={{ paddingBottom: bottomInset }}>
-      <View className="flex-1 items-center px-5 pb-3 pt-2">
-        <View className="w-full flex-1" style={{ maxWidth: 520, maxHeight: 680 }}>
+      <View className="flex-1 items-center justify-center px-5 pb-3 pt-2">
+        <View className="w-full flex-1" style={{ maxWidth: 500, maxHeight: 560 }}>
           <SwipeDeck<CandidateCard>
             items={candidates}
             keyExtractor={(c) => c.applicationId}

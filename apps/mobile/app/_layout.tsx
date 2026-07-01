@@ -7,6 +7,9 @@ import {
   InterTight_700Bold,
 } from "@expo-google-fonts/inter-tight";
 import notifee, { EventType } from "@notifee/react-native";
+import * as Sentry from "@sentry/react-native";
+import * as Application from "expo-application";
+import Constants from "expo-constants";
 import { useFonts } from "expo-font";
 import { Redirect, Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -15,6 +18,26 @@ import { useEffect, useState } from "react";
 import Providers from "@/providers";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import "@/global.css";
+
+// release/dist must match the source maps uploaded at build time (the Sentry
+// Expo plugin uploads them) so crashes symbolicate. version+build is stable per
+// binary; dist = native build number.
+const SENTRY_RELEASE = `${Constants.expoConfig?.version ?? "0.0.0"}+${
+  Application.nativeBuildVersion ?? "0"
+}`;
+
+// DSN is a public client key (safe to ship), not a secret. EXPO_PUBLIC_SENTRY_DSN
+// is inlined at build time; absent in local dev → init no-ops (enabled:false).
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  // OFF in local dev (Metro HMR noise), ON for preview/production builds.
+  enabled: !__DEV__ && Boolean(process.env.EXPO_PUBLIC_SENTRY_DSN),
+  environment: process.env.EXPO_PUBLIC_ENVIRONMENT ?? "development",
+  release: SENTRY_RELEASE,
+  dist: String(Application.nativeBuildVersion ?? "0"),
+  tracesSampleRate: 1.0,
+  sendDefaultPii: false,
+});
 
 // Hold the splash until fonts are ready so the UI doesn't flash system-font text.
 // The NativeWind theme (global.css @theme) names these families — every one the
@@ -151,9 +174,22 @@ const RootLayout = () => {
             animation: "slide_from_right",
           }}
         />
+        {/* Per-listing analytics, pushed from the Listings tab's Insights button. */}
+        <Stack.Screen
+          name="listing-analytics/[jobId]"
+          options={{
+            headerShown: true,
+            headerTitle: "",
+            headerBackTitle: "My roles",
+            headerTintColor: "#17181a",
+            headerStyle: { backgroundColor: "#f6f5f3" },
+            headerShadowVisible: false,
+            animation: "slide_from_right",
+          }}
+        />
       </Stack>
     </Providers>
   );
 };
 
-export default RootLayout;
+export default Sentry.wrap(RootLayout);

@@ -1,4 +1,9 @@
-import { faHeart, faRectangleList } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBriefcase,
+  faChartSimple,
+  faHeart,
+  faRectangleList,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "@tanstack/react-query";
@@ -16,10 +21,12 @@ import CandidateDeck from "@/components/CandidateDeck";
 import ErrorState from "@/components/ErrorState";
 import { TAB_BAR_HEIGHT } from "@/components/GlassTabBar";
 import JobCard from "@/components/JobCard";
+import ProfileViewsCard from "@/components/ProfileViewsCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSavedJobs } from "@/hooks/useSavedJobs";
 import { useViewMode } from "@/hooks/useViewMode";
 import { fetchApplications } from "@/lib/api-applications";
+import { fetchMyPosts, type PostSummary } from "@/lib/api-posts";
 
 // "My jobs" (seeker) / "My roles" (hiring). Mode-aware. Seekers get Saved +
 // Applications sub-tabs; hirers get their listings. The data surfaces (saved
@@ -215,6 +222,10 @@ const ApplicationsTab = ({ bottomInset }: { bottomInset: number }) => {
     <FlashList
       data={applications}
       keyExtractor={(item) => item.id}
+      // "Who viewed you" summary sits above the application list — the same context
+      // as the per-application "Viewed" badges below. Self-hides when there are no
+      // views yet, so it never shows a discouraging "0 views".
+      ListHeaderComponent={<ProfileViewsCard />}
       renderItem={({ item }) => (
         <View>
           <JobCard
@@ -354,9 +365,179 @@ const SavedTab = ({ bottomInset }: { bottomInset: number }) => {
   );
 };
 
+// A status pill for a listing: LIVE (paid + active), PENDING PAYMENT (created but
+// not yet paid), or CLOSED (paid but no longer active). Colour-coded so state reads
+// at a glance without reading the label.
+const StatusPill = ({ post }: { post: PostSummary }) => {
+  const live = post.isActive && post.paymentStatus !== "PENDING";
+  const pending = post.paymentStatus === "PENDING";
+  const label = live ? "Live" : pending ? "Payment due" : "Closed";
+  // Green = live, amber = payment due, grey = closed.
+  const tone = live
+    ? { bg: "#e7f2ec", fg: "#1f5d43" }
+    : pending
+      ? { bg: "#fdf1dc", fg: "#8a5a00" }
+      : { bg: "#efedea", fg: "#78716c" };
+  return (
+    <View
+      className="self-start rounded-full px-2.5 py-1"
+      style={{ backgroundColor: tone.bg }}
+    >
+      <Text
+        className="text-[11px] font-sans-semibold uppercase tracking-wide"
+        style={{ color: tone.fg }}
+      >
+        {label}
+      </Text>
+    </View>
+  );
+};
+
+// One listing row: position + company, status pill, applicant tallies, and an
+// "Insights" action that opens the per-listing analytics. Tapping the row body
+// opens the public job detail (the poster's own listing as seekers see it).
+const PostRow = ({
+  post,
+  onPress,
+  onInsights,
+}: {
+  post: PostSummary;
+  onPress: () => void;
+  onInsights: () => void;
+}) => (
+  <View className="mb-3 rounded-xl border border-border bg-card p-4">
+    <Pressable
+      className="active:opacity-80"
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${post.position} at ${post.companyName}`}
+    >
+      <View className="flex-row items-start justify-between gap-3">
+        <View className="flex-1">
+          <Text
+            className="font-sans-semibold text-base text-foreground"
+            numberOfLines={1}
+          >
+            {post.position}
+          </Text>
+          <Text className="text-sm text-muted-foreground" numberOfLines={1}>
+            {post.companyName}
+          </Text>
+        </View>
+        <StatusPill post={post} />
+      </View>
+
+      <View className="mt-3 flex-row items-center gap-4">
+        <Text className="text-sm text-muted-foreground">
+          {post.applicantCount === 0
+            ? "No applicants yet"
+            : `${post.applicantCount} applicant${post.applicantCount === 1 ? "" : "s"}`}
+        </Text>
+        {post.newApplicantCount > 0 ? (
+          <View className="rounded-full bg-primary px-2 py-0.5">
+            <Text className="text-[11px] font-sans-semibold text-primary-foreground">
+              {post.newApplicantCount} new
+            </Text>
+          </View>
+        ) : null}
+      </View>
+    </Pressable>
+
+    <Pressable
+      className="mt-3 flex-row items-center gap-2 self-start rounded-lg border border-border px-3 py-2 active:opacity-70"
+      onPress={onInsights}
+      accessibilityRole="button"
+      accessibilityLabel={`View insights for ${post.position}`}
+    >
+      <FontAwesomeIcon icon={faChartSimple} size={13} color="#17181a" />
+      <Text className="text-xs font-sans-semibold text-foreground">
+        Insights
+      </Text>
+    </Pressable>
+  </View>
+);
+
+// Listings sub-tab — the caller's own posted contracts with live/pending state +
+// applicant counts. Data from GET /api/mobile/posts (getMyJobsForCaller). Refetches
+// on focus so a just-posted job (or a new applicant) shows up on return.
+const ListingsTab = ({ bottomInset }: { bottomInset: number }) => {
+  const router = useRouter();
+  const {
+    data: posts = [],
+    isLoading,
+    isError,
+    isRefetching,
+    refetch,
+  } = useQuery({
+    queryKey: ["my-posts"],
+    queryFn: fetchMyPosts,
+  });
+
+  useFocusEffect(
+    useCallback(() => {
+      void refetch();
+    }, [refetch]),
+  );
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator color="#17181a" />
+      </View>
+    );
+  }
+
+  // A failed fetch must not fall through to the "no listings" empty state — that
+  // would read as "you haven't posted anything" when we simply couldn't load.
+  if (isError) {
+    return (
+      <ErrorState
+        title="Couldn’t load your listings"
+        body="We couldn’t reach your listings. Check your connection and try again."
+        onRetry={() => refetch()}
+      />
+    );
+  }
+
+  if (posts.length === 0) {
+    return (
+      <>
+        <EmptyState
+          icon={faBriefcase}
+          title="No listings yet"
+          body="Post a contract to reach verified limited-company contractors. Your live and pending listings will appear here."
+        />
+        <View style={{ height: bottomInset }} />
+      </>
+    );
+  }
+
+  return (
+    <FlashList
+      data={posts}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => (
+        <PostRow
+          post={item}
+          onPress={() => router.push(`/job/${item.id}`)}
+          onInsights={() => router.push(`/listing-analytics/${item.id}`)}
+        />
+      )}
+      contentContainerStyle={{
+        paddingHorizontal: 16,
+        paddingTop: 12,
+        paddingBottom: bottomInset + 16,
+      }}
+      refreshControl={
+        <RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} />
+      }
+    />
+  );
+};
+
 // Hiring view. Two sub-tabs: Applicants (the candidate swipe deck — shortlist/pass
-// the people who applied to your contracts) and Listings (your posts; full listing
-// management is a follow-up, so it's an empty state for now).
+// the people who applied to your contracts) and Listings (your posted contracts,
+// with live/pending state + applicant counts).
 const MyPosts = ({
   topInset,
   bottomInset,
@@ -387,14 +568,7 @@ const MyPosts = ({
       {tab === "applicants" ? (
         <CandidateDeck bottomInset={bottomInset} />
       ) : (
-        <>
-          <EmptyState
-            icon={faRectangleList}
-            title="Listings coming soon"
-            body="Your live and draft contracts will appear here. Post a contract from your profile."
-          />
-          <View style={{ height: bottomInset }} />
-        </>
+        <ListingsTab bottomInset={bottomInset} />
       )}
     </View>
   );

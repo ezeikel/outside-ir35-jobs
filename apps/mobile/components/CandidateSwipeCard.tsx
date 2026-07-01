@@ -2,6 +2,7 @@ import {
   faBuildingColumns,
   faCircleCheck,
   faShieldHalved,
+  faStar,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { Text, View } from "react-native";
@@ -66,11 +67,28 @@ const CandidateSwipeCard = ({ candidate }: { candidate: CandidateCard }) => {
           >
             {candidate.name}
           </Text>
-          <View className="mt-1 flex-row items-center gap-1.5 self-start rounded-full bg-verified-muted px-2.5 py-1">
-            <FontAwesomeIcon icon={faShieldHalved} size={11} color="#1f5d43" />
-            <Text className="text-xs font-sans-semibold text-verified">
-              {candidate.trustTierLabel}
-            </Text>
+          <View className="mt-1 flex-row flex-wrap items-center gap-1.5">
+            <View className="flex-row items-center gap-1.5 rounded-full bg-verified-muted px-2.5 py-1">
+              <FontAwesomeIcon
+                icon={faShieldHalved}
+                size={11}
+                color="#1f5d43"
+              />
+              <Text className="text-xs font-sans-semibold text-verified">
+                {candidate.trustTierLabel}
+              </Text>
+            </View>
+            {/* Featured = the contractor's premium signal-boost. Amber (NOT the
+                green verified tone) so it never reads as a verification/quality
+                claim — it's a paid highlight. */}
+            {candidate.featured ? (
+              <View className="flex-row items-center gap-1.5 rounded-full bg-[#fdf1dc] px-2.5 py-1">
+                <FontAwesomeIcon icon={faStar} size={10} color="#8a5a00" />
+                <Text className="text-xs font-sans-semibold text-[#8a5a00]">
+                  Featured
+                </Text>
+              </View>
+            ) : null}
           </View>
         </View>
       </View>

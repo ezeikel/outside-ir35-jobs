@@ -56,6 +56,11 @@ type SwipeDeckProps<T> = {
   // "3 of 24" position counter above the deck — a deck-size affordance (this is a
   // stack you swipe through, and here's how far you are). Off by default.
   showCounter?: boolean;
+  // Tap the top card (e.g. open its detail). Composed with the pan via Gesture.Race
+  // so it only fires on a clean tap — a drag is claimed by the pan and never opens
+  // the card. Prefer this over wrapping renderCard in a Pressable (whose press
+  // responder races the pan independently and hijacks fast swipes).
+  onCardPress?: (item: T) => void;
 };
 
 const SwipeDeck = <T,>({
@@ -69,6 +74,7 @@ const SwipeDeck = <T,>({
   onReady,
   onEmpty,
   showCounter = false,
+  onCardPress,
 }: SwipeDeckProps<T>) => {
   // Which cards have been swiped THIS session, tracked by key (not a numeric
   // index). This is robust to the parent re-filtering `items` underneath us: a
@@ -150,6 +156,21 @@ const SwipeDeck = <T,>({
         if (finished && top) runOnJS(advance)(direction, top);
       });
     });
+
+  // Tap the top card → onCardPress. Racing it with the pan (below) is what fixes
+  // the "swipe gets hijacked into opening the card" bug: gesture-handler arbitrates
+  // a single touch between the two, so any drag is claimed by the pan and the tap
+  // never resolves. A bare RN Pressable couldn't do this — its press responder
+  // sits outside gesture-handler and fires onPress on release even after a drag.
+  const tap = Gesture.Tap()
+    .maxDuration(250)
+    .onEnd((_e, success) => {
+      if (success && top && onCardPress) runOnJS(onCardPress)(top);
+    });
+
+  // Race: whichever gesture wins the touch cancels the other. Pan wins on movement;
+  // tap wins on a clean press-release with no drag.
+  const composed = Gesture.Race(pan, tap);
 
   const topStyle = useAnimatedStyle(() => ({
     transform: [
@@ -278,8 +299,8 @@ const SwipeDeck = <T,>({
         </Animated.View>
       ) : null}
 
-      {/* Top card — gesture target. */}
-      <GestureDetector gesture={pan}>
+      {/* Top card — gesture target (pan + tap, raced). */}
+      <GestureDetector gesture={composed}>
         <Animated.View
           key={keyExtractor(top)}
           style={[{ width: "100%", height: "100%" }, topStyle]}

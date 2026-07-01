@@ -50,7 +50,7 @@
               "locale" : "en_GB"
             }
           ],
-          "productID" : "premium_sub_monthly_v1",
+          "productID" : "premium_sub_monthly_v4",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Premium Monthly",
           "subscriptionGroupID" : "B2C3D4E5",

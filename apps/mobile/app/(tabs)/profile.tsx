@@ -21,6 +21,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import ContentColumn from "@/components/ContentColumn";
 import { TAB_BAR_HEIGHT } from "@/components/GlassTabBar";
 import SettingsRow, { SettingsSection } from "@/components/SettingsRow";
 import VerifiedProfile from "@/components/VerifiedProfile";
@@ -116,6 +117,7 @@ const ProfileScreen = () => {
           paddingBottom: insets.bottom + 24 + TAB_BAR_HEIGHT,
         }}
       >
+        <ContentColumn>
         <Text className="font-display text-3xl text-foreground">
           {user.name || "Your account"}
         </Text>
@@ -236,6 +238,7 @@ const ProfileScreen = () => {
             Version {versionLabel()}
           </Text>
         </View>
+        </ContentColumn>
       </ScrollView>
     );
   }

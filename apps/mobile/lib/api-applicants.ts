@@ -10,6 +10,9 @@ export type CandidateCard = {
   status: "NEW" | "SHORTLISTED" | "PASSED";
   appliedAt: string;
   message: string | null;
+  // Premium contractor — shows a "Featured" badge + sorts first. A paid signal-
+  // boost the contractor bought, never a quality/IR35 claim.
+  featured: boolean;
   name: string;
   trustTier: string;
   trustTierLabel: string;

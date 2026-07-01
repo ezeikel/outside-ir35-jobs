@@ -53,6 +53,13 @@ const POSTED_DAYS: Record<string, number> = {
   month: 30,
 };
 
+// Premium "early access": a new contract is visible to premium seekers this many
+// hours before free users. Lives here (a plain module) not in actions.ts, because
+// actions.ts is a "use server" file where ONLY async functions may be exported.
+// Applied only on the live board query for a signed-in NON-premium seeker (see
+// searchJobs opts) — never to saved-search matching, web SEO, or premium viewers.
+export const EARLY_ACCESS_HOURS = 24;
+
 const isWorkMode = (v: string): v is WorkMode =>
   (Object.values(WorkMode) as string[]).includes(v);
 

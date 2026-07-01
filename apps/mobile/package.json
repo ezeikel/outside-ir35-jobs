@@ -3,6 +3,14 @@
   "main": "./index.js",
   "version": "0.1.0",
   "private": true,
+  "expo": {
+    "install": {
+      "//": "Expo SDK 56 bundles @shopify/react-native-skia 2.6.2, but that version's podspec header glob breaks under use_frameworks!:static (which @react-native-firebase forces) → Skia fails to compile ('third_party/base64.h' not found). Fixed upstream in Skia 2.6.3 (PR #3853); we pin 2.6.9. Excluding it here stops expo-doctor/expo-install reverting us to the broken 2.6.2.",
+      "exclude": [
+        "@shopify/react-native-skia"
+      ]
+    }
+  },
   "scripts": {
     "clean": "git clean -xdf .expo node_modules",
     "start": "expo start",
@@ -55,6 +63,7 @@
     "@react-native-google-signin/google-signin": "^16.1.1",
     "@sentry/react-native": "~8.12.0",
     "@shopify/flash-list": "2.0.2",
+    "@shopify/react-native-skia": "2.6.9",
     "@stripe/stripe-react-native": "0.64.0",
     "@swmansion/react-native-bottom-sheet": "0.10.1",
     "@tanstack/react-form": "^1.33.0",
@@ -89,6 +98,7 @@
     "react-native-css": "3.0.4",
     "react-native-enriched": "^0.8.1",
     "react-native-gesture-handler": "~2.31.2",
+    "react-native-graph": "1.2.0",
     "react-native-keyboard-controller": "1.21.6",
     "react-native-pdf": "^7.0.4",
     "react-native-purchases": "^9.15.2",

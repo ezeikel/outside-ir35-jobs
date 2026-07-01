@@ -1,4 +1,5 @@
 import {
+  faBolt,
   faLayerGroup,
   faList,
   faSliders,
@@ -87,13 +88,17 @@ const JobsScreen = () => {
   // Client-side sort. "Newest" orders by postedAt desc; "Relevance" keeps the
   // server order (RRF when there's a query, newest-first otherwise).
   const jobs = useMemo<MobileJobCard[]>(() => {
-    const rows = data ?? [];
+    const rows = data?.jobs ?? [];
     if (filters.sort !== "newest") return rows;
     return [...rows].sort(
       (a, b) =>
         new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime(),
     );
   }, [data, filters.sort]);
+
+  // The premium early-access delay hid some brand-new contracts from this
+  // signed-in, non-premium seeker → show a subtle "unlock sooner" nudge.
+  const earlyAccessApplied = data?.earlyAccessApplied ?? false;
 
   const commit = (q: string, loc: string) => {
     const next = { q: q.trim(), location: loc.trim() };
@@ -308,6 +313,25 @@ const JobsScreen = () => {
           </View>
         ) : null}
       </View>
+
+      {/* Early-access nudge: shown only when the premium delay hid brand-new
+          contracts from this signed-in, non-premium seeker. Taps to the paywall. */}
+      {earlyAccessApplied && !isLoading && !isError ? (
+        <Pressable
+          className="mx-4 mb-2 flex-row items-center gap-2.5 rounded-lg border border-border bg-secondary/50 px-3 py-2.5 active:opacity-80"
+          onPress={() => router.push("/premium")}
+          accessibilityRole="button"
+          accessibilityLabel="Get early access to new contracts with Premium"
+        >
+          <FontAwesomeIcon icon={faBolt} size={13} color="#8a5a00" />
+          <Text className="flex-1 text-xs text-muted-foreground">
+            New contracts land here 24h earlier with Premium.
+          </Text>
+          <Text className="font-sans-semibold text-xs text-verified">
+            Unlock →
+          </Text>
+        </Pressable>
+      ) : null}
 
       {isLoading ? (
         <View className="flex-1 items-center justify-center">

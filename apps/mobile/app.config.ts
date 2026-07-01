@@ -217,8 +217,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ],
       // Local StoreKit testing for `expo run:ios`: copies the .storekit into ios/
       // and wires it into the generated scheme's Run action so RevenueCat resolves
-      // job_post_v1 / premium_sub_monthly_v1 in the SIMULATOR with no App Store
-      // Connect. Re-runs on every prebuild (survives `expo prebuild --clean`).
+      // premium_sub_monthly_v4 in the SIMULATOR with no App Store Connect. (Job
+      // posts moved to native Stripe — job_post_v1 remains in the .storekit as inert
+      // test data.) Re-runs on every prebuild (survives `expo prebuild --clean`).
       // NON-PRODUCTION ONLY: dev + preview run on simulators (no real ASC). RC is
       // inert in the dev variant, so this matters for the PREVIEW variant (which
       // has an RC key) — run preview locally to exercise the purchase UI.

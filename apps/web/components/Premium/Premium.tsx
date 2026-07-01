@@ -5,10 +5,11 @@ import { createSubscriptionCheckout, getBillingPortalUrl } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 
 const PERKS = [
+  'See which hirers viewed your applications',
+  'Get seen first: your profile surfaces above other applicants',
+  'AI “why this matched” + a tailored pitch on every role',
+  'Full day-rate data: the range and sample, not just the median',
   'Unlimited saved searches & daily job alerts',
-  'Full day-rate benchmark data, by skill and IR35 position',
-  'Profile prominence — surface higher to employers',
-  'Priority access to new features as we ship them',
 ];
 
 const fmtDate = (d: Date | string | null): string => {

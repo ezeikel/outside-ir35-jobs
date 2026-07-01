@@ -43,11 +43,24 @@ export type JobsQuery = {
   posted?: string;
 };
 
-export const fetchJobs = async (query: JobsQuery = {}): Promise<MobileJobCard[]> => {
-  const { data } = await api.get<{ jobs: MobileJobCard[] }>("/api/mobile/jobs", {
+export type JobsResult = {
+  jobs: MobileJobCard[];
+  // True when the premium early-access delay hid some new contracts from this
+  // (signed-in, non-premium) viewer — drives the "unlock new contracts sooner"
+  // nudge. False for signed-out + premium (they see everything).
+  earlyAccessApplied: boolean;
+  earlyAccessHours: number;
+};
+
+export const fetchJobs = async (query: JobsQuery = {}): Promise<JobsResult> => {
+  const { data } = await api.get<JobsResult>("/api/mobile/jobs", {
     params: query,
   });
-  return data.jobs;
+  return {
+    jobs: data.jobs,
+    earlyAccessApplied: data.earlyAccessApplied ?? false,
+    earlyAccessHours: data.earlyAccessHours ?? 0,
+  };
 };
 
 export const fetchJob = async (
