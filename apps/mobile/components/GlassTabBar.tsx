@@ -86,6 +86,13 @@ export const GlassTabBar = ({ state, navigation }: GlassTabBarProps) => {
           stray white bar), so the cap lives on this wrapper, not the blur. */}
       <View style={styles.barCap}>
         <BlurView intensity={40} tint="light" style={styles.bar}>
+        {/* The translucent off-white wash is its OWN absolute-fill layer, NOT a
+            backgroundColor on the BlurView. Tinting the native effect view
+            directly bands into a faint horizontal seam on iOS (the wash blends
+            into the UIVisualEffectView composite); a separate View paints a clean
+            uniform layer, clipped by the BlurView's radius+overflow. Same pattern
+            as the working sibling bars (bump-circle / chunky-crayon). */}
+        <View style={styles.wash} pointerEvents="none" />
         {TABS.map((tab) => {
           const route = state.routes.find((r) => r.name === tab.name);
           const focused = focusedName === tab.name;
@@ -153,9 +160,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 8,
     overflow: "hidden",
-    // Translucent off-white over the blur so the ink reads cleanly over busy
-    // content scrolling behind (matches the web's #f6f5f3 canvas).
-    backgroundColor: "rgba(246, 245, 243, 0.72)",
+    // The off-white wash lives on styles.wash (an absolute-fill child), NOT here
+    // — see the JSX comment. A backgroundColor on the BlurView bands into a
+    // horizontal seam on iOS.
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: "rgba(23, 24, 26, 0.06)",
     // Soft float shadow.
@@ -164,6 +171,13 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 6 },
     elevation: 8,
+  },
+  // Translucent off-white wash as its OWN layer over the blur (clipped by the
+  // BlurView's radius + overflow). Keeps the ink readable over busy content
+  // without tinting the native effect view (which seams on iOS).
+  wash: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: "rgba(246, 245, 243, 0.72)",
   },
   item: {
     flex: 1,
