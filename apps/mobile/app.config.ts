@@ -206,9 +206,18 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             compileSdkVersion: 36,
             targetSdkVersion: 36,
             buildToolsVersion: "36.0.0",
-            // notifee ships its Android lib as a local AAR; point Gradle at it.
+            // notifee ships its Android lib as a local AAR (app.notifee:core);
+            // point Gradle at its maven repo. These `url`s are resolved relative to
+            // the Gradle APP-MODULE dir (apps/mobile/android/app/), NOT android/.
+            // We list BOTH: the app-level path `../../` (= apps/mobile/node_modules,
+            // used when node_modules is installed per-app, e.g. some EAS setups) AND
+            // `../../../../` (= the REPO ROOT node_modules) — this repo uses pnpm
+            // `node-linker=hoisted` (.npmrc) so notifee hoists to the monorepo root,
+            // which is FOUR levels up from the app module. A non-existent repo dir is
+            // harmless (Gradle skips it), so listing both is safe everywhere.
             extraMavenRepos: [
               "../../node_modules/@notifee/react-native/android/libs",
+              "../../../../node_modules/@notifee/react-native/android/libs",
             ],
           },
           // react-native-firebase requires static frameworks on iOS.
