@@ -80,7 +80,12 @@ export const GlassTabBar = ({ state, navigation }: GlassTabBarProps) => {
       pointerEvents="box-none"
       style={[styles.wrap, { paddingBottom: insets.bottom + 10 }]}
     >
-      <BlurView intensity={40} tint="light" style={styles.bar}>
+      {/* Plain View does the width cap + centring; the BlurView just fills it.
+          Putting maxWidth/alignSelf on the BlurView itself breaks its rounded
+          clip on iOS (the native blur layer paints a full opaque rectangle → a
+          stray white bar), so the cap lives on this wrapper, not the blur. */}
+      <View style={styles.barCap}>
+        <BlurView intensity={40} tint="light" style={styles.bar}>
         {TABS.map((tab) => {
           const route = state.routes.find((r) => r.name === tab.name);
           const focused = focusedName === tab.name;
@@ -115,7 +120,8 @@ export const GlassTabBar = ({ state, navigation }: GlassTabBarProps) => {
             </Pressable>
           );
         })}
-      </BlurView>
+        </BlurView>
+      </View>
     </View>
   );
 };
@@ -127,18 +133,22 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     paddingHorizontal: 16,
+    // Centre the capped pill horizontally on wide screens.
+    alignItems: "center",
+  },
+  // Plain (non-blur) wrapper that carries the width cap + centring. Keeping the
+  // cap OFF the BlurView avoids the iOS bug where a maxWidth'd blur paints a
+  // full opaque white rectangle. On a phone the cap exceeds the width so the
+  // pill is full-bleed as before; on a tablet it stays a snug centred pill.
+  barCap: {
+    width: "100%",
+    maxWidth: 440,
   },
   bar: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
-    // Cap the pill and centre it so on a tablet it stays a snug, phone-width
-    // floating bar instead of stretching edge-to-edge (which spreads the tabs
-    // far apart and reads as empty). On a phone the cap exceeds the width, so
-    // it's full-bleed as before. Mirrors the ContentColumn treatment.
     width: "100%",
-    maxWidth: 440,
-    alignSelf: "center",
     borderRadius: 28,
     paddingVertical: 10,
     paddingHorizontal: 8,
