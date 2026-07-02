@@ -85,7 +85,17 @@ export const GlassTabBar = ({ state, navigation }: GlassTabBarProps) => {
           clip on iOS (the native blur layer paints a full opaque rectangle → a
           stray white bar), so the cap lives on this wrapper, not the blur. */}
       <View style={styles.barCap}>
-        <BlurView intensity={40} tint="light" style={styles.bar}>
+        {/* experimentalBlurMethod is REQUIRED on Android — it defaults to 'none',
+            which renders a flat semi-transparent view (no real blur). Combined with
+            the wash layer, 'none' composites unevenly under the opaque label text →
+            faint lighter rounded patches under each tab. 'dimezisBlurView' does a
+            real blur (RenderNode API on our SDK 31+); iOS ignores this prop. */}
+        <BlurView
+          intensity={40}
+          tint="light"
+          experimentalBlurMethod="dimezisBlurView"
+          style={styles.bar}
+        >
         {/* The translucent off-white wash is its OWN absolute-fill layer, NOT a
             backgroundColor on the BlurView. Tinting the native effect view
             directly bands into a faint horizontal seam on iOS (the wash blends
@@ -183,7 +193,7 @@ const styles = StyleSheet.create({
   // without tinting the native effect view (which seams on iOS).
   wash: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: "rgba(246, 245, 243, 0.72)",
+    backgroundColor: "rgba(246, 245, 243, 0.92)",
   },
   item: {
     flex: 1,
