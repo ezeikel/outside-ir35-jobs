@@ -150,27 +150,33 @@ const styles = StyleSheet.create({
   barCap: {
     width: "100%",
     maxWidth: 440,
+    // Border + radius + shadow live HERE on the plain (non-clipping) wrapper, NOT
+    // on the BlurView. iOS clips a view's own drop shadow when it also has
+    // overflow:'hidden' (the offset shadow gets composited against the clip → a
+    // hard line at the bottom edge). The shadow needs a non-clipping parent, and
+    // the shadow follows barCap's borderRadius so it stays pill-shaped.
+    borderRadius: 28,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "rgba(23, 24, 26, 0.06)",
+    shadowColor: "#17181a",
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
   },
   bar: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
     width: "100%",
+    // Radius + overflow live here ONLY to clip the blur + wash to the pill shape.
+    // No shadow/border here (they're on barCap) so the clip never truncates a
+    // shadow. The off-white wash is styles.wash (an absolute-fill child), never a
+    // backgroundColor on the BlurView (which bands into a seam on iOS).
     borderRadius: 28,
     paddingVertical: 10,
     paddingHorizontal: 8,
     overflow: "hidden",
-    // The off-white wash lives on styles.wash (an absolute-fill child), NOT here
-    // — see the JSX comment. A backgroundColor on the BlurView bands into a
-    // horizontal seam on iOS.
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(23, 24, 26, 0.06)",
-    // Soft float shadow.
-    shadowColor: "#17181a",
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 8,
   },
   // Translucent off-white wash as its OWN layer over the blur (clipped by the
   // BlurView's radius + overflow). Keeps the ink readable over busy content
