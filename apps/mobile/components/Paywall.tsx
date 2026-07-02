@@ -28,6 +28,14 @@ import {
 
 const GREEN = "#1f5d43";
 
+// Legal pages are public + stable, so always open the PRODUCTION marketing site
+// (not the dev loopback in API_BASE_URL, which points at a local Next server that
+// may not be running on-device). /terms and /privacy are live web routes.
+const WEB_BASE_URL = "https://www.outsideir35jobs.com";
+const openLegal = (path: string) => {
+  void Linking.openURL(`${WEB_BASE_URL}${path}`);
+};
+
 // Premium paywall, mirroring the web /premium page. The contractor buys via
 // StoreKit/Play (RevenueCat); on success we invalidate ["premium"] so the app
 // re-reads the AUTHORITATIVE backend entitlement (the RC webhook will have
@@ -295,6 +303,10 @@ const Paywall = () => {
         )}
       </Pressable>
 
+      {/* Footer: Restore + legal. No "billed via App Store / Google Play" — the
+          app already runs on one platform and the store handles that framing;
+          what a paywall must carry is the Terms + Privacy links (same as the
+          sibling Chewy Bytes apps). */}
       <View className="mt-3 flex-row items-center justify-center gap-4">
         <Pressable
           className="p-1 active:opacity-70"
@@ -306,9 +318,19 @@ const Paywall = () => {
           </Text>
         </Pressable>
         <Text className="text-muted-foreground">·</Text>
-        <Text className="text-xs text-muted-foreground">
-          Billed via {`App Store / Google Play`}
-        </Text>
+        <Pressable
+          className="p-1 active:opacity-70"
+          onPress={() => openLegal("/terms")}
+        >
+          <Text className="text-xs text-muted-foreground">Terms</Text>
+        </Pressable>
+        <Text className="text-muted-foreground">·</Text>
+        <Pressable
+          className="p-1 active:opacity-70"
+          onPress={() => openLegal("/privacy")}
+        >
+          <Text className="text-xs text-muted-foreground">Privacy</Text>
+        </Pressable>
       </View>
     </View>
   );
