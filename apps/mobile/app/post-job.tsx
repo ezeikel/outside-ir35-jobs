@@ -1,4 +1,4 @@
-import { useStripe } from "@stripe/stripe-react-native";
+import { initStripe, useStripe } from "@stripe/stripe-react-native";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
@@ -87,6 +87,15 @@ const PostJobScreen = () => {
       const { jobId } = await postJob(input);
       const intent = await createJobPaymentIntent(jobId);
 
+      // The native SDK must be initialised with a publishable key BEFORE the
+      // sheet opens or Android crashes outright (PaymentConfiguration not
+      // initialised). The server returns the right key per environment, so
+      // there's no EXPO_PUBLIC env var to drift out of sync.
+      await initStripe({
+        publishableKey: intent.publishableKey,
+        merchantIdentifier: "merchant.com.chewybytes.outsideir35jobs",
+      });
+
       const init = await initPaymentSheet({
         merchantDisplayName: "Outside IR35 Jobs",
         paymentIntentClientSecret: intent.paymentIntentClientSecret,
@@ -94,7 +103,7 @@ const PostJobScreen = () => {
         customerEphemeralKeySecret: intent.ephemeralKeySecret,
         allowsDelayedPaymentMethods: false,
         applePay: { merchantCountryCode: "GB" },
-        googlePay: { merchantCountryCode: "GB", testEnv: true },
+        googlePay: { merchantCountryCode: "GB", testEnv: __DEV__ },
       });
       if (init.error) {
         throw new Error(init.error.message);
