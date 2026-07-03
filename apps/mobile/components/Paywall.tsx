@@ -24,6 +24,7 @@ import {
   hasActiveEntitlement,
   purchasePackage,
   restorePurchases,
+  STORE_SUBSCRIPTIONS_URL,
 } from "@/lib/revenuecat";
 
 const GREEN = "#1f5d43";
@@ -194,7 +195,7 @@ const Paywall = () => {
           <Pressable
             className="mt-4 rounded-lg border border-border bg-card p-3 active:opacity-80"
             onPress={() =>
-              Linking.openURL("https://apps.apple.com/account/subscriptions")
+              STORE_SUBSCRIPTIONS_URL && Linking.openURL(STORE_SUBSCRIPTIONS_URL)
             }
           >
             <Text className="text-center font-sans-semibold text-foreground">

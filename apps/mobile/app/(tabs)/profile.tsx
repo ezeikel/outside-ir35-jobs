@@ -27,6 +27,8 @@ import SettingsRow, { SettingsSection } from "@/components/SettingsRow";
 import VerifiedProfile from "@/components/VerifiedProfile";
 import { useAuth } from "@/contexts/AuthContext";
 import { useViewMode } from "@/hooks/useViewMode";
+import { usePremium } from "@/lib/api-premium";
+import { STORE_SUBSCRIPTIONS_URL } from "@/lib/revenuecat";
 import type { ViewMode } from "@/stores/viewModeStore";
 
 const SITE = "https://www.outsideir35jobs.com";
@@ -44,6 +46,16 @@ const versionLabel = (): string => {
 
 // Seeker / Hiring segmented control. Switching changes which experience the whole
 // app shows (tabs + actions) — the backend lets any onboarded user do both.
+// Short renewal date for the premium row subtitle ("3 July 2026").
+const fmtRenewal = (iso: string | null): string =>
+  iso
+    ? new Date(iso).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "";
+
 const MODE_OPTIONS: { value: ViewMode; label: string }[] = [
   { value: "seeker", label: "Looking for work" },
   { value: "hiring", label: "Hiring" },
@@ -98,6 +110,7 @@ const ProfileScreen = () => {
     signOut,
   } = useAuth();
   const { mode, setMode } = useViewMode();
+  const { isPremium, status: premiumStatus } = usePremium();
 
   if (isLoading) {
     return (
@@ -157,16 +170,44 @@ const ProfileScreen = () => {
         ) : null}
 
         {/* Premium entry (seeker view) — the paywall moved off the tab bar; this
-            is its home, plus contextual paywall moments elsewhere. */}
+            is its home, plus contextual paywall moments elsewhere. Once premium,
+            the upsell becomes a manage row: store-billed subs jump straight to
+            the store's subscription page; web (Stripe) subs route via /premium,
+            which explains they're managed on the web. */}
         {user.onboarded && mode === "seeker" ? (
           <SettingsSection title="Premium">
-            <SettingsRow
-              icon={faStar}
-              title="Go premium"
-              subtitle="Unlimited alerts + AI pitch on every match"
-              onPress={() => router.push("/premium")}
-              isLast
-            />
+            {isPremium ? (
+              <SettingsRow
+                icon={faStar}
+                title="Manage subscription"
+                subtitle={
+                  premiumStatus?.cancelAtPeriodEnd
+                    ? `Premium ends ${fmtRenewal(premiumStatus.currentPeriodEnd)}`
+                    : premiumStatus?.currentPeriodEnd
+                      ? `Premium · renews ${fmtRenewal(premiumStatus.currentPeriodEnd)}`
+                      : "Premium is active"
+                }
+                onPress={() => {
+                  if (
+                    premiumStatus?.provider === "REVENUECAT" &&
+                    STORE_SUBSCRIPTIONS_URL
+                  ) {
+                    void Linking.openURL(STORE_SUBSCRIPTIONS_URL);
+                  } else {
+                    router.push("/premium");
+                  }
+                }}
+                isLast
+              />
+            ) : (
+              <SettingsRow
+                icon={faStar}
+                title="Go premium"
+                subtitle="Unlimited alerts + AI pitch on every match"
+                onPress={() => router.push("/premium")}
+                isLast
+              />
+            )}
           </SettingsSection>
         ) : null}
 

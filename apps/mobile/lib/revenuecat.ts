@@ -17,6 +17,14 @@ import { Platform } from "react-native";
 // premium. Keep in sync with the dashboard.
 export const PREMIUM_ENTITLEMENT_ID = "premium";
 
+// Where the user manages a store-billed (RevenueCat) subscription. Store
+// subscriptions can only be cancelled/changed in the store that sold them, and
+// each platform has its own page.
+export const STORE_SUBSCRIPTIONS_URL = Platform.select({
+  android: "https://play.google.com/store/account/subscriptions",
+  default: "https://apps.apple.com/account/subscriptions",
+});
+
 const API_KEYS = {
   ios: process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY,
   android: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY,
