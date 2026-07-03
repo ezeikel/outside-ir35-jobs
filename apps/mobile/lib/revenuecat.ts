@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/react-native";
 import Purchases, {
   type CustomerInfo,
   LOG_LEVEL,
@@ -105,14 +106,48 @@ const ensureConfigured = async (): Promise<boolean> => {
   return initializeRevenueCat();
 };
 
-/** The current premium offering (packages to buy), or null if none/unavailable. */
+/** The current premium offering (packages to buy), or null if none/unavailable.
+ *
+ * Failure is NOT silent: the two distinct "no purchasable package" cases both
+ * surface to Sentry so we can tell them apart in production instead of guessing.
+ *   (a) getOfferings() throws — SDK/store handshake error (network, billing
+ *       unavailable, misconfigured key). The error is captured verbatim.
+ *   (b) getOfferings() succeeds but `current` is null OR has no packages — the
+ *       store hasn't served the product yet (Play propagation can lag hours
+ *       after activation; a product not attached to the current offering; the
+ *       tester account not entitled). Captured as a message with the offering
+ *       shape so we can see WHICH. */
 export const getPremiumOffering =
   async (): Promise<PurchasesOffering | null> => {
     if (!(await ensureConfigured())) return null;
     try {
       const offerings = await Purchases.getOfferings();
-      return offerings.current ?? null;
-    } catch {
+      const current = offerings.current ?? null;
+      const pkgCount = current?.availablePackages?.length ?? 0;
+      if (!current || pkgCount === 0) {
+        Sentry.captureMessage(
+          "[RevenueCat] premium offering empty — store served no purchasable package",
+          {
+            level: "warning",
+            extra: {
+              platform: Platform.OS,
+              environment: process.env.EXPO_PUBLIC_ENVIRONMENT,
+              currentOfferingId: current?.identifier ?? null,
+              availablePackageCount: pkgCount,
+              allOfferingIds: Object.keys(offerings.all ?? {}),
+            },
+          },
+        );
+      }
+      return current;
+    } catch (e) {
+      Sentry.captureException(e, {
+        tags: { area: "revenuecat", op: "getOfferings" },
+        extra: {
+          platform: Platform.OS,
+          environment: process.env.EXPO_PUBLIC_ENVIRONMENT,
+        },
+      });
       return null;
     }
   };

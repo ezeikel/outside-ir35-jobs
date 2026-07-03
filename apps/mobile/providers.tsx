@@ -1,8 +1,17 @@
 import { StripeProvider } from "@stripe/stripe-react-native";
 import { BottomSheetProvider } from "@swmansion/react-native-bottom-sheet";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  focusManager,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
 import { PostHogProvider } from "posthog-react-native";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
+import {
+  AppState,
+  type AppStateStatus,
+  Platform,
+} from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -15,6 +24,17 @@ export const queryClient = new QueryClient({
   },
 });
 
+// React Query's refetchOnWindowFocus (default true) is INERT in React Native —
+// there's no browser focus event. Bridge it to AppState so queries refetch when
+// the app returns to the foreground. This is what makes money-sensitive gates
+// like ["premium"] and ["profile-views"] reflect changes made OUTSIDE the app
+// (a store cancel/manage, a web Stripe change, a sub expiring) without needing a
+// full relaunch — tab screens stay mounted in expo-router, so nothing else would
+// ever re-ask. (Standard TanStack RN integration; not previously wired here.)
+const onAppStateChange = (status: AppStateStatus): void => {
+  if (Platform.OS !== "web") focusManager.setFocused(status === "active");
+};
+
 const POSTHOG_KEY = process.env.EXPO_PUBLIC_POSTHOG_KEY;
 const POSTHOG_HOST =
   process.env.EXPO_PUBLIC_POSTHOG_HOST ?? "https://eu.i.posthog.com";
@@ -26,6 +46,11 @@ const STRIPE_PUBLISHABLE_KEY =
 const STRIPE_MERCHANT_ID = "merchant.com.chewybytes.outsideir35jobs";
 
 const Providers = ({ children }: { children: ReactNode }) => {
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", onAppStateChange);
+    return () => sub.remove();
+  }, []);
+
   const tree = (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <KeyboardProvider>

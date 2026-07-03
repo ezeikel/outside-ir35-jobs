@@ -27,7 +27,12 @@ export const usePremium = () => {
     queryKey: ["premium"],
     queryFn: fetchPremium,
     enabled,
-    staleTime: 60_000,
+    // Entitlement state is money-sensitive and cheap to fetch, so keep it fresh:
+    // staleTime 0 means it refetches on mount AND on app-foreground (via the
+    // AppState→focusManager bridge in providers.tsx). Without that low window a
+    // premium change made outside the app (store cancel, web Stripe, expiry)
+    // could show stale on the always-mounted Profile tab for up to a minute.
+    staleTime: 0,
   });
   return {
     isPremium: query.data?.isPremium ?? false,
