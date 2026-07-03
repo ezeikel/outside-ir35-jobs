@@ -59,3 +59,7 @@ android/
 *.zip
 *.apk
 *.ipa
+# EAS local build outputs (`eas build --local` writes build-<ts>.aab / .app here)
+*.aab
+build-*.aab
+build-*.tar.gz
