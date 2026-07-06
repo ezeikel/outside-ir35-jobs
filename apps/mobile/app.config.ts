@@ -58,6 +58,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ? process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID.split(".").reverse().join(".")
     : "";
 
+  // Facebook native login (react-native-fbsdk-next). All optional — the fbsdk
+  // plugin + FB button hide themselves when the env isn't set, so the app builds
+  // and runs without a Facebook app configured.
+  const facebookAppId = process.env.EXPO_PUBLIC_FACEBOOK_APP_ID;
+  const facebookClientToken = process.env.EXPO_PUBLIC_FACEBOOK_CLIENT_TOKEN;
+
   // Per-variant identity: EXPO_PUBLIC_ENVIRONMENT (set per EAS profile) makes
   // dev/preview/prod produce DIFFERENT bundle ids + names so all three install
   // side-by-side. Matches the Chewy Bytes convention (chunkycrayon, gounbeaten).
@@ -107,7 +113,22 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           : "./GoogleService-Info.plist"),
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
-        CFBundleURLTypes: [{ CFBundleURLSchemes: [googleIosClientId] }],
+        CFBundleURLTypes: [
+          { CFBundleURLSchemes: [googleIosClientId] },
+          // Facebook redirect scheme (fb<appId>) — only when configured.
+          ...(facebookAppId
+            ? [{ CFBundleURLSchemes: [`fb${facebookAppId}`] }]
+            : []),
+        ],
+        // Facebook SDK Info.plist keys (only when configured).
+        ...(facebookAppId
+          ? {
+              FacebookAppID: facebookAppId,
+              FacebookClientToken: facebookClientToken,
+              FacebookDisplayName: "Outside IR35 Jobs",
+              LSApplicationQueriesSchemes: ["fbapi", "fb-messenger-share-api"],
+            }
+          : {}),
         // Lets data-only FCM messages wake the app in the background to render
         // the notifee notification.
         UIBackgroundModes: ["remote-notification"],
@@ -168,6 +189,23 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         },
       ],
       "@react-native-google-signin/google-signin",
+      // Facebook SDK (native FB login). Only added when the FB env is present, so
+      // the app builds without a Facebook app configured.
+      ...(facebookAppId
+        ? ([
+            [
+              "react-native-fbsdk-next",
+              {
+                appID: facebookAppId,
+                clientToken: facebookClientToken,
+                displayName: "Outside IR35 Jobs",
+                scheme: `fb${facebookAppId}`,
+                isAutoLogAppEventsEnabled: false,
+                isAdvertiserIDCollectionEnabled: false,
+              },
+            ],
+          ] as NonNullable<ExpoConfig["plugins"]>)
+        : []),
       [
         // Native Stripe Payment Sheet for paying for a job posting in-app
         // (company card + VAT invoice, no Apple cut). merchantIdentifier enables

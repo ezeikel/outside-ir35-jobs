@@ -39,6 +39,16 @@ export const signInWithApple = async (
   return data;
 };
 
+export const signInWithFacebook = async (
+  accessToken: string,
+): Promise<OAuthSignInResponse> => {
+  const { data } = await api.post<OAuthSignInResponse>(
+    "/api/mobile/auth/facebook",
+    { accessToken },
+  );
+  return data;
+};
+
 /** Fetch the current user for the stored session token. 401 → signed out. */
 export const getAuthMe = async (): Promise<AuthUser> => {
   const { data } = await api.get<{ user: AuthUser }>("/api/mobile/auth/me");

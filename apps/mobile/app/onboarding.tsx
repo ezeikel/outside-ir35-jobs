@@ -20,6 +20,7 @@ const OnboardingScreen = () => {
     refreshAuth,
     signInWithGoogleHandler,
     signInWithAppleHandler,
+    signInWithFacebookHandler,
   } = useAuth();
   const complete = useOnboardingStore((s) => s.complete);
   const [submitting, setSubmitting] = useState(false);
@@ -52,15 +53,15 @@ const OnboardingScreen = () => {
   // the role step.
   const onPickRole = async (
     input: OnboardingInput,
-    provider: "google" | "apple",
+    provider: "google" | "apple" | "facebook",
   ) => {
     setSubmitting(true);
     try {
       if (!isAuthenticated) {
-        const res =
-          provider === "google"
-            ? await signInWithGoogleHandler()
-            : await signInWithAppleHandler();
+        let res: Awaited<ReturnType<typeof signInWithGoogleHandler>>;
+        if (provider === "google") res = await signInWithGoogleHandler();
+        else if (provider === "apple") res = await signInWithAppleHandler();
+        else res = await signInWithFacebookHandler();
         if (!res) return; // cancelled
       }
       await finishWithRole(input);

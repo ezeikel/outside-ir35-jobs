@@ -74,6 +74,50 @@ export const verifyAppleIdentityToken = async (
   return { email, name };
 };
 
+// ── Facebook ──
+// Verify a native Facebook access token two ways before trusting it:
+//   1. debug_token (with our own <appId>|<appSecret> app token) confirms the
+//      token was minted for OUR app and is valid — never decode-and-trust.
+//   2. /me?fields=id,name,email returns the profile we key the user on.
+// Uses the CONSUMER LOGIN app creds shared across Chewy Bytes apps.
+export const verifyFacebookAccessToken = async (
+  accessToken: string,
+): Promise<VerifiedIdentity> => {
+  const appId = process.env.FACEBOOK_CONSUMER_APP_ID;
+  const appSecret = process.env.FACEBOOK_CONSUMER_APP_SECRET;
+  if (!appId || !appSecret) {
+    throw new Error('Facebook sign-in is not configured');
+  }
+
+  const appToken = `${appId}|${appSecret}`;
+  const debugRes = await fetch(
+    `https://graph.facebook.com/debug_token?input_token=${encodeURIComponent(
+      accessToken,
+    )}&access_token=${encodeURIComponent(appToken)}`,
+  );
+  const debug = (await debugRes.json()) as {
+    data?: { is_valid?: boolean; app_id?: string };
+  };
+  if (!debug.data?.is_valid || debug.data.app_id !== appId) {
+    throw new Error('Invalid Facebook token');
+  }
+
+  const meRes = await fetch(
+    `https://graph.facebook.com/me?fields=id,name,email&access_token=${encodeURIComponent(
+      accessToken,
+    )}`,
+  );
+  const me = (await meRes.json()) as {
+    email?: string;
+    name?: string;
+    error?: unknown;
+  };
+  if (me.error || !me.email) {
+    throw new Error('Facebook token has no email');
+  }
+  return { email: me.email, name: me.name ?? null };
+};
+
 /**
  * Find-or-create the user for a verified identity. Same semantics as the
  * NextAuth signIn callback: existing user → returned as-is; first sign-in →
