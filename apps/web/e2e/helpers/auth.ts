@@ -1,16 +1,18 @@
-import { request as playwrightRequest } from '@playwright/test';
+import { readFileSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
 
-// Auth harness for the authed-flow e2e suite. NextAuth here is Google-only in
-// production; for tests we rely on the E2E-only Credentials provider (id 'e2e')
-// in auth.ts, which is registered ONLY when E2E_TEST_LOGIN === '1'. We mint a
-// real signed session cookie for each seeded user by driving NextAuth's own
-// csrf → callback endpoints. The resulting storageState is what each test
-// project loads, so tests start already signed in as the right role — no Google
-// consent screen involved.
+// Auth harness for the authed-flow e2e suite. NextAuth here uses the DATABASE
+// session strategy, so a valid web session IS a row in the `sessions` table whose
+// `sessionToken` equals the value of the `authjs.session-token` cookie. The seed
+// (e2e/seed-users.ts, run via `tsx` by global-setup) creates that row per user and
+// writes the tokens to .auth/session-tokens.json; here we just drop the token into
+// a Playwright storageState so each test project starts already signed in as the
+// right role — no Google consent screen, and no dependency on the (removed) e2e
+// credentials provider, which minted a JWT cookie the database strategy can't read.
 //
-// NOTE: the DB seed lives in e2e/seed-users.ts (run via `tsx` as a separate
-// process by global-setup), NOT here — importing the Prisma client into
-// Playwright's TS transform breaks on the generated client's CommonJS output.
+// NOTE: the DB seed lives in e2e/seed-users.ts, NOT here — importing the Prisma
+// client into Playwright's TS transform breaks on the generated client's CommonJS
+// output, so this file only ever touches strings + the tokens file it wrote.
 
 // Stable, obviously-synthetic emails so a seed re-run upserts rather than
 // duplicating, and so these rows are easy to spot/clean in the dev DB. Kept in
@@ -18,54 +20,52 @@ import { request as playwrightRequest } from '@playwright/test';
 export const CONTRACTOR_EMAIL = 'e2e-contractor@outsideir35.test';
 export const POSTER_EMAIL = 'e2e-poster@outsideir35.test';
 
+const SESSION_TOKENS_FILE = path.join(
+  __dirname,
+  '..',
+  '.auth',
+  'session-tokens.json',
+);
+
 /**
- * Sign in as `email` through the E2E credentials provider and persist the
- * session to `storageStatePath`. Uses an isolated Playwright request context so
- * cookies (csrf + session) are captured, then written out as storageState.
- *
- * The flow mirrors what a browser does for next-auth credentials sign-in:
- *   1. GET /api/auth/csrf            → csrfToken (+ sets the csrf cookie)
- *   2. POST /api/auth/callback/e2e   → validates csrf, runs authorize(), sets
- *                                      the session-token cookie on success.
+ * Persist a signed-in storageState for `email` to `storageStatePath` by writing
+ * the seeded database session token as the `authjs.session-token` cookie. The
+ * cookie is scoped to the test server's host (from baseURL). Over plain HTTP
+ * (the e2e webServer runs `pnpm start`, no TLS) the cookie name has no
+ * `__Secure-` prefix, matching NextAuth's default.
  */
 export const loginAs = async (
   baseURL: string,
   email: string,
   storageStatePath: string,
 ): Promise<void> => {
-  const ctx = await playwrightRequest.newContext({ baseURL });
-
-  const csrfRes = await ctx.get('/api/auth/csrf');
-  const { csrfToken } = (await csrfRes.json()) as { csrfToken: string };
-
-  const res = await ctx.post('/api/auth/callback/e2e', {
-    form: {
-      csrfToken,
-      email,
-      callbackUrl: `${baseURL}/`,
-      json: 'true',
-    },
-    // Do NOT follow the redirect. next-auth answers a successful credentials
-    // sign-in with a 302 whose Location is the (env-derived) site URL, and whose
-    // Set-Cookie carries the session token. The cookie is already applied to
-    // this request context by the time we see the 302 — following the redirect
-    // just tries to GET a URL that may not be this test server (ECONNREFUSED).
-    maxRedirects: 0,
-  });
-
-  // The 302 is the success signal; the session cookie is on the context now. If
-  // we never got a session cookie, sign-in failed — fail loudly here rather than
-  // in every test.
-  const cookies = await ctx.storageState();
-  const hasSession = cookies.cookies.some((c) =>
-    c.name.includes('authjs.session-token'),
-  );
-  if (!hasSession) {
+  const tokens = JSON.parse(
+    readFileSync(SESSION_TOKENS_FILE, 'utf8'),
+  ) as Record<string, string>;
+  const sessionToken = tokens[email];
+  if (!sessionToken) {
     throw new Error(
-      `E2E login failed for ${email} (status ${res.status()}). Is E2E_TEST_LOGIN=1 set for the web server, and is the user seeded?`,
+      `No seeded session token for ${email}. Did e2e/seed-users.ts run (global-setup)?`,
     );
   }
 
-  await ctx.storageState({ path: storageStatePath });
-  await ctx.dispose();
+  const { hostname } = new URL(baseURL);
+  const storageState = {
+    cookies: [
+      {
+        name: 'authjs.session-token',
+        value: sessionToken,
+        domain: hostname,
+        path: '/',
+        // 30 days out, matching the seeded session's expiry.
+        expires: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+        httpOnly: true,
+        secure: false,
+        sameSite: 'Lax' as const,
+      },
+    ],
+    origins: [],
+  };
+
+  writeFileSync(storageStatePath, JSON.stringify(storageState));
 };

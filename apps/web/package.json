@@ -23,6 +23,7 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.85",
     "@ai-sdk/openai": "^3.0.38",
+    "@auth/prisma-adapter": "^2.11.2",
     "@fortawesome/fontawesome-svg-core": "^6.5.2",
     "@fortawesome/free-brands-svg-icons": "^6.5.2",
     "@fortawesome/pro-duotone-svg-icons": "^6.5.2",

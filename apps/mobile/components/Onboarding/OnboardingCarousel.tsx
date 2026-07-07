@@ -95,7 +95,10 @@ const OnboardingCarousel = ({
 }: {
   submitting: boolean;
   alreadySignedIn: boolean;
-  onPickRole: (input: OnboardingInput, provider: "google" | "apple") => void;
+  onPickRole: (
+    input: OnboardingInput,
+    provider: "google" | "apple" | "facebook",
+  ) => void;
   onSkip: () => void;
 }) => {
   const { width } = useWindowDimensions();

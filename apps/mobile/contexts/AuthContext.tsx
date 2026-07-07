@@ -1,6 +1,7 @@
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { useQueryClient } from "@tanstack/react-query";
 import * as AppleAuthentication from "expo-apple-authentication";
+import { AccessToken, LoginManager } from "react-native-fbsdk-next";
 import {
   createContext,
   useCallback,
@@ -15,6 +16,7 @@ import {
   getAuthMe,
   type OAuthSignInResponse,
   signInWithApple,
+  signInWithFacebook,
   signInWithGoogle,
   testLogin,
 } from "@/lib/api-auth";
@@ -33,6 +35,7 @@ type AuthContextType = {
   user: AuthUser | null;
   signInWithGoogleHandler: () => Promise<OAuthSignInResponse | null>;
   signInWithAppleHandler: () => Promise<OAuthSignInResponse | null>;
+  signInWithFacebookHandler: () => Promise<OAuthSignInResponse | null>;
   // DEV/TEST-ONLY (no-ops in prod). Signs in as a seeded test user via the gated
   // test-login route, so the simulator + Maestro can reach authed surfaces.
   devSignInHandler: (role: "seeker" | "poster") => Promise<void>;
@@ -46,6 +49,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   signInWithGoogleHandler: async () => null,
   signInWithAppleHandler: async () => null,
+  signInWithFacebookHandler: async () => null,
   devSignInHandler: async () => undefined,
   signOut: async () => undefined,
   refreshAuth: async () => undefined,
@@ -173,6 +177,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }, [finishSignIn]);
 
+  const signInWithFacebookHandler =
+    useCallback(async (): Promise<OAuthSignInResponse | null> => {
+      try {
+        setIsLoading(true);
+        const result = await LoginManager.logInWithPermissions([
+          "public_profile",
+          "email",
+        ]);
+        if (result.isCancelled) return null;
+        const tokenData = await AccessToken.getCurrentAccessToken();
+        if (!tokenData?.accessToken) {
+          throw new Error("No access token returned from Facebook");
+        }
+        const res = await signInWithFacebook(tokenData.accessToken.toString());
+        await finishSignIn(res);
+        return res;
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Couldn't sign in with Facebook";
+        toast.error(message);
+        return null;
+      } finally {
+        setIsLoading(false);
+      }
+    }, [finishSignIn]);
+
   // DEV/TEST-ONLY: sign in as a seeded test user via the gated test-login route
   // (no OAuth), so the simulator + Maestro can drive authed surfaces. No-ops in a
   // prod build (__DEV__ is false) and the server route 404s without E2E_TEST_LOGIN.
@@ -215,6 +247,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         user,
         signInWithGoogleHandler,
         signInWithAppleHandler,
+        signInWithFacebookHandler,
         devSignInHandler,
         signOut,
         refreshAuth,

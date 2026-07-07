@@ -1,4 +1,8 @@
-import { faApple, faGoogle } from "@fortawesome/free-brands-svg-icons";
+import {
+  faApple,
+  faFacebook,
+  faGoogle,
+} from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useState } from "react";
 import { ActivityIndicator, Platform, Pressable, Text, View } from "react-native";
@@ -19,7 +23,7 @@ const RolePickerSlide = ({
   isActive: boolean;
   submitting: boolean;
   alreadySignedIn: boolean;
-  onPickRole: (input: OnboardingInput, provider: "google" | "apple") => void;
+  onPickRole: (input: OnboardingInput, provider: "google" | "apple" | "facebook") => void;
   onSkip: () => void;
 }) => {
   const [role, setRole] = useState<"JOB_SEEKER" | "JOB_POSTER" | null>(null);
@@ -37,7 +41,7 @@ const RolePickerSlide = ({
     return null;
   };
 
-  const signIn = (provider: "google" | "apple") => {
+  const signIn = (provider: "google" | "apple" | "facebook") => {
     const input = selection();
     if (input) onPickRole(input, provider);
   };
@@ -132,6 +136,20 @@ const RolePickerSlide = ({
                 <FontAwesomeIcon icon={faApple} color="#fbfaf9" size={18} />
                 <Text className="font-sans-semibold text-primary-foreground">
                   Sign in with Apple
+                </Text>
+              </Pressable>
+            ) : null}
+
+            {/* Facebook only when the FB app is configured (EXPO_PUBLIC env). */}
+            {process.env.EXPO_PUBLIC_FACEBOOK_APP_ID ? (
+              <Pressable
+                className={`flex-row items-center justify-center gap-3 rounded-lg border border-border bg-card p-4 ${ready ? "active:opacity-80" : "opacity-40"}`}
+                disabled={!ready}
+                onPress={() => signIn("facebook")}
+              >
+                <FontAwesomeIcon icon={faFacebook} color="#1877f2" size={18} />
+                <Text className="font-sans-semibold text-foreground">
+                  Continue with Facebook
                 </Text>
               </Pressable>
             ) : null}
