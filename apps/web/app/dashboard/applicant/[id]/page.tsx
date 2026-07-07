@@ -14,7 +14,7 @@ type Params = { params: Promise<{ id: string }> };
 
 const ApplicantPage = async ({ params }: Params) => {
   const session = await auth();
-  if (!session?.userId) redirect('/api/auth/signin');
+  if (!session?.userId) redirect('/signin');
   if (session.role !== 'JOB_POSTER') redirect('/jobs');
 
   const { id } = await params;

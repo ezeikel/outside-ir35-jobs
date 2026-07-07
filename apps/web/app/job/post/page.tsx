@@ -1,5 +1,4 @@
 import type { Viewport } from 'next';
-import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import PageWrap from '@/components/PageWrap/PageWrap';
 import PostJob from '@/components/PostJob/PostJob';
@@ -15,16 +14,12 @@ export const viewport: Viewport = {
 const JobPostPage = async () => {
   const session = await auth();
 
-  // Posting is a hiring action: must be signed in, onboarded, and a JOB_POSTER.
-  if (!session?.userId) {
-    redirect('/api/auth/signin');
-  }
-  if (!session.onboarded) {
-    redirect('/onboarding');
-  }
-  if (session.role !== 'JOB_POSTER') {
-    redirect('/jobs');
-  }
+  // Anonymous-first: anyone can OPEN and fill the post form (no wall) — the ask
+  // for an account comes only at Publish. A signed-in poster who's ready submits
+  // straight to checkout; an anonymous user's draft is preserved and they're
+  // sent to /signin, returning to the filled form. The createJobPost action is
+  // the real guard (it requires a signed-in, onboarded user server-side).
+  const canPublish = !!session?.userId && !!session.onboarded;
 
   return (
     <PageWrap>
@@ -38,7 +33,7 @@ const JobPostPage = async () => {
             work. Day rate, mode and your IR35 position, shown up front.
           </p>
         </header>
-        <PostJob />
+        <PostJob canPublish={canPublish} />
       </div>
     </PageWrap>
   );

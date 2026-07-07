@@ -124,6 +124,20 @@ const RootLayout = () => {
       >
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
+        {/* Dedicated, opt-in sign-in screen (pushed from Profile → "Sign in").
+            Onboarding never opens this — the app is usable anonymously. */}
+        <Stack.Screen
+          name="signin"
+          options={{
+            headerShown: true,
+            headerTitle: "",
+            headerBackTitle: "Profile",
+            headerTintColor: "#17181a",
+            headerStyle: { backgroundColor: "#f6f5f3" },
+            headerShadowVisible: false,
+            animation: "slide_from_right",
+          }}
+        />
         {/* Magic-link deep-link target (outsideir35://auth/magic-link?token=…):
             redeems the emailed token and signs the user in. */}
         <Stack.Screen name="auth/magic-link" options={{ gestureEnabled: false }} />

@@ -6,7 +6,7 @@ import PageWrap from '@/components/PageWrap/PageWrap';
 
 const AlertsPage = async () => {
   const session = await auth();
-  if (!session?.userId) redirect('/api/auth/signin');
+  if (!session?.userId) redirect('/signin');
   // Saved searches are a contractor feature.
   if (session.role !== 'JOB_SEEKER') redirect('/jobs');
 

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 const DashboardPage = async () => {
   const session = await auth();
-  if (!session?.userId) redirect('/api/auth/signin');
+  if (!session?.userId) redirect('/signin');
   if (!session.onboarded) redirect('/onboarding');
   // Only posters have a jobs dashboard.
   if (session.role !== 'JOB_POSTER') redirect('/jobs');

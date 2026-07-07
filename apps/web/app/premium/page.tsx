@@ -18,7 +18,7 @@ const PremiumPage = async ({
   searchParams: Promise<{ status?: string }>;
 }) => {
   const session = await auth();
-  if (!session?.userId) redirect('/api/auth/signin');
+  if (!session?.userId) redirect('/signin');
   if (session.role !== 'JOB_SEEKER') redirect('/jobs');
 
   const sub = await getMySubscription();

@@ -17,7 +17,7 @@ const ProfilePage = async () => {
 
   // Must be signed in; unonboarded users go pick a role first.
   if (!session?.userId) {
-    redirect('/api/auth/signin');
+    redirect('/signin');
   }
   if (!session.onboarded) {
     redirect('/onboarding');

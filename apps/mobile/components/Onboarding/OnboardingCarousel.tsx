@@ -88,19 +88,10 @@ const PaginationDot = ({
 };
 
 const OnboardingCarousel = ({
-  submitting,
-  alreadySignedIn,
   onPickRole,
-  onRequestMagicLink,
   onSkip,
 }: {
-  submitting: boolean;
-  alreadySignedIn: boolean;
-  onPickRole: (
-    input: OnboardingInput,
-    provider: "google" | "apple" | "facebook",
-  ) => void;
-  onRequestMagicLink: (email: string) => Promise<boolean>;
+  onPickRole: (input: OnboardingInput) => void;
   onSkip: () => void;
 }) => {
   const { width } = useWindowDimensions();
@@ -172,10 +163,7 @@ const OnboardingCarousel = ({
           <View style={{ width }}>
             <RolePickerSlide
               isActive={current === ROLE_SLIDE_INDEX}
-              submitting={submitting}
-              alreadySignedIn={alreadySignedIn}
               onPickRole={onPickRole}
-              onRequestMagicLink={onRequestMagicLink}
               onSkip={onSkip}
             />
           </View>

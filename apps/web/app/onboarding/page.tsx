@@ -13,7 +13,7 @@ const OnboardingPage = async () => {
 
   // Must be signed in to onboard; already-onboarded users skip straight through.
   if (!session?.userId) {
-    redirect('/api/auth/signin');
+    redirect('/signin');
   }
   if (session.onboarded) {
     redirect('/profile');

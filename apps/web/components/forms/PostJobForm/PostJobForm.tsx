@@ -1,4 +1,5 @@
 import { JobIR35Signal, WorkMode } from '@outside-ir35-jobs/db/types';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { createJobPost, draftJobSpec } from '@/app/actions';
@@ -49,9 +50,18 @@ const IR35_OPTIONS: { value: JobIR35Signal; label: string }[] = [
 
 interface PostJobFormProps {
   className?: string;
+  // False for anonymous / not-yet-onboarded users: Publish saves the draft and
+  // routes to sign-in instead of starting checkout.
+  canPublish: boolean;
+  onSaveDraft: () => void;
 }
 
-const PostJobForm = ({ className }: PostJobFormProps) => {
+const PostJobForm = ({
+  className,
+  canPublish,
+  onSaveDraft,
+}: PostJobFormProps) => {
+  const router = useRouter();
   const [descriptionContent, setDescriptionContent] = useState('');
   const [howToApplyContent, setHowToApplyContent] = useState('');
   const [drafting, setDrafting] = useState(false);
@@ -97,6 +107,15 @@ const PostJobForm = ({ className }: PostJobFormProps) => {
   };
 
   const onSubmit = async (values: PostJobFormValues) => {
+    // Anonymous (or not-yet-onboarded) poster: they've filled a valid form but
+    // can't publish yet. Stash the draft and send them to sign in — they return
+    // to the restored form and publish without re-typing. No wall to START.
+    if (!canPublish) {
+      onSaveDraft();
+      router.push('/signin?callbackUrl=/job/post');
+      return;
+    }
+
     // createJobPost creates the job unpublished and returns a Stripe Checkout
     // URL; the job only goes live after payment (webhook). Send the browser to
     // Stripe's hosted checkout. On failure (e.g. billing misconfigured) surface a

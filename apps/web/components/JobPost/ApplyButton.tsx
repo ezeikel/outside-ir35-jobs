@@ -48,7 +48,7 @@ const ApplyButton = ({
   if (!eligibility.ok && eligibility.reason === 'not_signed_in') {
     return (
       <Button asChild className="mt-5 w-full">
-        <Link href="/api/auth/signin">Sign in to apply</Link>
+        <Link href="/signin">Sign in to apply</Link>
       </Button>
     );
   }
