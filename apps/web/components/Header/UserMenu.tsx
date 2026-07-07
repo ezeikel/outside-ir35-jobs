@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { signIn, signOut, useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 
 // Client-side auth control for the header. Reads the SessionProvider context, so
@@ -16,8 +16,8 @@ const UserMenu = () => {
 
   if (!session?.user) {
     return (
-      <Button variant="ghost" onClick={() => signIn('google')}>
-        Log in
+      <Button variant="ghost" asChild>
+        <Link href="/signin">Log in</Link>
       </Button>
     );
   }

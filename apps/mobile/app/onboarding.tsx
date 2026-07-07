@@ -1,30 +1,27 @@
 import { useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { toast } from "sonner-native";
 import OnboardingCarousel from "@/components/Onboarding/OnboardingCarousel";
 import OnboardingPaywall from "@/components/Onboarding/OnboardingPaywall";
 import { useAuth } from "@/contexts/AuthContext";
 import { type OnboardingInput, submitOnboarding } from "@/lib/api-account";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 
-// First-launch onboarding (shown once, BEFORE sign-in). A value-prop carousel →
-// "how will you use it?" role pick. Picking a role then prompts sign-in (Google/
-// Apple) carrying the choice; after auth we persist the role and — for a
-// contractor — show the one-time paywall. The user can also "Browse first" to
-// skip straight into the board unsigned (sign-in is only needed later to apply /
-// save / post). Either exit marks onboarding complete so it never shows again.
+// First-launch onboarding: a value-prop carousel → "how will you use it?" role
+// pick → (contractors only) the one-time paywall, then into the board. It is
+// SIGN-IN FREE and fun/clean — the app is fully usable anonymously and we never
+// ask the user to sign in here. The only ask is the paywall.
+//
+// Role handling: an anonymous user's choice is saved locally
+// (onboardingStore.pendingRole) and applied to the account later, when they sign
+// in from the dedicated /signin screen. An ALREADY-signed-in user (who reached
+// this via the Profile "finish setting up" prompt) has their role persisted to
+// the account immediately. Either exit marks onboarding complete.
 const OnboardingScreen = () => {
   const router = useRouter();
-  const {
-    isAuthenticated,
-    refreshAuth,
-    signInWithGoogleHandler,
-    signInWithAppleHandler,
-    signInWithFacebookHandler,
-    requestMagicLinkHandler,
-  } = useAuth();
+  const { isAuthenticated, refreshAuth } = useAuth();
   const complete = useOnboardingStore((s) => s.complete);
-  const [submitting, setSubmitting] = useState(false);
+  const setPendingRole = useOnboardingStore((s) => s.setPendingRole);
+  const clearPendingRole = useOnboardingStore((s) => s.clearPendingRole);
   const [showPaywall, setShowPaywall] = useState(false);
 
   // Mark onboarding seen + go to the board.
@@ -33,57 +30,30 @@ const OnboardingScreen = () => {
     router.replace("/(tabs)");
   }, [complete, router]);
 
-  // "Browse first" — skip sign-in, just explore the board.
+  // "Browse first" — same destination; role stays unset.
   const onSkip = useCallback(() => enterApp(), [enterApp]);
 
-  // Persist the chosen role + continue. Contractors get the one-time paywall;
-  // posters go straight in. Shared by both entry paths below.
-  const finishWithRole = useCallback(
+  // Role chosen. Signed-in users → persist to their account now. Anonymous users
+  // → remember it locally for sign-in to apply. Then contractors see the one-time
+  // paywall; everyone else goes straight to the board.
+  const onPickRole = useCallback(
     async (input: OnboardingInput) => {
-      await submitOnboarding(input);
-      await refreshAuth();
+      if (isAuthenticated) {
+        await submitOnboarding(input);
+        await refreshAuth();
+        clearPendingRole();
+      } else {
+        setPendingRole(input);
+      }
       if (input.role === "JOB_SEEKER") setShowPaywall(true);
       else enterApp();
     },
-    [refreshAuth, enterApp],
+    [isAuthenticated, refreshAuth, setPendingRole, clearPendingRole, enterApp],
   );
-
-  // Role chosen → sign in (carrying the role) → persist. If the user is ALREADY
-  // signed in (came here from the Profile "finish setting up" prompt), skip the
-  // sign-in step and persist directly. A cancelled sign-in sheet leaves them on
-  // the role step.
-  const onPickRole = async (
-    input: OnboardingInput,
-    provider: "google" | "apple" | "facebook",
-  ) => {
-    setSubmitting(true);
-    try {
-      if (!isAuthenticated) {
-        let res: Awaited<ReturnType<typeof signInWithGoogleHandler>>;
-        if (provider === "google") res = await signInWithGoogleHandler();
-        else if (provider === "apple") res = await signInWithAppleHandler();
-        else res = await signInWithFacebookHandler();
-        if (!res) return; // cancelled
-      }
-      await finishWithRole(input);
-    } catch {
-      toast.error("Couldn’t finish setting up. Try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   if (showPaywall) return <OnboardingPaywall onContinue={enterApp} />;
 
-  return (
-    <OnboardingCarousel
-      submitting={submitting}
-      alreadySignedIn={isAuthenticated}
-      onPickRole={onPickRole}
-      onRequestMagicLink={requestMagicLinkHandler}
-      onSkip={onSkip}
-    />
-  );
+  return <OnboardingCarousel onPickRole={onPickRole} onSkip={onSkip} />;
 };
 
 export default OnboardingScreen;

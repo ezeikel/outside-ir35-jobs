@@ -138,6 +138,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
   },
+  // Custom auth screens (branded) instead of NextAuth's default pages: /signin is
+  // the dedicated sign-in surface; verify-request is the "check your inbox" state
+  // after requesting a magic link; error routes to the branded error page.
+  pages: {
+    signIn: '/signin',
+    verifyRequest: '/auth/verify-request',
+    error: '/auth/error',
+  },
   // Auth.js v5 reads AUTH_SECRET by default; keep NEXT_AUTH_SECRET as a fallback
   // for the existing env var name.
   secret: process.env.AUTH_SECRET || process.env.NEXT_AUTH_SECRET,

@@ -1,4 +1,3 @@
-import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 import {
   faEnvelope,
   faFileLines,
@@ -9,12 +8,10 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import * as Application from "expo-application";
-import * as AppleAuthentication from "expo-apple-authentication";
 import { useRouter } from "expo-router";
 import {
   ActivityIndicator,
   Linking,
-  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -100,15 +97,8 @@ const ModeSwitch = ({
 const ProfileScreen = () => {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const {
-    isLoading,
-    isAuthenticated,
-    user,
-    signInWithGoogleHandler,
-    signInWithAppleHandler,
-    devSignInHandler,
-    signOut,
-  } = useAuth();
+  const { isLoading, isAuthenticated, user, devSignInHandler, signOut } =
+    useAuth();
   const { mode, setMode } = useViewMode();
   const { isPremium, status: premiumStatus } = usePremium();
 
@@ -289,36 +279,22 @@ const ProfileScreen = () => {
       className="flex-1 bg-background px-6"
       style={{ paddingTop: insets.top + 24 }}
     >
-      <Text className="font-display text-3xl text-foreground">Sign in</Text>
+      <Text className="font-display text-3xl text-foreground">Your account</Text>
       <Text className="mt-2 text-sm text-muted-foreground">
-        Sign in to apply with your verified profile, save searches, and get
-        alerts for new Outside IR35 contracts.
+        You’re browsing anonymously. Sign in to sync across devices, apply with
+        your verified profile, save searches, and get alerts for new Outside IR35
+        contracts.
       </Text>
 
-      <View className="mt-8 gap-3">
+      <View className="mt-8">
         <Pressable
-          className="flex-row items-center justify-center gap-3 rounded-lg border border-border bg-card p-4 active:opacity-80"
-          onPress={signInWithGoogleHandler}
+          className="rounded-lg bg-primary p-4 active:opacity-90"
+          onPress={() => router.push("/signin")}
         >
-          <FontAwesomeIcon icon={faGoogle} color="#17181a" size={18} />
-          <Text className="font-sans-semibold text-foreground">
-            Continue with Google
+          <Text className="text-center font-sans-semibold text-primary-foreground">
+            Sign in
           </Text>
         </Pressable>
-
-        {Platform.OS === "ios" ? (
-          <AppleAuthentication.AppleAuthenticationButton
-            buttonType={
-              AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN
-            }
-            buttonStyle={
-              AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
-            }
-            cornerRadius={8}
-            style={{ height: 52 }}
-            onPress={signInWithAppleHandler}
-          />
-        ) : null}
       </View>
 
       {/* DEV/TEST-ONLY sign-in (never shipped — __DEV__ is false in prod builds).

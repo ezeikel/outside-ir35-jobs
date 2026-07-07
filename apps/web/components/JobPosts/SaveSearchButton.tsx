@@ -26,7 +26,7 @@ const SaveSearchButton = ({
   if (!canSave) {
     return (
       <p className="mt-3 text-sm text-muted-foreground">
-        <Link href="/api/auth/signin" className="text-link hover:underline">
+        <Link href="/signin" className="text-link hover:underline">
           Sign in
         </Link>{' '}
         to save this search and get emailed new matches.

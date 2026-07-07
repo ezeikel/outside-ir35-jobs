@@ -2,7 +2,7 @@
 
 import { MenuIcon, XIcon } from 'lucide-react';
 import Link from 'next/link';
-import { signIn, signOut, useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 
@@ -122,14 +122,10 @@ const MobileNav = () => {
                 Sign out
               </Button>
             ) : (
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  close();
-                  signIn('google');
-                }}
-              >
-                Log in
+              <Button variant="ghost" asChild>
+                <Link href="/signin" onClick={close}>
+                  Log in
+                </Link>
               </Button>
             )}
           </div>

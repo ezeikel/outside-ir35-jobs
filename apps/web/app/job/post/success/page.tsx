@@ -17,7 +17,7 @@ const JobPostSuccessPage = async ({
   searchParams: Promise<{ session_id?: string }>;
 }) => {
   const session = await auth();
-  if (!session?.userId) redirect('/api/auth/signin');
+  if (!session?.userId) redirect('/signin');
 
   const { session_id: stripeSessionId } = await searchParams;
 

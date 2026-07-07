@@ -47,3 +47,5 @@ next-env.d.ts
 
 # claude code (session-local settings / memory)
 .claude/
+
+.auth-secrets/
