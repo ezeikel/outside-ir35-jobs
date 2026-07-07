@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { auth } from '@/auth';
+import { auth, configuredProviders } from '@/auth';
 import PageWrap from '@/components/PageWrap/PageWrap';
 import {
   Card,
@@ -45,7 +45,7 @@ const SignInPage = async ({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <SignInOptions callbackUrl={dest} />
+            <SignInOptions callbackUrl={dest} providers={configuredProviders} />
             <p className="mt-6 text-center text-xs text-muted-foreground">
               By continuing you agree to our{' '}
               <Link href="/terms" className="underline">
