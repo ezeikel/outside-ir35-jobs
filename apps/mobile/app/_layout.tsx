@@ -124,6 +124,9 @@ const RootLayout = () => {
       >
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
+        {/* Magic-link deep-link target (outsideir35://auth/magic-link?token=…):
+            redeems the emailed token and signs the user in. */}
+        <Stack.Screen name="auth/magic-link" options={{ gestureEnabled: false }} />
         <Stack.Screen
           name="job/[id]"
           options={{

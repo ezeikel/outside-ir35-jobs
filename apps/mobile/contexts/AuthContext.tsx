@@ -15,10 +15,12 @@ import {
   type AuthUser,
   getAuthMe,
   type OAuthSignInResponse,
+  requestMagicLink,
   signInWithApple,
   signInWithFacebook,
   signInWithGoogle,
   testLogin,
+  verifyMagicLink,
 } from "@/lib/api-auth";
 import { clearSession, getSessionToken, setSession } from "@/lib/auth";
 import { registerForPush } from "@/lib/push";
@@ -36,6 +38,10 @@ type AuthContextType = {
   signInWithGoogleHandler: () => Promise<OAuthSignInResponse | null>;
   signInWithAppleHandler: () => Promise<OAuthSignInResponse | null>;
   signInWithFacebookHandler: () => Promise<OAuthSignInResponse | null>;
+  // Magic-link: request emails a deep link; verify redeems the token the deep
+  // link carries and finishes sign-in (called by the /auth/magic-link screen).
+  requestMagicLinkHandler: (email: string) => Promise<boolean>;
+  verifyMagicLinkHandler: (token: string) => Promise<OAuthSignInResponse | null>;
   // DEV/TEST-ONLY (no-ops in prod). Signs in as a seeded test user via the gated
   // test-login route, so the simulator + Maestro can reach authed surfaces.
   devSignInHandler: (role: "seeker" | "poster") => Promise<void>;
@@ -50,6 +56,8 @@ const AuthContext = createContext<AuthContextType>({
   signInWithGoogleHandler: async () => null,
   signInWithAppleHandler: async () => null,
   signInWithFacebookHandler: async () => null,
+  requestMagicLinkHandler: async () => false,
+  verifyMagicLinkHandler: async () => null,
   devSignInHandler: async () => undefined,
   signOut: async () => undefined,
   refreshAuth: async () => undefined,
@@ -205,6 +213,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }, [finishSignIn]);
 
+  // Magic-link step 1: email the user a deep link. Returns true if the email was
+  // sent so the UI can show a "check your inbox" state. Does NOT sign in yet.
+  const requestMagicLinkHandler = useCallback(
+    async (email: string): Promise<boolean> => {
+      try {
+        await requestMagicLink(email.trim());
+        return true;
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error ? error.message : "Couldn't send the sign-in link";
+        toast.error(message);
+        return false;
+      }
+    },
+    [],
+  );
+
+  // Magic-link step 2: redeem the token the deep link carried, then finish sign-in
+  // (persist session + set user). Called by the /auth/magic-link screen on open.
+  const verifyMagicLinkHandler = useCallback(
+    async (token: string): Promise<OAuthSignInResponse | null> => {
+      try {
+        setIsLoading(true);
+        const res = await verifyMagicLink(token);
+        await finishSignIn(res);
+        return res;
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "This sign-in link is invalid or has expired";
+        toast.error(message);
+        return null;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [finishSignIn],
+  );
+
   // DEV/TEST-ONLY: sign in as a seeded test user via the gated test-login route
   // (no OAuth), so the simulator + Maestro can drive authed surfaces. No-ops in a
   // prod build (__DEV__ is false) and the server route 404s without E2E_TEST_LOGIN.
@@ -248,6 +296,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         signInWithGoogleHandler,
         signInWithAppleHandler,
         signInWithFacebookHandler,
+        requestMagicLinkHandler,
+        verifyMagicLinkHandler,
         devSignInHandler,
         signOut,
         refreshAuth,

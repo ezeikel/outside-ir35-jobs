@@ -49,6 +49,28 @@ export const signInWithFacebook = async (
   return data;
 };
 
+// Magic-link step 1: ask the server to email a deep link to `email`. There's no
+// SDK token here — the email round-trip is the proof of ownership.
+export const requestMagicLink = async (email: string): Promise<{ sent: true }> => {
+  const { data } = await api.post<{ sent: true }>(
+    "/api/mobile/auth/magic-link",
+    { email },
+  );
+  return data;
+};
+
+// Magic-link step 2: redeem the token from the tapped deep link. The token
+// carries the (signed) email, so no other input is needed; returns a session.
+export const verifyMagicLink = async (
+  token: string,
+): Promise<OAuthSignInResponse> => {
+  const { data } = await api.post<OAuthSignInResponse>(
+    "/api/mobile/auth/magic-link/verify",
+    { token },
+  );
+  return data;
+};
+
 /** Fetch the current user for the stored session token. 401 → signed out. */
 export const getAuthMe = async (): Promise<AuthUser> => {
   const { data } = await api.get<{ user: AuthUser }>("/api/mobile/auth/me");
