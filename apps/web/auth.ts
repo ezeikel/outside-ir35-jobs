@@ -4,21 +4,18 @@ import NextAuth from 'next-auth';
 import type { Adapter } from 'next-auth/adapters';
 import type { Provider } from 'next-auth/providers';
 import AppleProvider from 'next-auth/providers/apple';
-import CredentialsProvider from 'next-auth/providers/credentials';
 import FacebookProvider from 'next-auth/providers/facebook';
 import GoogleProvider from 'next-auth/providers/google';
 import Resend from 'next-auth/providers/resend';
 import { generateAppleClientSecret } from '@/lib/apple';
 import { sendEmail } from '@/lib/email/send';
 
-// Test-only sign-in seam. Active ONLY when E2E_TEST_LOGIN === '1' (never set in
-// production), so the Playwright happy-path suite can sign in as a seeded
-// contractor/poster without driving the real Google OAuth consent screen. It
-// authenticates an *already-seeded* user by email — it never creates users and
-// never accepts a password, so even if the flag leaked it could only ever
-// "log in as" a row that already exists in this DB. When the flag is off the
-// provider isn't registered at all and this whole branch is dead code.
-const e2eLoginEnabled = process.env.E2E_TEST_LOGIN === '1';
+// e2e note: the Playwright authed suite signs in by seeding a real `sessions` row
+// and dropping its token into the `authjs.session-token` cookie (see
+// e2e/seed-users.ts + e2e/helpers/auth.ts). Under the database session strategy
+// that's the only thing `auth()` will accept, so there's no test-only credentials
+// provider here — a JWT-cookie credentials sign-in can't be resolved by the DB
+// strategy anyway.
 
 // Apple's client secret is a short-lived ES256 JWT, generated at module init.
 // Empty string when any Apple env var is missing so dev/build still starts — the
@@ -92,24 +89,6 @@ if (process.env.RESEND_API_KEY) {
         if (!result.sent) {
           throw new Error(result.error ?? 'Failed to send magic link email');
         }
-      },
-    }),
-  );
-}
-
-if (e2eLoginEnabled) {
-  providers.push(
-    CredentialsProvider({
-      id: 'e2e',
-      name: 'E2E Test Login',
-      credentials: { email: { label: 'Email', type: 'text' } },
-      async authorize(credentials) {
-        const email =
-          typeof credentials?.email === 'string' ? credentials.email : null;
-        if (!email) return null;
-        const user = await prisma.user.findUnique({ where: { email } });
-        if (!user) return null;
-        return { id: user.id, email: user.email, name: user.name };
       },
     }),
   );

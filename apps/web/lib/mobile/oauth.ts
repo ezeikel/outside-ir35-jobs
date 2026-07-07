@@ -139,7 +139,10 @@ export const upsertUserForIdentity = async (identity: VerifiedIdentity) => {
   return prisma.user.create({
     data: {
       email: identity.email,
-      name: identity.name ?? '',
+      // Mirror the web NextAuth adapter's createUser name-guard (auth.ts): Apple /
+      // Facebook often return no name, and User.name is NOT NULL, so default to the
+      // email local-part. Keeps web + mobile sign-in producing identical rows.
+      name: identity.name?.trim() || identity.email.split('@')[0],
       role: null,
       onboardedAt: null,
     },

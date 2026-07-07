@@ -1,11 +1,10 @@
--- DropIndex
-DROP INDEX "jobs_embedding_hnsw_idx";
-
--- DropIndex
-DROP INDEX "jobs_search_vector_gin_idx";
-
--- DropIndex
-DROP INDEX "users_embedding_hnsw_idx";
+-- pgvector wrinkle: `prisma migrate dev` can't represent the HNSW / GIN indexes on
+-- the Unsupported("vector") + tsvector columns in schema.prisma, so it emitted
+-- DROP INDEX for them here — which would destroy the semantic-search (HNSW) and
+-- full-text-search (GIN) indexes on the live jobs/users tables. Those DROP lines
+-- were removed; the indexes are (re)asserted at the end of this migration with
+-- IF NOT EXISTS so it stays index-neutral and idempotent (same pattern as the
+-- sibling migrations that touch these tables).
 
 -- CreateTable
 CREATE TABLE "accounts" (
@@ -56,3 +55,10 @@ ALTER TABLE "accounts" ADD CONSTRAINT "accounts_userId_fkey" FOREIGN KEY ("userI
 
 -- AddForeignKey
 ALTER TABLE "sessions" ADD CONSTRAINT "sessions_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- Re-assert the pgvector HNSW + FTS GIN indexes that `prisma migrate dev` bogusly
+-- tried to DROP above (Prisma can't see indexes on Unsupported()/tsvector columns).
+-- IF NOT EXISTS keeps this idempotent and index-neutral on every branch.
+CREATE INDEX IF NOT EXISTS "jobs_search_vector_gin_idx" ON "jobs" USING gin ("searchVector");
+CREATE INDEX IF NOT EXISTS "jobs_embedding_hnsw_idx" ON "jobs" USING hnsw ("embedding" vector_cosine_ops);
+CREATE INDEX IF NOT EXISTS "users_embedding_hnsw_idx" ON "users" USING hnsw ("embedding" vector_cosine_ops);

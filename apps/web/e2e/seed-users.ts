@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { db as prisma } from '@outside-ir35-jobs/db';
@@ -19,6 +20,34 @@ export const POSTER_EMAIL = 'e2e-poster@outsideir35.test';
 // reads this file). Mirrors lib/mobile/session.ts (which is `server-only`, so we
 // inline the same HS256 sign here under tsx).
 const MOBILE_TOKEN_FILE = path.join(__dirname, '.auth', 'mobile-token.json');
+
+// Where each seeded user's DATABASE session token is written for the auth harness
+// (e2e/helpers/auth.ts reads this to build storageState). Under the database
+// session strategy a valid web session IS a row in `sessions` whose `sessionToken`
+// equals the value of the `authjs.session-token` cookie — so we create the row
+// here and hand its token to Playwright. This replaces the old credentials-provider
+// sign-in, which minted a JWT cookie that the database strategy can't resolve.
+const SESSION_TOKENS_FILE = path.join(
+  __dirname,
+  '.auth',
+  'session-tokens.json',
+);
+
+// Mint + persist a database session for `userId`, returning the opaque session
+// token that goes in the cookie. 30-day expiry (NextAuth's default) is plenty for
+// a test run. Idempotent per seed run: we clear the user's prior sessions first.
+const createDbSession = async (userId: string): Promise<string> => {
+  await prisma.session.deleteMany({ where: { userId } });
+  const sessionToken = randomUUID();
+  await prisma.session.create({
+    data: {
+      sessionToken,
+      userId,
+      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    },
+  });
+  return sessionToken;
+};
 
 const mintMobileToken = async (
   userId: string,
@@ -48,7 +77,7 @@ const seed = async (): Promise<void> => {
     },
   });
 
-  await prisma.user.upsert({
+  const poster = await prisma.user.upsert({
     where: { email: POSTER_EMAIL },
     update: {
       role: Role.JOB_POSTER,
@@ -72,6 +101,19 @@ const seed = async (): Promise<void> => {
   writeFileSync(
     MOBILE_TOKEN_FILE,
     JSON.stringify({ userId: contractor.id, token }),
+  );
+
+  // Create a real database session per user and hand the tokens to the auth harness.
+  const [contractorSession, posterSession] = await Promise.all([
+    createDbSession(contractor.id),
+    createDbSession(poster.id),
+  ]);
+  writeFileSync(
+    SESSION_TOKENS_FILE,
+    JSON.stringify({
+      [CONTRACTOR_EMAIL]: contractorSession,
+      [POSTER_EMAIL]: posterSession,
+    }),
   );
 };
 
