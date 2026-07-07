@@ -91,6 +91,7 @@ const OnboardingCarousel = ({
   submitting,
   alreadySignedIn,
   onPickRole,
+  onRequestMagicLink,
   onSkip,
 }: {
   submitting: boolean;
@@ -99,6 +100,7 @@ const OnboardingCarousel = ({
     input: OnboardingInput,
     provider: "google" | "apple" | "facebook",
   ) => void;
+  onRequestMagicLink: (email: string) => Promise<boolean>;
   onSkip: () => void;
 }) => {
   const { width } = useWindowDimensions();
@@ -173,6 +175,7 @@ const OnboardingCarousel = ({
               submitting={submitting}
               alreadySignedIn={alreadySignedIn}
               onPickRole={onPickRole}
+              onRequestMagicLink={onRequestMagicLink}
               onSkip={onSkip}
             />
           </View>

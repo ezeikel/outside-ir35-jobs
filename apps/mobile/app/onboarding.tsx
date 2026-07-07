@@ -21,6 +21,7 @@ const OnboardingScreen = () => {
     signInWithGoogleHandler,
     signInWithAppleHandler,
     signInWithFacebookHandler,
+    requestMagicLinkHandler,
   } = useAuth();
   const complete = useOnboardingStore((s) => s.complete);
   const [submitting, setSubmitting] = useState(false);
@@ -79,6 +80,7 @@ const OnboardingScreen = () => {
       submitting={submitting}
       alreadySignedIn={isAuthenticated}
       onPickRole={onPickRole}
+      onRequestMagicLink={requestMagicLinkHandler}
       onSkip={onSkip}
     />
   );

@@ -1,3 +1,4 @@
+import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import {
   faApple,
   faFacebook,
@@ -5,31 +6,48 @@ import {
 } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useState } from "react";
-import { ActivityIndicator, Platform, Pressable, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Platform,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import type { OnboardingInput } from "@/lib/api-account";
 
 // The final onboarding slide: pick contractor (JOB_SEEKER) or hiring (JOB_POSTER)
-// — hiring also picks direct vs recruiter — then sign in (Google/Apple) to attach
-// the choice to an account. "Browse first" skips sign-in straight into the board.
-// Mirrors the web /onboarding role picker, with sign-in moved here (onboarding is
-// shown before sign-in on first launch).
+// — hiring also picks direct vs recruiter — then sign in (Google/Apple/Facebook or
+// an emailed magic link) to attach the choice to an account. "Browse first" skips
+// sign-in straight into the board. Mirrors the web /onboarding role picker, with
+// sign-in moved here (onboarding is shown before sign-in on first launch).
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
 const RolePickerSlide = ({
   isActive,
   submitting,
   alreadySignedIn,
   onPickRole,
+  onRequestMagicLink,
   onSkip,
 }: {
   isActive: boolean;
   submitting: boolean;
   alreadySignedIn: boolean;
   onPickRole: (input: OnboardingInput, provider: "google" | "apple" | "facebook") => void;
+  // Email the user a sign-in link. Returns whether it was sent (for the "check
+  // your inbox" state). The role is applied later, on the Profile prompt, since
+  // the magic-link round-trip can't carry it synchronously like OAuth does.
+  onRequestMagicLink: (email: string) => Promise<boolean>;
   onSkip: () => void;
 }) => {
   const [role, setRole] = useState<"JOB_SEEKER" | "JOB_POSTER" | null>(null);
   const [posterType, setPosterType] = useState<"DIRECT" | "RECRUITER" | null>(
     null,
   );
+  const [email, setEmail] = useState("");
+  const [sendingLink, setSendingLink] = useState(false);
+  const [linkSent, setLinkSent] = useState(false);
 
   const ready =
     role === "JOB_SEEKER" || (role === "JOB_POSTER" && !!posterType);
@@ -44,6 +62,16 @@ const RolePickerSlide = ({
   const signIn = (provider: "google" | "apple" | "facebook") => {
     const input = selection();
     if (input) onPickRole(input, provider);
+  };
+
+  const emailValid = EMAIL_RE.test(email.trim());
+
+  const sendLink = async () => {
+    if (!emailValid || sendingLink) return;
+    setSendingLink(true);
+    const sent = await onRequestMagicLink(email.trim());
+    setSendingLink(false);
+    if (sent) setLinkSent(true);
   };
 
   return (
@@ -153,6 +181,70 @@ const RolePickerSlide = ({
                 </Text>
               </Pressable>
             ) : null}
+
+            {/* Magic link — email a one-tap sign-in link. Once sent we swap to a
+                "check your inbox" note; the emailed link reopens the app and
+                signs the user in (role is applied later, on the Profile prompt). */}
+            <View className="mt-2 flex-row items-center gap-3">
+              <View className="h-px flex-1 bg-border" />
+              <Text className="text-xs text-muted-foreground">or</Text>
+              <View className="h-px flex-1 bg-border" />
+            </View>
+
+            {linkSent ? (
+              <View className="rounded-lg border border-border bg-secondary p-4">
+                <Text className="text-center font-sans-semibold text-foreground">
+                  Check your inbox
+                </Text>
+                <Text className="mt-1 text-center text-sm text-muted-foreground">
+                  We sent a sign-in link to {email.trim()}. Tap it on this phone to
+                  finish.
+                </Text>
+                <Pressable
+                  className="mt-3 p-1 active:opacity-70"
+                  onPress={() => setLinkSent(false)}
+                >
+                  <Text className="text-center text-sm text-primary">
+                    Use a different email
+                  </Text>
+                </Pressable>
+              </View>
+            ) : (
+              <>
+                <TextInput
+                  className="rounded-lg border border-border bg-card p-4 text-foreground"
+                  placeholder="you@email.com"
+                  placeholderTextColor="#9aa1ab"
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="email-address"
+                  textContentType="emailAddress"
+                  editable={ready && !sendingLink}
+                />
+                <Pressable
+                  className={`flex-row items-center justify-center gap-3 rounded-lg border border-border bg-card p-4 ${ready && emailValid ? "active:opacity-80" : "opacity-40"}`}
+                  disabled={!ready || !emailValid || sendingLink}
+                  onPress={sendLink}
+                >
+                  {sendingLink ? (
+                    <ActivityIndicator color="#17181a" />
+                  ) : (
+                    <>
+                      <FontAwesomeIcon
+                        icon={faEnvelope}
+                        color="#17181a"
+                        size={18}
+                      />
+                      <Text className="font-sans-semibold text-foreground">
+                        Email me a sign-in link
+                      </Text>
+                    </>
+                  )}
+                </Pressable>
+              </>
+            )}
           </>
         )}
       </View>
