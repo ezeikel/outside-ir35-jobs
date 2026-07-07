@@ -112,6 +112,20 @@ const adapter: Adapter = {
     }),
 };
 
+// Which providers are actually usable, derived from the SAME env checks that
+// build the `providers` array above. The sign-in UI reads this (server-side) so
+// it only renders a button for a provider that will really work — no separate
+// NEXT_PUBLIC_* flags to keep in sync, no button that would 404 on click.
+export const configuredProviders = {
+  google: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
+  apple: !!(process.env.APPLE_CLIENT_ID && appleClientSecret),
+  facebook: !!(
+    process.env.FACEBOOK_CONSUMER_APP_ID &&
+    process.env.FACEBOOK_CONSUMER_APP_SECRET
+  ),
+  resend: !!process.env.RESEND_API_KEY,
+};
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   // Vercel auto-enables this, but a local `next start` (and the prod-build e2e
   // run) needs it set explicitly or every session lookup throws UntrustedHost.
