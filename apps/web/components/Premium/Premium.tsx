@@ -3,6 +3,8 @@
 import { useState, useTransition } from 'react';
 import { createSubscriptionCheckout, getBillingPortalUrl } from '@/app/actions';
 import { Button } from '@/components/ui/button';
+import { TRACKING_EVENTS } from '@/constants';
+import { useAnalytics } from '@/utils/analytics-client';
 
 const PERKS = [
   'See which hirers viewed your applications',
@@ -41,9 +43,11 @@ const Premium = ({
 }: Props) => {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const { track } = useAnalytics();
 
   const subscribe = () => {
     setError(null);
+    track(TRACKING_EVENTS.SUBSCRIPTION_CHECKOUT_STARTED, { plan: 'premium' });
     startTransition(async () => {
       try {
         const { checkoutUrl } = await createSubscriptionCheckout();

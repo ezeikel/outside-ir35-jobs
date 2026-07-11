@@ -68,6 +68,8 @@
     "next-auth": "5.0.0-beta.28",
     "next-plausible": "^3.12.0",
     "openai": "^4.46.1",
+    "posthog-js": "^1.399.2",
+    "posthog-node": "^5.41.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-email": "2.1.2",

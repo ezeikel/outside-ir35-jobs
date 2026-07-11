@@ -15,6 +15,7 @@ import {
 import { del, getSignedDownloadUrl, put } from '@outside-ir35-jobs/storage';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
+import { TRACKING_EVENTS } from '@/constants';
 import { canApply } from '@/lib/apply/eligibility';
 import { MIN_SAMPLE } from '@/lib/benchmarks/compute';
 import { isPremium, shouldProviderWriteWin } from '@/lib/contractor/premium';
@@ -66,6 +67,7 @@ import {
   OnboardingRoleValues,
   PostJobFormValues,
 } from '@/types';
+import { track, trackWithUser } from '@/utils/analytics-server';
 
 // Recompute a contractor's trust tier from their verified companies + documents +
 // right-to-work, persisting only when it changes. Internal helper (NOT exported —
@@ -233,6 +235,8 @@ const createJobCheckoutSession = async (
     data: { stripeSessionId: checkout.id },
   });
 
+  await track(TRACKING_EVENTS.JOB_POST_CHECKOUT_STARTED, { jobId, position });
+
   return checkout.url;
 };
 
@@ -342,6 +346,7 @@ export const fulfilJobPayment = async (jobId: string): Promise<void> => {
     where: { id: jobId },
     select: {
       id: true,
+      userId: true,
       position: true,
       description: true,
       keywords: true,
@@ -355,6 +360,15 @@ export const fulfilJobPayment = async (jobId: string): Promise<void> => {
     where: { id: job.id },
     data: { paymentStatus: 'PAID', isActive: true },
   });
+
+  // The paid-listing revenue event — server-side, keyed to the poster so the
+  // funnel unifies with job_post_started / job_post_checkout_started.
+  if (job.userId) {
+    await trackWithUser(job.userId, TRACKING_EVENTS.JOB_POST_PUBLISHED, {
+      jobId: job.id,
+      position: job.position,
+    });
+  }
 
   // Embed now that it's live, so it appears in semantic search (best-effort).
   await embedAndStoreJob({
@@ -523,19 +537,40 @@ export const searchJobs = async (
         FROM "jobs"
         WHERE "id" = ANY(${fusedIds})`;
       const byId = new Map(rows.map((r) => [r.id, r]));
-      return fusedIds
+      const fused = fusedIds
         .map((id) => byId.get(id))
         .filter((r): r is JobSearchRow => Boolean(r));
+      await trackJobSearch(f, fused.length);
+      return fused;
     }
     // No ranker produced hits → fall through to newest-first.
   }
 
-  return prisma.$queryRaw<JobSearchRow[]>`
+  const newest = await prisma.$queryRaw<JobSearchRow[]>`
     SELECT ${JOB_CARD_COLUMNS}
     FROM "jobs"
     WHERE ${where}
     ORDER BY "createdAt" DESC
     LIMIT 50`;
+  await trackJobSearch(f, newest.length);
+  return newest;
+};
+
+// Emit job_search_performed with the filter shape + result count. Fire-and-await
+// (the helper swallows its own errors) so analytics can never break search.
+const trackJobSearch = async (
+  f: SearchFilters,
+  resultCount: number,
+): Promise<void> => {
+  await track(TRACKING_EVENTS.JOB_SEARCH_PERFORMED, {
+    hasQuery: Boolean(f.q),
+    resultCount,
+    workMode: f.workMode ?? null,
+    minRate: f.minRate,
+    location: f.location ?? null,
+    ir35OutsideOnly: Boolean(f.ir35OutsideOnly),
+    postedSinceDays: f.postedSinceDays,
+  });
 };
 
 // A recommended job is a search card plus its match distance (cosine, lower =
@@ -844,6 +879,11 @@ export const setUserRole = async (input: OnboardingRoleValues) => {
       posterType: role === Role.JOB_POSTER ? posterType : null,
       onboardedAt: new Date(),
     },
+  });
+
+  await track(TRACKING_EVENTS.ONBOARDING_ROLE_SELECTED, {
+    role,
+    posterType: role === Role.JOB_POSTER ? posterType : null,
   });
 
   revalidatePath('/profile');
@@ -1684,6 +1724,13 @@ export const createApplication = async (
     data: { jobId, applicantId: session!.userId as string, message: note },
   });
 
+  await track(TRACKING_EVENTS.APPLICATION_SUBMITTED, {
+    jobId,
+    jobSource: job.source,
+    hasMessage: Boolean(note),
+    surface: 'web',
+  });
+
   revalidatePath(`/job/${jobId}`);
   revalidatePath('/dashboard');
   return { status: 'applied' };
@@ -2196,6 +2243,15 @@ export const saveSearch = async (params: SearchParams): Promise<void> => {
   await prisma.savedSearch.create({
     data: { userId: session.userId, ...toStoredSearch(params) },
   });
+
+  const savedFilters = normalizeFilters(params);
+  await track(TRACKING_EVENTS.SEARCH_SAVED, {
+    hasQuery: Boolean(savedFilters.q),
+    workMode: savedFilters.workMode ?? null,
+    minRate: savedFilters.minRate,
+    location: savedFilters.location ?? null,
+  });
+
   revalidatePath('/alerts');
 };
 
@@ -2238,6 +2294,12 @@ export const setSavedSearchAlerts = async (
     where: { id, userId: session.userId },
     data: { alertsEnabled: enabled },
   });
+
+  await track(TRACKING_EVENTS.JOB_ALERTS_ENABLED, {
+    savedSearchId: id,
+    enabled,
+  });
+
   revalidatePath('/alerts');
 };
 
@@ -2272,6 +2334,8 @@ export const saveJob = async (jobId: string): Promise<void> => {
     create: { userId: session.userId, jobId },
     update: {},
   });
+
+  await track(TRACKING_EVENTS.JOB_SAVED, { jobId });
 };
 
 export const unsaveJob = async (jobId: string): Promise<void> => {
@@ -2562,6 +2626,29 @@ export const syncSubscriptionFromStripe = async (input: {
     create: { userId, ...data },
     update: data,
   });
+
+  // Money events — server-side, keyed to the userId in Stripe metadata so web
+  // Stripe premium unifies with mobile RevenueCat premium on one person. A
+  // cancel is signalled by a terminal status OR cancel-at-period-end; everything
+  // else that reaches here is an activation/renewal.
+  const isCancel =
+    input.cancelAtPeriodEnd ||
+    input.status === 'canceled' ||
+    input.status === 'unpaid' ||
+    input.status === 'incomplete_expired';
+  if (isCancel) {
+    await trackWithUser(userId, TRACKING_EVENTS.SUBSCRIPTION_CANCELLED, {
+      provider: 'STRIPE',
+      status: input.status,
+      cancelAtPeriodEnd: input.cancelAtPeriodEnd,
+    });
+  } else if (input.status === 'active' || input.status === 'trialing') {
+    await trackWithUser(userId, TRACKING_EVENTS.SUBSCRIPTION_ACTIVATED, {
+      provider: 'STRIPE',
+      status: input.status,
+      stripePriceId: input.stripePriceId,
+    });
+  }
 
   revalidatePath('/premium');
   revalidatePath('/profile');

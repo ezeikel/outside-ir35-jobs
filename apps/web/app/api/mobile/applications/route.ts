@@ -1,8 +1,10 @@
 import { db as prisma } from '@outside-ir35-jobs/db';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { TRACKING_EVENTS } from '@/constants';
 import { canApply } from '@/lib/apply/eligibility';
 import { getMobileCaller } from '@/lib/mobile/auth';
+import { trackWithUser } from '@/utils/analytics-server';
 
 // Apply to a job from mobile. Uses the SAME canApply eligibility gate as the web
 // createApplication action (role, source, active, not own, not already applied),
@@ -70,6 +72,16 @@ export const POST = async (req: Request) => {
   const note = message?.trim().slice(0, APPLICATION_MESSAGE_MAX) || null;
   await prisma.application.create({
     data: { jobId, applicantId: caller.userId, message: note },
+  });
+
+  // Same core conversion event as the web createApplication action, tagged
+  // surface:'mobile' and keyed to the bearer caller so web + mobile applications
+  // unify on one person.
+  await trackWithUser(caller.userId, TRACKING_EVENTS.APPLICATION_SUBMITTED, {
+    jobId,
+    jobSource: job.source,
+    hasMessage: Boolean(note),
+    surface: 'mobile',
   });
 
   return NextResponse.json({ status: 'applied' });

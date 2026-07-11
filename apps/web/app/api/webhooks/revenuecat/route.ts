@@ -1,6 +1,7 @@
 import { timingSafeEqual } from 'node:crypto';
 import { db as prisma } from '@outside-ir35-jobs/db';
 import { NextResponse } from 'next/server';
+import { TRACKING_EVENTS } from '@/constants';
 import { shouldProviderWriteWin } from '@/lib/contractor/premium';
 import { publishPaidJob } from '@/lib/jobs/publish-paid-job';
 import {
@@ -8,6 +9,7 @@ import {
   mapRevenueCatJobPurchase,
   type RevenueCatWebhookBody,
 } from '@/lib/mobile/revenuecat';
+import { trackWithUser } from '@/utils/analytics-server';
 
 // Constant-time comparison of the shared secret (the only gate granting paid
 // access). length-guard first — timingSafeEqual throws on unequal lengths.
@@ -116,6 +118,18 @@ export const POST = async (req: Request) => {
     create: { userId: sync.userId, ...data },
     update: data,
   });
+
+  // Money event — mobile premium unlock, server-side, keyed to the DB user id
+  // (RC app_user_id) so iOS/Android premium unifies with web Stripe on one
+  // person. Fire only on an activation (active/trialing), not on churn events.
+  if (sync.status === 'active' || sync.status === 'trialing') {
+    await trackWithUser(sync.userId, TRACKING_EVENTS.PREMIUM_ACTIVATED_MOBILE, {
+      provider: 'REVENUECAT',
+      status: sync.status,
+      eventType: event.type,
+      productId: sync.revenueCatProductId,
+    });
+  }
 
   return NextResponse.json({ ok: true });
 };

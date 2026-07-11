@@ -23,7 +23,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { TRACKING_EVENTS } from '@/constants';
 import { PostJobFormValues } from '@/types';
+import { useAnalytics } from '@/utils/analytics-client';
 import cn from '@/utils/cn';
 import DayRateInputs from './DayRateInputs';
 import LocationInput from './LocationInput';
@@ -62,6 +64,7 @@ const PostJobForm = ({
   onSaveDraft,
 }: PostJobFormProps) => {
   const router = useRouter();
+  const { track } = useAnalytics();
   const [descriptionContent, setDescriptionContent] = useState('');
   const [howToApplyContent, setHowToApplyContent] = useState('');
   const [drafting, setDrafting] = useState(false);
@@ -107,6 +110,14 @@ const PostJobForm = ({
   };
 
   const onSubmit = async (values: PostJobFormValues) => {
+    // Top of the paid-posting funnel — fired on every valid submit (both the
+    // sign-in-first path and the checkout path start the post flow here).
+    track(TRACKING_EVENTS.JOB_POST_STARTED, {
+      surface: 'web',
+      workMode: values.workMode ?? null,
+      ir35Signal: values.ir35Signal ?? null,
+    });
+
     // Anonymous (or not-yet-onboarded) poster: they've filled a valid form but
     // can't publish yet. Stash the draft and send them to sign in — they return
     // to the restored form and publish without re-typing. No wall to START.

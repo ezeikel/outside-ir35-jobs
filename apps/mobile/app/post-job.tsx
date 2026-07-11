@@ -13,7 +13,9 @@ import FormField from "@/components/FormField";
 import DayRateField from "@/components/post/DayRateField";
 import PostLocationField from "@/components/post/PostLocationField";
 import RichTextField from "@/components/RichTextField";
+import { ANALYTICS_EVENTS } from "@/constants/analytics";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAnalytics } from "@/lib/analytics";
 import {
   createJobPaymentIntent,
   type PostJobInput,
@@ -57,6 +59,7 @@ const PostJobScreen = () => {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
+  const { trackEvent } = useAnalytics();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
   // Rich-text + picker fields live outside the TanStack form (the editor is
@@ -165,6 +168,12 @@ const PostJobScreen = () => {
         return;
       }
       setRateError(null);
+
+      // Native paid-listing funnel entry — the PaymentSheet flow begins here.
+      trackEvent(ANALYTICS_EVENTS.JOB_POST_STARTED_MOBILE, {
+        workMode,
+        ir35Signal,
+      });
 
       post.mutate({
         companyName: value.companyName.trim(),

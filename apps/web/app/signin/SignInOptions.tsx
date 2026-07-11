@@ -11,6 +11,8 @@ import { signIn } from 'next-auth/react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { TRACKING_EVENTS } from '@/constants';
+import { useAnalytics } from '@/utils/analytics-client';
 
 // The canonical web sign-in surface (mirrors the mobile /signin screen + the
 // PTP / Chunky Crayon pattern): Google → Apple → Facebook OAuth, then an email
@@ -38,12 +40,27 @@ const SignInOptions = ({
   const [email, setEmail] = useState('');
   const [sending, setSending] = useState(false);
   const emailValid = EMAIL_RE.test(email.trim());
+  const { track } = useAnalytics();
 
   const sendMagicLink = async () => {
     if (!emailValid || sending) return;
     setSending(true);
+    track(TRACKING_EVENTS.SIGNIN_STARTED, {
+      method: 'magic_link',
+      location: 'signin_page',
+    });
     // NextAuth Resend provider — redirects to the verify-request page on send.
     await signIn('resend', { email: email.trim(), callbackUrl });
+  };
+
+  // OAuth start: fire the funnel event, then hand off to NextAuth (which
+  // redirects the browser to the provider).
+  const startOAuth = (
+    provider: 'google' | 'apple' | 'facebook',
+    method: 'google' | 'apple' | 'facebook',
+  ) => {
+    track(TRACKING_EVENTS.SIGNIN_STARTED, { method, location: 'signin_page' });
+    void signIn(provider, { callbackUrl });
   };
 
   return (
@@ -53,7 +70,7 @@ const SignInOptions = ({
           type="button"
           variant="outline"
           className="h-12 justify-center gap-3"
-          onClick={() => signIn('google', { callbackUrl })}
+          onClick={() => startOAuth('google', 'google')}
         >
           <FontAwesomeIcon icon={faGoogle} className="text-[#EA4335]" />
           Continue with Google
@@ -64,7 +81,7 @@ const SignInOptions = ({
         <Button
           type="button"
           className="h-12 justify-center gap-3 bg-black text-white hover:bg-black/90"
-          onClick={() => signIn('apple', { callbackUrl })}
+          onClick={() => startOAuth('apple', 'apple')}
         >
           <FontAwesomeIcon icon={faApple} />
           Continue with Apple
@@ -75,7 +92,7 @@ const SignInOptions = ({
         <Button
           type="button"
           className="h-12 justify-center gap-3 bg-[#1877F2] text-white hover:bg-[#1877F2]/90"
-          onClick={() => signIn('facebook', { callbackUrl })}
+          onClick={() => startOAuth('facebook', 'facebook')}
         >
           <FontAwesomeIcon icon={faFacebookF} />
           Continue with Facebook

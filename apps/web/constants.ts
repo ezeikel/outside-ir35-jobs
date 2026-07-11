@@ -1,4 +1,49 @@
-// eslint-disable-next-line import-x/prefer-default-export
+/**
+ * Header the client fetch forwards so a server-side track() can attribute a guest
+ * (not-signed-in) event to the SAME PostHog person as the browser events, rather
+ * than collapsing every guest onto the shared 'anonymous' distinct_id. Defined
+ * here — in a directive-free module imported by both client and server — to avoid
+ * importing across the 'use client' / 'server-only' boundary.
+ */
+export const POSTHOG_DISTINCT_ID_HEADER = 'x-ph-distinct-id';
+
+/**
+ * Analytics tracking events for Outside IR35 Jobs.
+ *
+ * Naming convention: category_action (snake_case) — lets PostHog filter by prefix
+ * (all "job_post_*", all "subscription_*"). Web + mobile share the one PostHog
+ * project; the mobile catalog (apps/mobile/constants/analytics.ts) copies the
+ * exact string values for any event fired on both surfaces so funnels unify.
+ */
+export const TRACKING_EVENTS = {
+  // ===== AUTHENTICATION =====
+  SIGNIN_STARTED: 'signin_started', // Clicked an OAuth button or submitted the magic-link
+  AUTH_SIGN_IN_COMPLETED: 'auth_sign_in_completed', // Session resolved (identify happens here)
+
+  // ===== ONBOARDING =====
+  ONBOARDING_ROLE_SELECTED: 'onboarding_role_selected', // Picked JOB_SEEKER vs JOB_POSTER
+
+  // ===== JOB SEARCH & SAVE =====
+  JOB_SEARCH_PERFORMED: 'job_search_performed', // Ran a filtered/semantic board search
+  JOB_SAVED: 'job_saved', // Bookmarked a job
+  SEARCH_SAVED: 'search_saved', // Saved a search (top of the alerts funnel)
+  JOB_ALERTS_ENABLED: 'job_alerts_enabled', // Toggled email alerts on a saved search
+
+  // ===== APPLICATION (core contractor conversion) =====
+  APPLICATION_SUBMITTED: 'application_submitted', // Applied to a contract
+
+  // ===== SUBSCRIPTION (contractor premium, Stripe) =====
+  SUBSCRIPTION_CHECKOUT_STARTED: 'subscription_checkout_started', // Clicked Subscribe → Stripe
+  SUBSCRIPTION_ACTIVATED: 'subscription_activated', // Stripe sub active (server, money event)
+  SUBSCRIPTION_CANCELLED: 'subscription_cancelled', // Stripe sub cancelled/expired (server)
+  PREMIUM_ACTIVATED_MOBILE: 'premium_activated_mobile', // RevenueCat premium unlock (server)
+
+  // ===== JOB POSTING (paid listing funnel) =====
+  JOB_POST_STARTED: 'job_post_started', // Submitted the post-a-contract form
+  JOB_POST_CHECKOUT_STARTED: 'job_post_checkout_started', // Stripe checkout session created
+  JOB_POST_PUBLISHED: 'job_post_published', // Payment confirmed → listing live (server, revenue)
+} as const;
+
 export const DUMMY_JOBS = [
   {
     id: '1',

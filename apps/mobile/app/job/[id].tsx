@@ -18,8 +18,10 @@ import AIPitchUpsell from "@/components/AIPitchUpsell";
 import ContentColumn from "@/components/ContentColumn";
 import RichText from "@/components/RichText";
 import SaveHeart from "@/components/SaveHeart";
+import { ANALYTICS_EVENTS } from "@/constants/analytics";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSavedJobs } from "@/hooks/useSavedJobs";
+import { useAnalytics } from "@/lib/analytics";
 import {
   type ApplyEligibility,
   applyToJob,
@@ -154,6 +156,7 @@ const ApplyControl = ({
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
+  const { trackEvent } = useAnalytics();
   const [note, setNote] = useState("");
   // The note field grows with content (so the whole AI draft is readable) up to a
   // cap, then scrolls internally.
@@ -165,6 +168,11 @@ const ApplyControl = ({
   const mutation = useMutation({
     mutationFn: () => applyToJob(jobId, note),
     onSuccess: () => {
+      trackEvent(ANALYTICS_EVENTS.APPLICATION_SUBMITTED_MOBILE, {
+        jobId,
+        source,
+        hasMessage: Boolean(note.trim()),
+      });
       toast.success("Applied. The poster can see your verified profile.");
       void queryClient.invalidateQueries({ queryKey: ["job", jobId] });
     },

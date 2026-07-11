@@ -14,6 +14,25 @@ const nextConfig = {
       bodySizeLimit: '10mb',
     },
   },
+  // PostHog reverse-proxy: the browser sends analytics to /ingest (same origin,
+  // so ad-blockers can't null-route the PostHog domain), and we rewrite it to
+  // PostHog EU cloud. /ingest/static/* → the assets host, everything else →
+  // the ingestion host. instrumentation-client sets api_host:'/ingest' in prod.
+  // Sentry already owns tunnelRoute '/monitoring', so these paths don't collide.
+  async rewrites() {
+    return [
+      {
+        source: '/ingest/static/:path*',
+        destination: 'https://eu-assets.i.posthog.com/static/:path*',
+      },
+      {
+        source: '/ingest/:path*',
+        destination: 'https://eu.i.posthog.com/:path*',
+      },
+    ];
+  },
+  // PostHog uses a trailing-slash API; keep the rewrite intact.
+  skipTrailingSlashRedirect: true,
 };
 
 // sentry configuration options

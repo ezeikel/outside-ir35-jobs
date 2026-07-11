@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { toast } from "sonner-native";
+import { ANALYTICS_EVENTS } from "@/constants/analytics";
 import {
   type AuthUser,
   getAuthMe,
@@ -22,6 +23,7 @@ import {
   testLogin,
   verifyMagicLink,
 } from "@/lib/api-auth";
+import { useAnalytics } from "@/lib/analytics";
 import { clearSession, getSessionToken, setSession } from "@/lib/auth";
 import { registerForPush } from "@/lib/push";
 import { initializeRevenueCat } from "@/lib/revenuecat";
@@ -69,6 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<AuthUser | null>(null);
   const queryClient = useQueryClient();
+  const { identify, trackEvent, reset } = useAnalytics();
 
   // Configure the Google SDK once. webClientId is the OAuth Web client (the one
   // that mints the idToken our server verifies); iosClientId is the native iOS
@@ -119,11 +122,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     async (res: OAuthSignInResponse) => {
       await setSession(res.sessionToken, res.user.id);
       setUser(res.user);
+      // distinct_id = the DB user id (the SAME id web uses) so web↔mobile and
+      // guest→account collapse onto one PostHog person. Then the funnel event.
+      identify(res.user.id, {
+        email: res.user.email,
+        role: res.user.role,
+        onboarded: res.user.onboarded,
+      });
+      trackEvent(ANALYTICS_EVENTS.SIGNIN_COMPLETED_MOBILE, {
+        role: res.user.role,
+        isNewUser: !res.user.onboarded,
+      });
       // Authed data (applications, saved searches, premium) must refetch now
       // that we have a session.
       void queryClient.invalidateQueries();
     },
-    [queryClient],
+    [queryClient, identify, trackEvent],
   );
 
   const signInWithGoogleHandler =
@@ -279,13 +293,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = useCallback(async () => {
     await clearSession();
     setUser(null);
+    // Clear PostHog identity so the next user isn't merged into the old person.
+    reset();
     try {
       await GoogleSignin.signOut();
     } catch {
       // best-effort — local session is already cleared
     }
     void queryClient.invalidateQueries();
-  }, [queryClient]);
+  }, [queryClient, reset]);
 
   return (
     <AuthContext.Provider

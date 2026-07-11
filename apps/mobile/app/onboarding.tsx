@@ -2,7 +2,9 @@ import { useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import OnboardingCarousel from "@/components/Onboarding/OnboardingCarousel";
 import OnboardingPaywall from "@/components/Onboarding/OnboardingPaywall";
+import { ANALYTICS_EVENTS } from "@/constants/analytics";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAnalytics } from "@/lib/analytics";
 import { type OnboardingInput, submitOnboarding } from "@/lib/api-account";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 
@@ -19,6 +21,7 @@ import { useOnboardingStore } from "@/stores/onboardingStore";
 const OnboardingScreen = () => {
   const router = useRouter();
   const { isAuthenticated, refreshAuth } = useAuth();
+  const { trackEvent } = useAnalytics();
   const complete = useOnboardingStore((s) => s.complete);
   const setPendingRole = useOnboardingStore((s) => s.setPendingRole);
   const clearPendingRole = useOnboardingStore((s) => s.clearPendingRole);
@@ -38,6 +41,10 @@ const OnboardingScreen = () => {
   // paywall; everyone else goes straight to the board.
   const onPickRole = useCallback(
     async (input: OnboardingInput) => {
+      trackEvent(ANALYTICS_EVENTS.ONBOARDING_ROLE_SELECTED, {
+        role: input.role,
+        posterType: input.role === "JOB_POSTER" ? input.posterType : null,
+      });
       if (isAuthenticated) {
         await submitOnboarding(input);
         await refreshAuth();
@@ -48,7 +55,14 @@ const OnboardingScreen = () => {
       if (input.role === "JOB_SEEKER") setShowPaywall(true);
       else enterApp();
     },
-    [isAuthenticated, refreshAuth, setPendingRole, clearPendingRole, enterApp],
+    [
+      isAuthenticated,
+      refreshAuth,
+      setPendingRole,
+      clearPendingRole,
+      enterApp,
+      trackEvent,
+    ],
   );
 
   if (showPaywall) return <OnboardingPaywall onContinue={enterApp} />;
