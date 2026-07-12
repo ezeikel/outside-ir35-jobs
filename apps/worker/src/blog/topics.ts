@@ -179,4 +179,251 @@ export const BLOG_TOPICS: BlogTopic[] = [
     keywords: ['record keeping', 'limited company', 'accounts', 'HMRC'],
     dataBacked: false,
   },
+
+  // --- Seed top-up (extends the runway for daily generation; the
+  //     dynamic-topics engine takes over once even these are exhausted) ---
+
+  // IR35 guidance (disclaimer required, primary sources)
+  {
+    topic:
+      'How the off-payroll rules changed in April 2021 for the private sector',
+    category: 'ir35-guidance',
+    keywords: ['off-payroll', 'April 2021', 'private sector', 'IR35 reform'],
+    dataBacked: false,
+  },
+  {
+    topic:
+      'What happens if a client disagrees with your IR35 status determination',
+    category: 'ir35-guidance',
+    keywords: [
+      'status disagreement',
+      'client-led disagreement process',
+      'SDS',
+      'IR35',
+    ],
+    dataBacked: false,
+  },
+  {
+    topic: 'The client-led disagreement process explained for contractors',
+    category: 'ir35-guidance',
+    keywords: [
+      'disagreement process',
+      'SDS challenge',
+      'end client',
+      'off-payroll',
+    ],
+    dataBacked: false,
+  },
+  {
+    topic: 'Reasonable care: what an end client must do when assessing IR35',
+    category: 'ir35-guidance',
+    keywords: ['reasonable care', 'end client', 'blanket assessment', 'IR35'],
+    dataBacked: false,
+  },
+  {
+    topic: 'Blanket IR35 determinations and why they carry risk for clients',
+    category: 'ir35-guidance',
+    keywords: [
+      'blanket determination',
+      'role-based',
+      'reasonable care',
+      'IR35',
+    ],
+    dataBacked: false,
+  },
+  {
+    topic: 'Control as an IR35 factor: what, how, when and where you work',
+    category: 'ir35-guidance',
+    keywords: ['control', 'IR35 factors', 'employment status', 'supervision'],
+    dataBacked: false,
+  },
+  {
+    topic: 'Part and parcel of the organisation as an employment-status factor',
+    category: 'ir35-guidance',
+    keywords: [
+      'part and parcel',
+      'employment status',
+      'IR35 factors',
+      'integration',
+    ],
+    dataBacked: false,
+  },
+  {
+    topic: 'Financial risk and being in business on your own account for IR35',
+    category: 'ir35-guidance',
+    keywords: [
+      'financial risk',
+      'in business on your own account',
+      'IR35',
+      'contractor',
+    ],
+    dataBacked: false,
+  },
+  {
+    topic: 'What a deemed employment payment is under the off-payroll rules',
+    category: 'ir35-guidance',
+    keywords: ['deemed employment payment', 'off-payroll', 'fee-payer', 'PAYE'],
+    dataBacked: false,
+  },
+  {
+    topic: 'How the fee-payer handles tax and NIC on an inside-IR35 contract',
+    category: 'ir35-guidance',
+    keywords: ['fee-payer', 'PAYE', 'National Insurance', 'inside IR35'],
+    dataBacked: false,
+  },
+  {
+    topic: 'Overseas clients and the off-payroll rules: who determines status',
+    category: 'ir35-guidance',
+    keywords: ['overseas client', 'off-payroll', 'UK establishment', 'IR35'],
+    dataBacked: false,
+  },
+  {
+    topic: 'The Fair Work Agency and what it means for contractor rights',
+    category: 'ir35-guidance',
+    keywords: [
+      'Fair Work Agency',
+      'employment rights',
+      'contractor',
+      'enforcement',
+    ],
+    dataBacked: false,
+  },
+
+  // Contracting (general)
+  {
+    topic: 'How umbrella company take-home pay is calculated',
+    category: 'contracting',
+    keywords: [
+      'umbrella company',
+      'take-home pay',
+      'assignment rate',
+      'deductions',
+    ],
+    dataBacked: false,
+  },
+  {
+    topic:
+      'Reading a Key Information Document before you sign with an umbrella',
+    category: 'contracting',
+    keywords: [
+      'Key Information Document',
+      'umbrella company',
+      'assignment rate',
+      'contractor',
+    ],
+    dataBacked: false,
+  },
+  {
+    topic: 'Spotting a non-compliant umbrella or disguised remuneration scheme',
+    category: 'contracting',
+    keywords: [
+      'non-compliant umbrella',
+      'disguised remuneration',
+      'tax avoidance',
+      'contractor',
+    ],
+    dataBacked: false,
+  },
+  {
+    topic: 'Working through a recruitment agency as an outside-IR35 contractor',
+    category: 'contracting',
+    keywords: ['recruitment agency', 'outside IR35', 'contract chain', 'PSC'],
+    dataBacked: false,
+  },
+  {
+    topic: 'Understanding the contract chain: end client, agency and your PSC',
+    category: 'contracting',
+    keywords: ['contract chain', 'PSC', 'agency', 'fee-payer'],
+    dataBacked: false,
+  },
+  {
+    topic: 'Notice periods and termination clauses in contractor agreements',
+    category: 'contracting',
+    keywords: ['notice period', 'termination clause', 'contract', 'contractor'],
+    dataBacked: false,
+  },
+  {
+    topic: 'How to handle a gap between outside-IR35 contracts',
+    category: 'contracting',
+    keywords: ['contract gap', 'between contracts', 'contractor', 'cash flow'],
+    dataBacked: false,
+  },
+  {
+    topic: 'Writing an outside-IR35-friendly working practices summary',
+    category: 'contracting',
+    keywords: [
+      'working practices',
+      'outside IR35',
+      'contract review',
+      'evidence',
+    ],
+    dataBacked: false,
+  },
+
+  // Compliance (general)
+  {
+    topic: 'Corporation tax basics for a limited company contractor',
+    category: 'compliance',
+    keywords: [
+      'corporation tax',
+      'limited company',
+      'contractor',
+      'accounting',
+    ],
+    dataBacked: false,
+  },
+  {
+    topic: 'Dividends vs salary: how contractors typically pay themselves',
+    category: 'compliance',
+    keywords: ['dividends', 'salary', 'director', 'limited company'],
+    dataBacked: false,
+  },
+  {
+    topic: 'Allowable business expenses for outside-IR35 contractors',
+    category: 'compliance',
+    keywords: [
+      'business expenses',
+      'allowable expenses',
+      'limited company',
+      'HMRC',
+    ],
+    dataBacked: false,
+  },
+  {
+    topic: 'The Flat Rate VAT Scheme and whether it suits contractors',
+    category: 'compliance',
+    keywords: ['Flat Rate Scheme', 'VAT', 'limited company', 'contractor'],
+    dataBacked: false,
+  },
+  {
+    topic: 'Making Tax Digital: what it means for contractor bookkeeping',
+    category: 'compliance',
+    keywords: ['Making Tax Digital', 'MTD', 'bookkeeping', 'limited company'],
+    dataBacked: false,
+  },
+  {
+    topic: 'Confirmation statements and annual filings at Companies House',
+    category: 'compliance',
+    keywords: [
+      'confirmation statement',
+      'Companies House',
+      'annual filing',
+      'limited company',
+    ],
+    dataBacked: false,
+  },
+  {
+    topic: 'Choosing an accountant who understands contracting and IR35',
+    category: 'compliance',
+    keywords: ['contractor accountant', 'IR35', 'limited company', 'advice'],
+    dataBacked: false,
+  },
 ];
+
+/**
+ * The fixed seed-topic slugs (the `topic` string is the dedup + idempotency key
+ * across the whole pipeline and in Sanity `generationMeta.topic`). The dynamic
+ * never-dry engine excludes these so it never re-proposes a hand-seeded topic.
+ */
+export const seedTopicSlugs = (): Set<string> =>
+  new Set(BLOG_TOPICS.map((t) => t.topic));

@@ -95,7 +95,24 @@ ABSOLUTE RULES — no exceptions:
    state a platform legal conclusion.
 6. Write in clear, practical British English for limited-company contractors. Use
    ## and ### headings, short paragraphs, and lists. 700-1100 words. No emojis.
-   Do not use em-dashes.
+   Do not use em-dashes anywhere (use a full stop, a colon, parentheses, or a
+   middot); en-dashes in numeric ranges like "£100-£200" are fine.
+7. This is EDUCATION, not advice. Explain how the rules work in general; never
+   tell the reader their own IR35 status, their own tax position, or what they
+   personally should do. IR35 status is fact-specific and depends on the actual
+   working practices, so point readers to a qualified specialist (an IR35 contract
+   reviewer, a contractor accountant) and, on employment rights, to the Fair Work
+   Agency, rather than concluding for them.
+8. NEVER fabricate. Do not invent statistics, percentages, survey figures, case
+   names, tribunal outcomes, dates, or day-rate numbers. Only cite a statistic or
+   a case (e.g. PGMOL) if it is real and you can attribute it to a named primary
+   source; if you are unsure, describe the principle in words instead of quoting a
+   number. Day-rate figures may ONLY come from the live board data supplied below.
+9. Encourage internal linking: where it is natural, refer the reader to related
+   guides on this site and to the live outside-IR35 job listings and day-rate
+   pages, using relative markdown links (for example [browse outside-IR35
+   contracts](/jobs) or [day-rate benchmarks](/day-rates)). Do not invent slugs
+   for specific articles; only link to sections you are confident exist.
 
 When the topic is IR35 guidance, the FINAL paragraph MUST be exactly this
 disclaimer (verbatim):
