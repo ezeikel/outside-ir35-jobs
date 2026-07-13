@@ -7,7 +7,7 @@ const Footer = () => (
       <p className="flex items-center gap-2">
         <BrandMark className="h-5 w-auto shrink-0" />
         <span>
-          © {new Date().getFullYear()} Chewy Bytes Limited. outsideir35jobs.com
+          © {new Date().getFullYear()} Outside IR35 Jobs. outsideir35jobs.com
         </span>
       </p>
       <nav>
