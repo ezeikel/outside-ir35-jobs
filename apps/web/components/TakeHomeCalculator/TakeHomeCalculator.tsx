@@ -7,7 +7,9 @@ import { TRACKING_EVENTS } from '@/constants';
 import {
   calculateTakeHome,
   DEFAULT_SALARY,
+  DEFAULT_TAX_YEAR,
   TAKE_HOME_CAVEATS,
+  taxConstants,
 } from '@/lib/tax/takeHome';
 import { useAnalytics } from '@/utils/analytics-client';
 import cn from '@/utils/cn';
@@ -22,54 +24,101 @@ const parseNum = (s: string): number | undefined => {
   return Number.isFinite(n) && n >= 0 ? n : undefined;
 };
 
+// Current-year figures for labels (dividend allowance, sensible salary cap).
+const C = taxConstants(DEFAULT_TAX_YEAR);
+// A sensible top for the salary slider: the point above which extra salary is
+// taxed at the higher NI+income rates and stops being efficient vs dividends.
+const SALARY_SLIDER_MAX = C.UEL; // £50,270
+
 type Props = {
   className?: string;
-  /** Compact = hero variant (no "how it works" footer). */
+  /** Compact = hero variant (tighter, breakdown collapsed by default). */
   compact?: boolean;
 };
 
 /**
- * Live UK outside-IR35 take-home estimator. Recomputes as you type via the
- * verified tax lib (lib/tax/takeHome — unit-tested). The headline take-home
- * updates instantly; a settled-value analytics event (CALCULATOR_USED) captures
- * what rate the visitor modelled, which is a direct market-intelligence signal
- * for day-rate benchmarking. This is an estimate — the caveats are shown.
+ * Interactive UK outside-IR35 take-home estimator. The headline take-home
+ * updates live as you tune the levers a contractor actually controls:
+ *  - day rate + days worked (the contract),
+ *  - director salary (slider £0 → £50,270),
+ *  - dividends drawn (slider £0 → max distributable) — leave profit in the
+ *    company or take it all,
+ *  - annual company expenses.
+ * All maths comes from the verified, unit-tested tax lib (lib/tax/takeHome),
+ * keyed to the current tax year. A settled-value analytics event
+ * (CALCULATOR_USED) captures what rate the visitor modelled — a direct
+ * day-rate-benchmark signal. This is an estimate; the caveats are shown.
  */
 const TakeHomeCalculator = ({ className, compact = false }: Props) => {
   const { track } = useAnalytics();
 
-  // Sensible defaults so the widget shows a real number on first paint (this is
-  // the "wow" — an instant, credible figure, not an empty form).
+  // Sensible defaults so the widget shows a real, credible number on first paint.
   const [dayRateStr, setDayRateStr] = useState('500');
   const [daysStr, setDaysStr] = useState('220');
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [salaryStr, setSalaryStr] = useState(String(DEFAULT_SALARY));
+  const [salary, setSalary] = useState(DEFAULT_SALARY);
   const [expensesStr, setExpensesStr] = useState('');
+  // Dividend control: 'all' auto-distributes every penny of post-tax profit
+  // (the common case); 'custom' lets you slide how much to actually draw.
+  const [divMode, setDivMode] = useState<'all' | 'custom'>('all');
+  const [customDividends, setCustomDividends] = useState(0);
+  const [showBreakdown, setShowBreakdown] = useState(!compact);
 
   const dayRate = parseNum(dayRateStr) ?? 0;
   const daysWorked = parseNum(daysStr) ?? 0;
-  const salary = parseNum(salaryStr);
   const expenses = parseNum(expensesStr);
+
+  // The "take everything" result — its `dividends` is the max the slider allows
+  // (i.e. the full distributable reserves for the current inputs).
+  const maxResult = useMemo(
+    () => calculateTakeHome({ dayRate, daysWorked, salary, expenses }),
+    [dayRate, daysWorked, salary, expenses],
+  );
+  const maxDividends = maxResult.dividends;
+
+  // Keep the custom slider within the current max as inputs change (e.g. a lower
+  // day rate shrinks the pool). Clamp, don't reset, so dragging feels stable.
+  useEffect(() => {
+    setCustomDividends((v) => Math.min(v, Math.round(maxDividends)));
+  }, [maxDividends]);
+
+  // When you first switch to custom mode, start from the current max so the
+  // headline doesn't jump — you then slide down from "take all".
+  const enterCustom = () => {
+    setCustomDividends(Math.round(maxDividends));
+    setDivMode('custom');
+  };
 
   const result = useMemo(
     () =>
-      calculateTakeHome({
-        dayRate,
-        daysWorked,
-        // Only pass advanced fields when the section is open, so a stray value
-        // left behind doesn't silently affect the headline number.
-        salary: showAdvanced ? salary : undefined,
-        expenses: showAdvanced ? expenses : undefined,
-      }),
-    [dayRate, daysWorked, salary, expenses, showAdvanced],
+      divMode === 'all'
+        ? maxResult
+        : calculateTakeHome({
+            dayRate,
+            daysWorked,
+            salary,
+            expenses,
+            dividends: customDividends,
+          }),
+    [
+      divMode,
+      maxResult,
+      dayRate,
+      daysWorked,
+      salary,
+      expenses,
+      customDividends,
+    ],
   );
 
-  // Debounced market-intelligence event: fire once the inputs settle (800ms
-  // after the last change), not on every keystroke. Skip empty/zero states.
+  // Money left in the company (undrawn profit) — real money the business keeps,
+  // just not personal take-home. Surfaced because contractors think about it.
+  const retainedInCompany = Math.max(0, maxDividends - result.dividends);
+
+  // Debounced market-intelligence event: fire once inputs settle. Skip empty.
   const lastTracked = useRef<string>('');
   useEffect(() => {
     if (dayRate <= 0 || daysWorked <= 0) return;
-    const key = `${dayRate}|${daysWorked}|${showAdvanced ? salary : ''}|${showAdvanced ? expenses : ''}`;
+    const key = `${dayRate}|${daysWorked}|${salary}|${expenses ?? ''}|${divMode}|${result.dividends}`;
     if (key === lastTracked.current) return;
     const id = setTimeout(() => {
       lastTracked.current = key;
@@ -79,8 +128,8 @@ const TakeHomeCalculator = ({ className, compact = false }: Props) => {
         revenue: result.revenue,
         takeHome: result.takeHome,
         retentionRatePct: Math.round(result.retentionRate * 100),
-        salary: showAdvanced ? (salary ?? null) : null,
-        expenses: showAdvanced ? (expenses ?? null) : null,
+        salary,
+        expenses: expenses ?? null,
       });
     }, 800);
     return () => clearTimeout(id);
@@ -89,21 +138,38 @@ const TakeHomeCalculator = ({ className, compact = false }: Props) => {
     daysWorked,
     salary,
     expenses,
-    showAdvanced,
+    divMode,
+    result.dividends,
     result.revenue,
     result.takeHome,
     result.retentionRate,
     track,
   ]);
 
-  const rows: { label: string; value: string; muted?: boolean }[] = [
+  const rows: { label: string; value: string; sub?: string }[] = [
     { label: 'Company revenue', value: fmt(result.revenue) },
+    ...(result.expenses > 0
+      ? [{ label: 'Expenses', value: `− ${fmt(result.expenses)}` }]
+      : []),
     { label: 'Corporation tax', value: `− ${fmt(result.corporationTax)}` },
     {
-      label: 'Income tax + NI',
-      value: `− ${fmt(result.incomeTaxSalary + result.employeeNI)}`,
+      label: 'Salary income tax + NI',
+      value: `− ${fmt(result.incomeTaxSalary + result.employeeNI + result.employerNI)}`,
     },
-    { label: 'Dividend tax', value: `− ${fmt(result.dividendTax)}` },
+    {
+      label: 'Dividend tax',
+      value: `− ${fmt(result.dividendTax)}`,
+      sub: `${fmt(result.dividends)} drawn · first ${fmt(C.DIVIDEND_ALLOWANCE)} tax-free`,
+    },
+    ...(retainedInCompany > 0
+      ? [
+          {
+            label: 'Left in the company',
+            value: fmt(retainedInCompany),
+            sub: 'Undrawn profit. Still your business’s money.',
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -122,6 +188,7 @@ const TakeHomeCalculator = ({ className, compact = false }: Props) => {
         </p>
       </div>
 
+      {/* Contract inputs */}
       <div className="mt-6 grid grid-cols-2 gap-4">
         <div className="grid gap-2">
           <Label htmlFor="calc-day-rate">Day rate</Label>
@@ -151,50 +218,96 @@ const TakeHomeCalculator = ({ className, compact = false }: Props) => {
         </div>
       </div>
 
-      {showAdvanced ? (
-        <div className="mt-4 grid grid-cols-2 gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="calc-salary">Director salary</Label>
-            <div className="relative">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                £
-              </span>
-              <Input
-                id="calc-salary"
-                inputMode="numeric"
-                className="pl-7"
-                value={salaryStr}
-                onChange={(e) => setSalaryStr(e.target.value)}
-                placeholder={String(DEFAULT_SALARY)}
-              />
-            </div>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="calc-expenses">Expenses a year</Label>
-            <div className="relative">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                £
-              </span>
-              <Input
-                id="calc-expenses"
-                inputMode="numeric"
-                className="pl-7"
-                value={expensesStr}
-                onChange={(e) => setExpensesStr(e.target.value)}
-                placeholder="0"
-              />
-            </div>
-          </div>
+      {/* Salary slider */}
+      <div className="mt-5 grid gap-1.5">
+        <div className="flex items-baseline justify-between">
+          <Label htmlFor="calc-salary">Director salary</Label>
+          <span className="font-display text-lg text-foreground">
+            {fmt(salary)}
+          </span>
         </div>
-      ) : null}
+        <input
+          id="calc-salary"
+          type="range"
+          min={0}
+          max={SALARY_SLIDER_MAX}
+          step={10}
+          value={salary}
+          onChange={(e) => setSalary(Number(e.target.value))}
+          className="oir35-range"
+          aria-label="Director salary"
+        />
+        <p className="text-xs text-muted-foreground">
+          {salary === DEFAULT_SALARY
+            ? 'The usual low-salary split (matches the personal allowance).'
+            : salary < DEFAULT_SALARY
+              ? 'Below the personal allowance.'
+              : 'Above the NI threshold, so extra salary is taxed.'}
+        </p>
+      </div>
 
-      <button
-        type="button"
-        onClick={() => setShowAdvanced((v) => !v)}
-        className="mt-3 text-xs font-medium text-link hover:underline"
-      >
-        {showAdvanced ? 'Hide' : 'Adjust'} salary and expenses
-      </button>
+      {/* Dividend control */}
+      <div className="mt-5 grid gap-1.5">
+        <div className="flex items-baseline justify-between">
+          <Label htmlFor="calc-dividends">Dividends drawn</Label>
+          <span className="font-display text-lg text-foreground">
+            {fmt(result.dividends)}
+          </span>
+        </div>
+        {divMode === 'all' ? (
+          <button
+            type="button"
+            onClick={enterCustom}
+            className="justify-self-start text-xs font-medium text-link hover:underline"
+          >
+            Taking all profit as dividends. Draw less instead?
+          </button>
+        ) : (
+          <>
+            <input
+              id="calc-dividends"
+              type="range"
+              min={0}
+              max={Math.max(1, Math.round(maxDividends))}
+              step={10}
+              value={Math.min(customDividends, Math.round(maxDividends))}
+              onChange={(e) => setCustomDividends(Number(e.target.value))}
+              className="oir35-range"
+              aria-label="Dividends drawn"
+            />
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>
+                First {fmt(C.DIVIDEND_ALLOWANCE)} tax-free ({DEFAULT_TAX_YEAR})
+              </span>
+              <button
+                type="button"
+                onClick={() => setDivMode('all')}
+                className="font-medium text-link hover:underline"
+              >
+                Take all
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Expenses */}
+      <div className="mt-5 grid gap-2">
+        <Label htmlFor="calc-expenses">Company expenses a year</Label>
+        <div className="relative">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+            £
+          </span>
+          <Input
+            id="calc-expenses"
+            inputMode="numeric"
+            className="pl-7"
+            value={expensesStr}
+            onChange={(e) => setExpensesStr(e.target.value)}
+            placeholder="0"
+          />
+        </div>
+      </div>
 
       {/* Headline result — forest green = the money figure. */}
       <div className="mt-6 rounded-xl border border-verified/30 bg-verified-muted/40 p-5">
@@ -209,26 +322,41 @@ const TakeHomeCalculator = ({ className, compact = false }: Props) => {
           <span className="font-semibold text-foreground">
             {Math.round(result.retentionRate * 100)}%
           </span>{' '}
-          of {fmt(result.revenue)} billed.
+          of {fmt(result.revenue)} billed
+          {retainedInCompany > 0
+            ? `, plus ${fmt(retainedInCompany)} kept in the company`
+            : ''}
+          .
         </p>
       </div>
 
-      {/* Breakdown */}
-      <dl className="mt-5 space-y-2 text-sm">
-        {rows.map((row) => (
-          <div key={row.label} className="flex justify-between">
-            <dt className="text-muted-foreground">{row.label}</dt>
-            <dd
-              className={cn(
-                'tabular-nums',
-                row.muted ? 'text-muted-foreground' : 'text-foreground',
-              )}
-            >
-              {row.value}
-            </dd>
-          </div>
-        ))}
-      </dl>
+      {/* Breakdown (collapsible) */}
+      <button
+        type="button"
+        onClick={() => setShowBreakdown((v) => !v)}
+        className="mt-4 text-xs font-medium text-link hover:underline"
+      >
+        {showBreakdown ? 'Hide breakdown' : 'Show breakdown'}
+      </button>
+      {showBreakdown ? (
+        <dl className="mt-3 space-y-2 text-sm">
+          {rows.map((row) => (
+            <div key={row.label} className="flex justify-between gap-4">
+              <dt className="text-muted-foreground">
+                {row.label}
+                {row.sub ? (
+                  <span className="block text-xs text-muted-foreground/70">
+                    {row.sub}
+                  </span>
+                ) : null}
+              </dt>
+              <dd className="shrink-0 tabular-nums text-foreground">
+                {row.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
 
       {!compact ? (
         <p className="mt-6 border-t border-border pt-4 text-xs leading-relaxed text-muted-foreground">

@@ -9,9 +9,15 @@ import { calculateTakeHome, DEFAULT_SALARY } from './takeHome';
 const near = (actual: number, expected: number, tol = 0.01) =>
   expect(Math.abs(actual - expected)).toBeLessThanOrEqual(tol);
 
-describe('calculateTakeHome — reconciled worked examples', () => {
+describe('calculateTakeHome — reconciled worked examples (2025/26)', () => {
+  // Pinned to 2025/26 (dividend rates 8.75% / 33.75%) — the year these fixtures
+  // were reconciled against. Kept as a regression anchor for that year's block.
   it('Example 1: £500/day × 220 days, default salary → £71,412.53 take-home', () => {
-    const r = calculateTakeHome({ dayRate: 500, daysWorked: 220 });
+    const r = calculateTakeHome({
+      dayRate: 500,
+      daysWorked: 220,
+      taxYear: '2025/26',
+    });
     near(r.revenue, 110_000);
     near(r.employerNI, 1_135.5);
     near(r.profitBeforeCT, 96_294.5);
@@ -27,7 +33,11 @@ describe('calculateTakeHome — reconciled worked examples', () => {
   });
 
   it('Example 2: £650/day × 230 days (PA taper + higher-rate dividends) → £87,017.54', () => {
-    const r = calculateTakeHome({ dayRate: 650, daysWorked: 230 });
+    const r = calculateTakeHome({
+      dayRate: 650,
+      daysWorked: 230,
+      taxYear: '2025/26',
+    });
     near(r.revenue, 149_500);
     near(r.employerNI, 1_135.5);
     near(r.profitBeforeCT, 135_794.5);
@@ -43,23 +53,66 @@ describe('calculateTakeHome — reconciled worked examples', () => {
   });
 });
 
-describe('calculateTakeHome — edge fixtures', () => {
-  it('small-profits only: £300 × 100 → £24,657.42', () => {
+describe('calculateTakeHome — 2026/27 (dividend rates rose to 10.75% / 35.75%)', () => {
+  // The current default year. CT / NI / income-tax figures are IDENTICAL to
+  // 2025/26; only the dividend tax (and therefore take-home) changes. These
+  // values are computed from the verified 2026/27 constants and satisfy the
+  // reconciliation invariant (revenue − takeHome === totalTaxAndNI).
+  it('Example 1: £500/day × 220 days, default salary → £69,932.00 (was £71,412.53)', () => {
+    const r = calculateTakeHome({ dayRate: 500, daysWorked: 220 }); // default = 2026/27
+    expect(r.taxYear).toBe('2026/27');
+    near(r.corporationTax, 21_768.04); // unchanged from 2025/26
+    near(r.dividends, 74_526.46); // unchanged
+    near(r.dividendTax, 17_164.46); // ↑ (the +2pt dividend rate rise)
+    near(r.takeHome, 69_932.0);
+    near(r.totalTaxAndNI, 40_068.0);
+    // Invariant: revenue − takeHome === total tax + NI (no expenses here).
+    near(r.revenue - r.takeHome, r.totalTaxAndNI);
+  });
+
+  it('Example 2: £650/day × 230 days → £84,956.36 (PA taper + higher-rate divs)', () => {
+    const r = calculateTakeHome({ dayRate: 650, daysWorked: 230 });
+    near(r.corporationTax, 32_235.54);
+    near(r.personalAllowance, 4_505.52);
+    near(r.incomeTaxSalary, 1_612.9);
+    near(r.dividendTax, 29_559.7);
+    near(r.takeHome, 84_956.36);
+  });
+
+  it('take-home is lower than 2025/26 for the same inputs (rates rose)', () => {
+    const y25 = calculateTakeHome({
+      dayRate: 500,
+      daysWorked: 220,
+      taxYear: '2025/26',
+    });
+    const y26 = calculateTakeHome({
+      dayRate: 500,
+      daysWorked: 220,
+      taxYear: '2026/27',
+    });
+    expect(y26.takeHome).toBeLessThan(y25.takeHome);
+    // Only dividend tax moved; the gap equals the extra dividend tax.
+    near(y25.takeHome - y26.takeHome, y26.dividendTax - y25.dividendTax);
+  });
+});
+
+describe('calculateTakeHome — edge fixtures (2026/27, current default)', () => {
+  it('small-profits only: £300 × 100 → £24,403.45', () => {
     const r = calculateTakeHome({ dayRate: 300, daysWorked: 100 });
     near(r.revenue, 30_000);
-    near(r.corporationTax, 3_095.96);
-    near(r.takeHome, 24_657.42);
+    near(r.corporationTax, 3_095.96); // 19% small-profits, unchanged
+    near(r.takeHome, 24_403.45);
   });
 
-  it('deep additional-rate: £1,500 × 250 → main-rate CT, PA fully lost, £187,030.00', () => {
+  it('deep additional-rate: £1,500 × 250 → main-rate CT, PA fully lost, £184,788.60', () => {
     const r = calculateTakeHome({ dayRate: 1_500, daysWorked: 250 });
     near(r.revenue, 375_000);
-    near(r.corporationTax, 90_323.63);
+    near(r.corporationTax, 90_323.63); // main rate, unchanged
     near(r.personalAllowance, 0); // fully tapered away
-    near(r.takeHome, 187_030.0);
+    near(r.takeHome, 184_788.6);
   });
 
-  it('arbitrary higher salary triggers the employee-NI path: salary £50,270 on £150k rev → £83,156.74', () => {
+  it('arbitrary higher salary triggers the employee-NI path: salary £50,270 on £150k rev → £81,725.53', () => {
     const r = calculateTakeHome({
       dayRate: 1_000,
       daysWorked: 150,
@@ -68,7 +121,7 @@ describe('calculateTakeHome — edge fixtures', () => {
     near(r.revenue, 150_000);
     expect(r.employeeNI).toBeGreaterThan(0); // salary above the primary threshold
     near(r.personalAllowance, 1_404.74);
-    near(r.takeHome, 83_156.74);
+    near(r.takeHome, 81_725.53);
   });
 });
 
