@@ -288,3 +288,36 @@
 .editor-preview a {
   @apply underline text-link mx-0.5 cursor-pointer;
 }
+
+/* Mapbox geocoder — make its box look like a shadcn Input (used by
+   MapboxLocationInput). The library ships its own CSS; these overrides align it
+   with the app's theme and let it sit flush inside the hero search pill. */
+.oir35-geocoder .mapboxgl-ctrl-geocoder {
+  @apply h-10 min-w-0 rounded-md border border-input bg-background font-sans text-sm shadow-none;
+}
+.oir35-geocoder .mapboxgl-ctrl-geocoder--input {
+  @apply h-10 rounded-md bg-transparent py-2 pr-8 text-sm text-foreground placeholder:text-muted-foreground;
+  padding-left: 2.5rem; /* room for the search icon */
+}
+.oir35-geocoder .mapboxgl-ctrl-geocoder--icon-search {
+  @apply left-2.5 top-1/2 fill-muted-foreground;
+  transform: translateY(-50%);
+}
+.oir35-geocoder .mapboxgl-ctrl-geocoder--icon-loading {
+  @apply top-1/2;
+  transform: translateY(-50%);
+}
+/* Inside the hero pill: transparent, borderless, white text on the video. */
+.oir35-geocoder--pill .mapboxgl-ctrl-geocoder,
+.oir35-geocoder--pill .mapboxgl-ctrl-geocoder--input {
+  @apply border-transparent bg-white;
+}
+.oir35-geocoder .suggestions-wrapper .suggestions {
+  @apply rounded-md border border-border bg-popover text-sm shadow-md;
+}
+.oir35-geocoder .suggestions-wrapper .suggestions > li > a {
+  @apply text-foreground hover:bg-accent;
+}
+.oir35-geocoder .suggestions-wrapper .suggestions > .active > a {
+  @apply bg-accent;
+}

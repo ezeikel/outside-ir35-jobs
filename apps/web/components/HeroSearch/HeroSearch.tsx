@@ -3,6 +3,7 @@
 import { useForm } from '@tanstack/react-form';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
+import MapboxLocationInput from '@/components/MapboxLocationInput/MapboxLocationInput';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TRACKING_EVENTS } from '@/constants';
@@ -68,12 +69,12 @@ const HeroSearch = () => {
 
       <form.Field name="location">
         {(field) => (
-          <Input
-            aria-label="Location"
-            className="flex-1 border-transparent bg-white text-foreground placeholder:text-muted-foreground sm:border-0 sm:bg-transparent sm:shadow-none sm:focus-visible:ring-0"
+          <MapboxLocationInput
+            className="oir35-geocoder--pill flex-1"
+            inputClassName="border-transparent bg-white text-foreground placeholder:text-muted-foreground"
             placeholder="Location (or remote)"
             value={field.state.value}
-            onChange={(e) => field.handleChange(e.target.value)}
+            onChange={(v) => field.handleChange(v)}
             onBlur={field.handleBlur}
           />
         )}
