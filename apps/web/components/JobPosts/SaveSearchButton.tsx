@@ -37,7 +37,7 @@ const SaveSearchButton = ({
   if (saved) {
     return (
       <p className="mt-3 text-sm text-muted-foreground">
-        Saved — we’ll email you new matches.{' '}
+        Saved. We’ll email you new matches.{' '}
         <Link href="/alerts" className="text-link hover:underline">
           Manage alerts
         </Link>

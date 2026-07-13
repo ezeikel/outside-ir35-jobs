@@ -239,7 +239,7 @@ const ContractorProfile = ({
             ) : (
               <p className="text-sm text-muted-foreground">
                 Add your IR35 / tax-investigation insurance to show it to
-                employers — a strong, honest trust signal.
+                employers: a strong, honest trust signal.
               </p>
             )}
             <IR35InsuranceForm
@@ -298,7 +298,7 @@ const ContractorProfile = ({
             <section className="rounded-lg border border-dashed border-border bg-card/50 p-5">
               <p className="text-sm font-medium">From your CV</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Processing your CV — your skills and experience will appear here
+                Processing your CV. Your skills and experience will appear here
                 shortly. Refresh in a moment if it doesn’t show.
               </p>
             </section>
@@ -313,7 +313,7 @@ const ContractorProfile = ({
           <div className="flex flex-col items-center gap-3 rounded-lg border border-border bg-card p-6">
             <CompletenessRing percent={pct} label="Pack complete" size={88} />
             <p className="text-center text-xs leading-relaxed text-muted-foreground">
-              Build your pack once. Share it with one click — no more re-sending
+              Build your pack once. Share it with one click. No more re-sending
               the same documents to every agency.
             </p>
           </div>

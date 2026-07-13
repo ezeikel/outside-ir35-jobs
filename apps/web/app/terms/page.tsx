@@ -4,7 +4,7 @@ import LegalPage, { H2, P, UL } from '@/components/Legal/LegalPage';
 import PageWrap from '@/components/PageWrap/PageWrap';
 
 export const metadata: Metadata = {
-  title: 'Terms and conditions — outsideir35jobs.com',
+  title: 'Terms and conditions · outsideir35jobs.com',
   description:
     'The terms and conditions for using outsideir35jobs.com, the UK outside-IR35 contract job board and contractor-identity platform.',
 };
@@ -34,7 +34,7 @@ const TermsPage = () => (
         IR35 status, through a Status Determination Statement (SDS). We never
         assert, verify, guarantee, or warrant that any role is “outside IR35”.
         Where a listing indicates an IR35 position, we present it as the
-        client’s own stated claim, attributed and dated — not as our
+        client’s own stated claim, attributed and dated, not as our
         determination. We surface objectively checkable facts (such as company
         and VAT registration verified against official registers) and the
         client’s claims; nothing on this service is tax or legal advice. You

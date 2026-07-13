@@ -34,7 +34,7 @@ const RecommendedJobs = ({ data }: { data: RecommendationResult }) => {
       {data.jobs.length === 0 ? (
         <p className="py-2 text-sm text-muted-foreground">
           No strong matches on the board right now. We’ll keep looking as new
-          contracts are listed —{' '}
+          contracts are listed.{' '}
           <Link href="/jobs" className="text-verified underline">
             browse all contracts
           </Link>

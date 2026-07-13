@@ -21,7 +21,7 @@ const AlertsPage = async () => {
           </h1>
           <p className="mt-2 text-muted-foreground">
             Searches you’ve saved. We email you new outside-IR35 contracts that
-            match — you can pause or delete any alert.
+            match. You can pause or delete any alert.
           </p>
         </header>
         <SavedSearches searches={searches} />

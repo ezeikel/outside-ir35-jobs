@@ -31,10 +31,10 @@ export const generateMetadata = async ({
 }): Promise<Metadata> => {
   const { skill: slug } = await params;
   const skill = await resolveSkill(slug);
-  if (!skill) return { title: 'Contracts — Outside IR35 Jobs' };
+  if (!skill) return { title: 'Contracts · Outside IR35 Jobs' };
   const name = skillDisplay(skill);
   return {
-    title: `${name} outside-IR35 contracts & day rates — Outside IR35 Jobs`,
+    title: `${name} outside-IR35 contracts & day rates · Outside IR35 Jobs`,
     description: `Live ${name} outside-IR35 contract roles and median day rates by IR35 position, aggregated on outsideir35jobs.com.`,
     alternates: { canonical: `/contracts/${slug}` },
   };
@@ -112,7 +112,7 @@ const SkillContractsPage = async ({
           <h2 className="text-2xl">Open {name} contracts</h2>
           {jobs.length === 0 ? (
             <p className="mt-3 text-sm text-muted-foreground">
-              No live {name} contracts right now —{' '}
+              No live {name} contracts right now.{' '}
               <Link href="/jobs" className="text-link hover:underline">
                 browse all outside-IR35 roles
               </Link>

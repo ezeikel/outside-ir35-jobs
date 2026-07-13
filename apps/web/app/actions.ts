@@ -1543,7 +1543,7 @@ export const sweepDocumentExpiry = async () => {
         pushToUser({
           userId: c.userId,
           title: 'A compliance document is expiring',
-          body: `Your ${DOC_EXPIRY_LABEL[c.type] ?? 'document'} is expiring soon — renew it to keep your profile current.`,
+          body: `Your ${DOC_EXPIRY_LABEL[c.type] ?? 'document'} is expiring soon. Renew it to keep your profile current.`,
           url: '/(tabs)/profile',
         }),
       ),

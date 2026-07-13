@@ -7,7 +7,7 @@ import Premium from '@/components/Premium/Premium';
 import { isPremium } from '@/lib/contractor/premium';
 
 export const metadata: Metadata = {
-  title: 'Premium — Outside IR35 Jobs',
+  title: 'Premium · Outside IR35 Jobs',
   description:
     'A business tool for limited-company contractors: unlimited job alerts, full day-rate data and profile prominence.',
 };

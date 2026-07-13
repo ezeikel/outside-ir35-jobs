@@ -75,7 +75,7 @@ const ApplyButton = ({
   ) {
     return (
       <p className="mt-5 rounded-md border border-verified/40 bg-card/50 p-3 text-center text-sm text-verified">
-        ✓ You’ve applied — the poster can see your verified profile.
+        ✓ You’ve applied. The poster can see your verified profile.
       </p>
     );
   }
@@ -112,7 +112,7 @@ const ApplyButton = ({
         {pending ? 'Applying…' : 'Apply with verified profile'}
       </Button>
       <p className="mt-2 text-center text-xs text-muted-foreground">
-        One click — share your verified compliance pack.
+        One click: share your verified compliance pack.
       </p>
     </div>
   );

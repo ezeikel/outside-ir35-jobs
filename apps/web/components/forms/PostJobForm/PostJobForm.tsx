@@ -207,7 +207,7 @@ const PostJobForm = ({
         ) : null}
         <p className="mb-2 text-xs text-muted-foreground">
           Drafts the description, how-to-apply and keywords from your title and
-          details. It never claims a role is outside IR35 — you set your IR35
+          details. It never claims a role is outside IR35. You set your IR35
           position below.
         </p>
         <TipTapEditor
@@ -362,8 +362,8 @@ const PostJobForm = ({
               />
               <span className="text-muted-foreground">
                 I confirm this reflects the client&rsquo;s stated IR35 position.
-                The platform does not determine, verify or warrant IR35 status —
-                the SDS is the client&rsquo;s legal responsibility.
+                The platform does not determine, verify or warrant IR35 status.
+                The SDS is the client&rsquo;s legal responsibility.
               </span>
             </label>
             <FormMessage />

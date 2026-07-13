@@ -4,7 +4,7 @@ import PageWrap from '@/components/PageWrap/PageWrap';
 import { getBlogPosts } from '@/lib/sanity/queries';
 
 export const metadata: Metadata = {
-  title: 'Outside IR35 blog — guides & contractor day-rate data',
+  title: 'Outside IR35 blog · guides & contractor day-rate data',
   description:
     'Practical guidance for UK limited-company contractors who want outside-IR35 work: IR35 explained, compliance, and day-rate market data. We never determine IR35 status.',
 };

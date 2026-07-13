@@ -198,7 +198,7 @@ const JobPost = async ({ id }: JobPostProps) => {
             <p className="mb-1 text-sm font-medium">Client checks</p>
             <VerifiedFactRow
               source="Companies House"
-              fact={`${job.companyName} — lookup`}
+              fact={`${job.companyName} · lookup`}
               status="none"
             />
             <p className="pt-2 text-xs leading-relaxed text-muted-foreground">

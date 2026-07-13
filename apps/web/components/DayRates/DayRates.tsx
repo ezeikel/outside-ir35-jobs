@@ -31,8 +31,8 @@ const DayRates = ({ benchmarks }: { benchmarks: DayRateBenchmark[] }) => {
           Contract day rates
         </h1>
         <p className="mt-3 text-muted-foreground">
-          Median UK day rates by skill, from contracts aggregated on this board
-          — split by the IR35 position each listing states. We never assert a
+          Median UK day rates by skill, from contracts aggregated on this board,
+          split by the IR35 position each listing states. We never assert a
           role’s IR35 status; we only report what the listing claims.
         </p>
       </header>
@@ -42,7 +42,7 @@ const DayRates = ({ benchmarks }: { benchmarks: DayRateBenchmark[] }) => {
           <p className="font-display text-2xl">Not enough data yet</p>
           <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
             We publish a day rate only once a skill has at least {MIN_SAMPLE}{' '}
-            live listings — so the numbers mean something. The board is still
+            live listings, so the numbers mean something. The board is still
             filling. Check back soon.
           </p>
           <Button asChild className="mt-6">
@@ -98,7 +98,7 @@ const DayRates = ({ benchmarks }: { benchmarks: DayRateBenchmark[] }) => {
             {totalSample === 1 ? '' : 's'} aggregated on this board, grouped by
             skill and the IR35 position the listing states. Day rates are
             midpoints of any stated range. This is a snapshot of current
-            listings, not a market authority — sanity-check against your own
+            listings, not a market authority. Sanity-check against your own
             sources.
           </p>
         </>

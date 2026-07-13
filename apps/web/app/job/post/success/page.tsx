@@ -40,7 +40,7 @@ const JobPostSuccessPage = async ({
         </h1>
         <p className="mx-auto mt-3 max-w-md text-muted-foreground">
           {!owned
-            ? 'Thanks — your payment is being processed.'
+            ? 'Thanks. Your payment is being processed.'
             : paid
               ? `“${job?.position}” is now published and searchable on the board.`
               : 'Thanks. Your listing will go live within a few moments, once payment is confirmed.'}

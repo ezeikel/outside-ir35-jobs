@@ -68,7 +68,7 @@ const VerifiedFactRow = ({
       />
       <div className="min-w-0 flex-1 text-sm leading-snug">
         <span className="font-medium text-foreground">{source}</span>
-        <span className="text-muted-foreground"> — </span>
+        <span className="text-muted-foreground"> · </span>
         <span className="text-foreground">{fact}</span>
         {checkedOn && status !== 'none' && (
           <span className="text-muted-foreground tabular">

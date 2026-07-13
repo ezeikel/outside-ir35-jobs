@@ -22,7 +22,7 @@ const CvProfile = ({ profile }: { profile: ParsedCvProfile }) => {
       <div className="mb-3 flex items-baseline justify-between gap-2">
         <p className="text-sm font-medium">From your CV</p>
         <p className="text-xs text-muted-foreground">
-          Self-reported — not verified by us
+          Self-reported · not verified by us
         </p>
       </div>
 

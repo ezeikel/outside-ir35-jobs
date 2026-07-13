@@ -114,7 +114,7 @@ const IR35InsuranceForm = ({ holds, provider, expiresAt }: Props) => {
       </div>
       <p className="text-xs text-muted-foreground">
         Self-declared. We show your provider and expiry to employers as a fact
-        you state — we don’t verify the policy or treat it as an IR35-status
+        you state. We don’t verify the policy or treat it as an IR35-status
         guarantee.
       </p>
       <div className="flex gap-2">

@@ -80,14 +80,14 @@ const Premium = ({
           Win and deliver more contracts
         </h1>
         <p className="mt-3 text-muted-foreground">
-          A business tool for limited-company contractors — unlimited alerts,
-          the full rate data, and a profile that stands out.
+          A business tool for limited-company contractors: unlimited alerts, the
+          full rate data, and a profile that stands out.
         </p>
       </header>
 
       {checkoutStatus === 'success' && !isActive ? (
         <p className="mb-6 rounded-md border border-border bg-card p-3 text-sm text-muted-foreground">
-          Thanks — your subscription is being activated. It’ll show as active
+          Thanks. Your subscription is being activated. It’ll show as active
           here within a moment.
         </p>
       ) : null}
@@ -130,7 +130,7 @@ const Premium = ({
             </div>
           ) : (
             <Button onClick={subscribe} disabled={pending}>
-              {pending ? 'Redirecting…' : 'Subscribe — £29/month'}
+              {pending ? 'Redirecting…' : 'Subscribe · £29/month'}
             </Button>
           )}
           {status === 'past_due' && !isActive ? (
@@ -156,7 +156,7 @@ const Premium = ({
       <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
         Billed monthly via Stripe; a VAT invoice is provided. Many contractors
         expense tools like this through their limited company as a legitimate
-        business cost — but deductibility depends on your circumstances, so
+        business cost, but deductibility depends on your circumstances, so
         please consult your accountant. We don’t provide tax advice.
       </p>
     </div>

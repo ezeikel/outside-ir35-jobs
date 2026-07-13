@@ -3,7 +3,7 @@ import LegalPage, { H2, P, UL } from '@/components/Legal/LegalPage';
 import PageWrap from '@/components/PageWrap/PageWrap';
 
 export const metadata: Metadata = {
-  title: 'Privacy policy — outsideir35jobs.com',
+  title: 'Privacy policy · outsideir35jobs.com',
   description:
     'How outsideir35jobs.com collects, uses, stores and protects your personal data, your lawful basis, retention, processors and your rights under UK GDPR.',
 };
@@ -39,29 +39,29 @@ const PrivacyPage = () => (
       <H2>What we collect</H2>
       <UL>
         <li>
-          <strong>Account details</strong> — your name and email address when
-          you sign in (via Google), and the role you choose at onboarding.
+          <strong>Account details</strong>: your name and email address when you
+          sign in (via Google), and the role you choose at onboarding.
         </li>
         <li>
-          <strong>Contractor profile</strong> — information you choose to
+          <strong>Contractor profile</strong>: information you choose to
           provide, including your limited company details (company name,
           registration number, VAT number) and uploaded documents (CV,
           certificate of incorporation, insurance certificates, right-to-work
           evidence).
         </li>
         <li>
-          <strong>Information extracted from your CV</strong> — when you upload
-          a CV we use AI to extract a structured summary of your skills and
+          <strong>Information extracted from your CV</strong>: when you upload a
+          CV we use AI to extract a structured summary of your skills and
           experience to help match you to contracts. We extract professional
           competency only and do not extract identity details such as your name,
           address or phone number from the CV.
         </li>
         <li>
-          <strong>Job postings</strong> — the content you submit if you post a
+          <strong>Job postings</strong>: the content you submit if you post a
           contract.
         </li>
         <li>
-          <strong>Technical data</strong> — basic logs and error reports needed
+          <strong>Technical data</strong>: basic logs and error reports needed
           to run and secure the service.
         </li>
       </UL>
@@ -70,20 +70,20 @@ const PrivacyPage = () => (
       <P>Under UK GDPR we rely on the following lawful bases:</P>
       <UL>
         <li>
-          <strong>Performance of a contract</strong> — to provide your account,
+          <strong>Performance of a contract</strong>: to provide your account,
           your profile, document storage, and job-matching features you ask for.
         </li>
         <li>
-          <strong>Legitimate interests</strong> — to operate, secure and improve
+          <strong>Legitimate interests</strong>: to operate, secure and improve
           the platform, and to surface relevant contracts to you. We balance
           this against your rights.
         </li>
         <li>
-          <strong>Legal obligation</strong> — where we must keep or disclose
-          data to comply with the law.
+          <strong>Legal obligation</strong>: where we must keep or disclose data
+          to comply with the law.
         </li>
         <li>
-          <strong>Consent</strong> — where we ask for it; you can withdraw
+          <strong>Consent</strong>: where we ask for it; you can withdraw
           consent at any time.
         </li>
       </UL>
@@ -95,7 +95,7 @@ const PrivacyPage = () => (
         registered and active) and, where available, HMRC’s “Check a UK VAT
         number” service (to confirm a VAT registration). We record only the
         result of these checks (for example, “verified” and the date). We never
-        assert a role’s IR35 status — only the end client can determine that.
+        assert a role’s IR35 status. Only the end client can determine that.
       </P>
 
       <H2>Where your data is stored and who processes it</H2>
@@ -106,24 +106,24 @@ const PrivacyPage = () => (
       <UL>
         <li>
           <strong>Neon</strong> (PostgreSQL database) and{' '}
-          <strong>Vercel</strong> (hosting) — core application data; servers in
+          <strong>Vercel</strong> (hosting): core application data; servers in
           the United States.
         </li>
         <li>
-          <strong>Cloudflare R2</strong> — secure, private storage for your
+          <strong>Cloudflare R2</strong>: secure, private storage for your
           uploaded documents (CV, certificates). These are never publicly
           accessible; they are served only to you via short-lived, signed links.
         </li>
         <li>
-          <strong>Anthropic and OpenAI</strong> — AI processing to extract your
+          <strong>Anthropic and OpenAI</strong>: AI processing to extract your
           CV profile and to power semantic search and matching.
         </li>
         <li>
-          <strong>Companies House and HMRC</strong> — to verify company and VAT
+          <strong>Companies House and HMRC</strong>: to verify company and VAT
           details you provide.
         </li>
         <li>
-          <strong>Google</strong> — sign-in.
+          <strong>Google</strong>: sign-in.
         </li>
       </UL>
       <P>

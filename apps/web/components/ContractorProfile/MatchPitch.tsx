@@ -110,7 +110,7 @@ const MatchPitch = ({ jobId }: { jobId: string }) => {
         {copied ? 'Copied' : 'Copy pitch'}
       </Button>
       <p className="mt-2 text-xs text-muted-foreground">
-        Based only on your CV — review and edit before sending.
+        Based only on your CV. Review and edit before sending.
       </p>
     </div>
   );

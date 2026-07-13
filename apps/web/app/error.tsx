@@ -27,8 +27,8 @@ export default function RouteError({
         Something went wrong
       </h1>
       <p className="mx-auto mt-3 max-w-md text-muted-foreground">
-        That page hit a snag. Please try again — if it keeps happening, head
-        back to the board.
+        That page hit a snag. Please try again. If it keeps happening, head back
+        to the board.
       </p>
       <div className="mt-8 flex justify-center gap-3">
         <Button onClick={reset}>Try again</Button>

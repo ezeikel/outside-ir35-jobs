@@ -31,7 +31,7 @@ const JobPosts = async ({ params = {} }: { params?: SearchParams }) => {
             {jobs.length > 0
               ? `${jobs.length} contract${jobs.length === 1 ? '' : 's'}${
                   q ? ` ranked by relevance to “${q}”` : ''
-                } — day rate, mode and IR35 signal up front.`
+                }. Day rate, mode and IR35 signal up front.`
               : 'Day rate, work mode and the client’s IR35 signal, up front.'}
           </p>
         </header>
@@ -118,7 +118,7 @@ const JobPosts = async ({ params = {} }: { params?: SearchParams }) => {
             <p className="mt-1 text-sm text-muted-foreground">
               {q
                 ? 'Try a broader search or clear the filters.'
-                : 'Check back soon — new outside-IR35 roles are added regularly.'}
+                : 'Check back soon. New outside-IR35 roles are added regularly.'}
             </p>
           </div>
         ) : (

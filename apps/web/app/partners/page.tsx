@@ -3,7 +3,7 @@ import PageWrap from '@/components/PageWrap/PageWrap';
 import PartnerList from '@/components/Partners/PartnerList';
 
 export const metadata: Metadata = {
-  title: 'IR35 insurance & contract review — Outside IR35 Jobs',
+  title: 'IR35 insurance & contract review · Outside IR35 Jobs',
   description:
     'IR35 / tax-investigation insurance and contract-review providers for UK limited-company contractors. The safe, checkable trust signal.',
   alternates: { canonical: '/partners' },
@@ -20,8 +20,8 @@ const PartnersPage = () => (
           IR35 insurance & contract review
         </h1>
         <p className="mt-3 text-muted-foreground">
-          Holding active IR35 / tax-investigation cover — and an independent
-          contract review on file — is the safest, most checkable trust signal a
+          Holding active IR35 / tax-investigation cover (and an independent
+          contract review on file) is the safest, most checkable trust signal a
           contractor can show. Here are specialist providers.
         </p>
       </header>

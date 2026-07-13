@@ -33,11 +33,11 @@ const CHECK_COPY: Record<string, string> = {
 const chNextStep = (status: string): string | null => {
   switch (status) {
     case 'not_found':
-      return 'Double-check the company number on your Companies House record — it should be 8 characters (e.g. 12345678 or SC123456).';
+      return 'Double-check the company number on your Companies House record. It should be 8 characters (e.g. 12345678 or SC123456).';
     case 'inactive':
       return 'That company isn’t active on the register (e.g. dissolved or in liquidation), so we can’t verify it.';
     case 'error':
-      return 'We couldn’t reach Companies House just now — please try again in a moment.';
+      return 'We couldn’t reach Companies House just now. Please try again in a moment.';
     default:
       return null;
   }
@@ -71,7 +71,7 @@ const AddCompanyForm = () => {
     <section className="rounded-lg border border-border bg-card p-5">
       <p className="mb-1 text-sm font-medium">Add your limited company</p>
       <p className="mb-3 text-sm text-muted-foreground">
-        We check it against Companies House and HMRC — we only record what the
+        We check it against Companies House and HMRC. We only record what the
         official registers confirm.
       </p>
       <form ref={formRef} action={action} className="flex flex-col gap-3">
@@ -117,7 +117,7 @@ const AddCompanyForm = () => {
           ) : null}
           {result.vat === 'pending' ? (
             <p className="text-muted-foreground">
-              VAT checks aren’t live yet — we’ll verify your VAT number
+              VAT checks aren’t live yet. We’ll verify your VAT number
               automatically once enabled. Your company is still added.
             </p>
           ) : null}

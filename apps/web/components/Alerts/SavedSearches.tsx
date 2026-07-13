@@ -47,7 +47,7 @@ const SavedSearchItem = ({ search }: { search: SavedSearchRow }) => {
         await setSavedSearchAlerts(search.id, next);
         setEnabled(next);
       } catch {
-        setError('Couldn’t update — try again.');
+        setError('Couldn’t update. Try again.');
       }
     });
 
@@ -58,7 +58,7 @@ const SavedSearchItem = ({ search }: { search: SavedSearchRow }) => {
         await deleteSavedSearch(search.id);
         setRemoved(true);
       } catch {
-        setError('Couldn’t delete — try again.');
+        setError('Couldn’t delete. Try again.');
       }
     });
 

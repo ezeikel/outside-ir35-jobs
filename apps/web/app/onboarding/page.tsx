@@ -5,7 +5,7 @@ import OnboardingRolePicker from '@/components/Onboarding/OnboardingRolePicker';
 import PageWrap from '@/components/PageWrap/PageWrap';
 
 export const metadata: Metadata = {
-  title: 'Welcome — choose how you’ll use the platform',
+  title: 'Welcome: choose how you’ll use the platform',
 };
 
 const OnboardingPage = async () => {

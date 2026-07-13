@@ -4,7 +4,7 @@ import DayRates from '@/components/DayRates/DayRates';
 import PageWrap from '@/components/PageWrap/PageWrap';
 
 export const metadata: Metadata = {
-  title: 'UK contract day rates by skill — outside IR35',
+  title: 'UK contract day rates by skill · outside IR35',
   description:
     'Median UK contractor day rates by skill, split by IR35 position, from live outside-IR35 contracts aggregated on outsideir35jobs.com.',
 };

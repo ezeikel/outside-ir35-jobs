@@ -50,8 +50,8 @@ const PartnerList = ({ only }: { only?: PartnerCategory } = {}) => {
       })}
       <p className="text-xs leading-relaxed text-muted-foreground">
         These are independent third-party providers. Holding active IR35 /
-        tax-investigation cover is a strong, checkable trust signal — but it
-        does not determine or guarantee a role’s IR35 status. We may earn a
+        tax-investigation cover is a strong, checkable trust signal, but it does
+        not determine or guarantee a role’s IR35 status. We may earn a
         commission if you take out a policy or review through these links, at no
         extra cost to you. Always check the cover suits your circumstances.
       </p>
