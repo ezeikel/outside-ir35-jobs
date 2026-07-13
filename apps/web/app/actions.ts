@@ -65,6 +65,7 @@ import {
   Ir35InsuranceValues,
   OnboardingRoleSchema,
   OnboardingRoleValues,
+  PostJobFormSchema,
   PostJobFormValues,
 } from '@/types';
 import { track, trackWithUser } from '@/utils/analytics-server';
@@ -191,7 +192,19 @@ export const createJobPost = async (
     throw new Error('Finish setting up your account to post a contract');
   }
 
-  const job = await createUnpaidJob(session.userId, values);
+  // Never trust the client for a paid listing: re-validate the payload
+  // server-side against the same schema the form uses. A tampered/bypassed
+  // client (or a future non-form caller) can't create a malformed job or slip
+  // past the IR35 attestation. The mobile route already validates its own body;
+  // this covers the web entry point.
+  const parsed = PostJobFormSchema.safeParse(values);
+  if (!parsed.success) {
+    throw new Error(
+      parsed.error.issues[0]?.message ?? 'Some details are missing or invalid.',
+    );
+  }
+
+  const job = await createUnpaidJob(session.userId, parsed.data);
 
   const checkoutUrl = await createJobCheckoutSession(job.id, values.position);
   return { checkoutUrl };
