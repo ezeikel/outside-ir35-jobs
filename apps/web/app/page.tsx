@@ -1,11 +1,11 @@
 import type { Viewport } from 'next';
 import Link from 'next/link';
 import { getJobs } from '@/app/actions';
+import HeroSearch from '@/components/HeroSearch/HeroSearch';
 import PageWrap from '@/components/PageWrap/PageWrap';
 import TakeHomeCalculator from '@/components/TakeHomeCalculator/TakeHomeCalculator';
 import { JobListCard } from '@/components/trust';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { jobToCard } from '@/utils/jobToCard';
 
 export const viewport: Viewport = {
@@ -44,24 +44,25 @@ const HomePage = async () => {
               Only outside-IR35 contracts. Nothing else.
             </h1>
             <p className="mt-4 max-w-md text-lg text-ink-200">
-              Stop filtering LinkedIn. Day rate, work mode and the client’s IR35
-              signal — surfaced up front, on every role.
+              Stop filtering LinkedIn. Day rate, work mode and the
+              client&rsquo;s IR35 signal, surfaced up front on every role.
             </p>
-            <form
-              method="get"
-              action="/jobs"
-              className="mt-8 flex max-w-lg gap-2"
-            >
-              <Input
-                name="q"
-                className="flex-1 border-transparent bg-white text-foreground placeholder:text-muted-foreground"
-                placeholder="Role, skill or company"
-                type="text"
-              />
-              <Button type="submit">Search</Button>
-            </form>
+            <div className="mt-8">
+              <HeroSearch />
+            </div>
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink-200">
+              <span>Client IR35 signal on every listing</span>
+              <span aria-hidden className="text-ink-400">
+                &middot;
+              </span>
+              <span>Day rates you can filter</span>
+              <span aria-hidden className="text-ink-400">
+                &middot;
+              </span>
+              <span>Contract-only, no perm noise</span>
+            </div>
           </div>
-          <TakeHomeCalculator className="hidden md:block" />
+          <TakeHomeCalculator className="hidden md:block" compact />
         </div>
       </div>
 
@@ -85,7 +86,7 @@ const HomePage = async () => {
         ) : (
           <div className="rounded-lg border border-border bg-card p-8 text-center">
             <p className="text-muted-foreground">
-              No live contracts yet — check back soon.
+              No live contracts yet. Check back soon.
             </p>
             <Button asChild className="mt-4">
               <Link href="/job/post">Post the first one</Link>
