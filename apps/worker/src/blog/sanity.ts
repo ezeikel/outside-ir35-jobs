@@ -1,4 +1,5 @@
 import { createClient } from '@sanity/client';
+import type { SanityImageRef } from './image.js';
 import type { PortableTextBlock } from './portable-text.js';
 
 /**
@@ -20,7 +21,7 @@ export const sanityConfigured = Boolean(
   projectId && process.env.SANITY_API_TOKEN,
 );
 
-const writeClient = createClient({
+export const writeClient = createClient({
   projectId: projectId || 'placeholder',
   dataset,
   apiVersion,
@@ -88,6 +89,7 @@ export type CreatePostInput = {
   slug: string;
   excerpt: string;
   body: PortableTextBlock[];
+  featuredImage?: SanityImageRef;
   authorId: string;
   publishedAt: string; // ISO
   seo: { metaTitle: string; metaDescription: string; keywords: string[] };
@@ -107,6 +109,7 @@ export const createPost = async (input: CreatePostInput): Promise<string> => {
     slug: { _type: 'slug', current: input.slug },
     excerpt: input.excerpt,
     body: input.body,
+    ...(input.featuredImage ? { featuredImage: input.featuredImage } : {}),
     author: { _type: 'reference', _ref: input.authorId },
     publishedAt: input.publishedAt,
     status: 'published',

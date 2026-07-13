@@ -1,6 +1,7 @@
 import { getDayRateBenchmarks, totalBenchmarkSample } from './benchmarks.js';
 import { generateDynamicTopics } from './dynamic-topics.js';
 import { BLOG_MODEL, generateContent, generateMeta } from './generate.js';
+import { generateBlogFeaturedImage } from './image.js';
 import { markdownToPortableText } from './portable-text.js';
 import { researchTopic } from './research.js';
 import {
@@ -193,12 +194,20 @@ export const runBlogCron = async (opts?: {
     return { status: 'dryRun', topic: topic.topic };
   }
 
+  // Featured image (non-blocking): Pexels high-match -> gpt-image-2 fallback ->
+  // Sanity asset. Returns undefined on any failure; the post still publishes.
+  const featuredImage = await generateBlogFeaturedImage(
+    meta.title,
+    meta.excerpt,
+  );
+
   const authorId = await lookupOrCreateAuthor(pickAuthor());
   const postId = await createPost({
     title: meta.title,
     slug: meta.slug,
     excerpt: meta.excerpt,
     body,
+    featuredImage,
     authorId,
     publishedAt: todayIso,
     seo: {
