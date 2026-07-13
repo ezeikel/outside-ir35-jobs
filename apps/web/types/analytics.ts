@@ -95,4 +95,18 @@ export type EventProperties = {
     jobId: string;
     position: string;
   };
+
+  // ===== TAKE-HOME CALCULATOR (market-intelligence signal) =====
+  [TRACKING_EVENTS.CALCULATOR_USED]: {
+    dayRate: number;
+    daysWorked: number;
+    // The revenue the inputs imply — the headline signal for rate benchmarking.
+    revenue: number;
+    takeHome: number;
+    // 0..1 retention; rounded pct is easier to segment on in PostHog.
+    retentionRatePct: number;
+    // Non-default extraction inputs, so we can see how sophisticated users are.
+    salary?: number | null;
+    expenses?: number | null;
+  };
 };

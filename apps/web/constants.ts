@@ -42,6 +42,12 @@ export const TRACKING_EVENTS = {
   JOB_POST_STARTED: 'job_post_started', // Submitted the post-a-contract form
   JOB_POST_CHECKOUT_STARTED: 'job_post_checkout_started', // Stripe checkout session created
   JOB_POST_PUBLISHED: 'job_post_published', // Payment confirmed → listing live (server, revenue)
+
+  // ===== TAKE-HOME CALCULATOR (market-intelligence signal) =====
+  // What contractors model reveals the day rates they're chasing — feeds the
+  // day-rate benchmark, SEO, and positioning. Captured on a settled value
+  // (debounced), NOT every keystroke.
+  CALCULATOR_USED: 'calculator_used',
 } as const;
 
 export const DUMMY_JOBS = [
