@@ -312,7 +312,7 @@ const TakeHomeCalculator = ({ className, compact = false }: Props) => {
       {/* Headline result — forest green = the money figure. */}
       <div className="mt-6 rounded-xl border border-verified/30 bg-verified-muted/40 p-5">
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Estimated annual take-home
+          Personal take-home
         </p>
         <p className="mt-1 font-display text-5xl leading-none text-verified">
           {fmt(result.takeHome)}
@@ -322,12 +322,24 @@ const TakeHomeCalculator = ({ className, compact = false }: Props) => {
           <span className="font-semibold text-foreground">
             {Math.round(result.retentionRate * 100)}%
           </span>{' '}
-          of {fmt(result.revenue)} billed
-          {retainedInCompany > 0
-            ? `, plus ${fmt(retainedInCompany)} kept in the company`
-            : ''}
-          .
+          of {fmt(result.revenue)} billed.
         </p>
+
+        {/* Money left in the company — a distinct, clearly-labelled line so it's
+            obvious this is retained, not lost. Only when you draw less than all. */}
+        {retainedInCompany > 0 ? (
+          <div className="mt-4 flex items-baseline justify-between border-t border-verified/20 pt-3">
+            <span className="text-sm text-muted-foreground">
+              Left in the company
+              <span className="block text-xs text-muted-foreground/70">
+                Undrawn profit, still your business’s
+              </span>
+            </span>
+            <span className="font-display text-2xl leading-none text-foreground">
+              {fmt(retainedInCompany)}
+            </span>
+          </div>
+        ) : null}
       </div>
 
       {/* Breakdown (collapsible) */}
