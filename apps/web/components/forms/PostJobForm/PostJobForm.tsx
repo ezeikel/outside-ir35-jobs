@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import cn from '@/utils/cn';
+import CompanyLogoInput from './CompanyLogoInput';
 import DayRateInputs from './DayRateInputs';
 import LocationInput from './LocationInput';
 
@@ -173,23 +174,7 @@ const PostJobForm = ({
 
       <LocationInput form={form} />
 
-      <form.Field name="companyLogo">
-        {(field) => (
-          <div className="grid gap-2">
-            <Label htmlFor={field.name}>Company Logo</Label>
-            <input
-              id={field.name}
-              type="file"
-              accept="image/*"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium"
-              // A logo upload isn't wired to storage in this form yet; keep the
-              // filename as the field value so the shape stays a string.
-              onChange={(e) => field.handleChange(e.target.value ?? '')}
-              onBlur={field.handleBlur}
-            />
-          </div>
-        )}
-      </form.Field>
+      <CompanyLogoInput form={form} />
 
       <DayRateInputs form={form} />
 

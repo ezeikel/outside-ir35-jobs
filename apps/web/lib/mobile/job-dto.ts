@@ -5,6 +5,25 @@ import type {
   WorkMode,
 } from '@outside-ir35-jobs/db/types';
 import { IR35_LABELS, OUTSIDE_LEANING_SIGNALS } from '@/lib/ir35/labels';
+import { LOGO_KEY_PREFIX, LOGO_ROUTE_PREFIX } from '@/lib/logo/validate';
+
+// Absolute site origin (NEXTAUTH_URL is set in every env). Inlined rather than
+// importing lib/stripe/client's getSiteUrl so this DTO doesn't pull the Stripe
+// SDK into its module graph.
+const siteOrigin = (): string =>
+  (process.env.NEXTAUTH_URL ?? 'http://localhost:3000').replace(/\/$/, '');
+
+// Resolve a stored companyLogo to an ABSOLUTE url for the RN app. An R2 key
+// (starts with the logo prefix) becomes the absolute /api/logo/<key> proxy URL;
+// a full https URL is passed through; empty → null. The web renders via a
+// relative path (logoSrc), but mobile needs the origin baked in.
+const mobileLogoUrl = (stored: string | null): string | null => {
+  if (!stored) return null;
+  if (stored.startsWith(LOGO_KEY_PREFIX)) {
+    return `${siteOrigin()}${LOGO_ROUTE_PREFIX}${stored}`;
+  }
+  return stored;
+};
 
 /**
  * Mobile-facing job DTOs. The RN app can't import the web's React components or
@@ -81,7 +100,7 @@ export const toMobileJobCard = (row: JobCardRow): MobileJobCard => ({
   id: row.id,
   position: row.position,
   companyName: row.companyName,
-  companyLogo: row.companyLogo,
+  companyLogo: mobileLogoUrl(row.companyLogo),
   location: locationAddress(row.location),
   dayRate: row.dayRate?.length ? row.dayRate : [0],
   ir35Signal: row.ir35Signal ?? ('UNKNOWN' as JobIR35Signal),

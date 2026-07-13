@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { logoSrc } from '@/lib/logo/validate';
 import cn from '@/utils/cn';
 import {
   ContractLengthPill,
@@ -54,10 +55,10 @@ const JobListCard = ({
       {/* Left: identity + title */}
       <div className="flex min-w-0 gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-muted text-sm font-semibold text-muted-foreground">
-          {job.companyLogo ? (
+          {logoSrc(job.companyLogo) ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={job.companyLogo}
+              src={logoSrc(job.companyLogo) as string}
               alt=""
               className="h-full w-full object-cover"
             />

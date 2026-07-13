@@ -37,6 +37,11 @@ import {
   type JobSpecDraft,
   type JobSpecInput,
 } from '@/lib/jobspec/generate';
+import {
+  extForLogoMime,
+  LOGO_KEY_PREFIX,
+  validateLogoUpload,
+} from '@/lib/logo/validate';
 import { generateMatchAndPitch, type MatchProfile } from '@/lib/match/generate';
 import { pushToUser } from '@/lib/push/send';
 import { embedAndStoreJob } from '@/lib/search/embed-job';
@@ -180,6 +185,54 @@ export const createUnpaidJob = async (
       paymentStatus: 'PENDING',
     },
   });
+};
+
+/**
+ * Upload a company logo to R2 and return its object KEY (not a URL). The key is
+ * stored on Job.companyLogo and served publicly via the /api/logo/<key> proxy
+ * route (the bucket is private; the route streams it with a long cache). Dev
+ * writes the dev bucket, prod the prod bucket — resolved from R2_BUCKET in the
+ * environment, so no per-call bucket logic. Shared by the web action + the
+ * mobile jobs route so the rules can't drift.
+ *
+ * Returns just a string (the key) rather than throwing on a bad file so callers
+ * get a typed result; the caller maps UploadError → 400.
+ */
+export const uploadCompanyLogoForUser = async (file: File): Promise<string> => {
+  const check = validateLogoUpload({ mimeType: file.type, size: file.size });
+  if (!check.ok) {
+    throw new UploadError(check.error);
+  }
+
+  const ext = extForLogoMime(check.mime);
+  // Random, unguessable key under the public-logo prefix (logoSrc keys off it).
+  const key = `${LOGO_KEY_PREFIX}${crypto.randomUUID()}.${ext}`;
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  await put(key, buffer, { contentType: check.mime });
+
+  return key;
+};
+
+/**
+ * Web server action: upload a company logo from the post-a-job form. Any
+ * signed-in user may upload (the job's owner is resolved from the session at
+ * create time); we just need a caller so an anonymous visitor can't spray the
+ * bucket. Anonymous posters upload after signing in (the draft round-trip).
+ */
+export const uploadCompanyLogo = async (
+  formData: FormData,
+): Promise<{ key: string }> => {
+  const session = await auth();
+  if (!session?.userId) {
+    throw new Error('Sign in to upload a logo.');
+  }
+  const file = formData.get('file');
+  if (!(file instanceof File)) {
+    throw new UploadError('No file provided');
+  }
+  const key = await uploadCompanyLogoForUser(file);
+  return { key };
 };
 
 export const createJobPost = async (
