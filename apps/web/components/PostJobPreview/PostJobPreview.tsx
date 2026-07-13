@@ -1,6 +1,6 @@
 'use client';
 
-import { useFormContext } from 'react-hook-form';
+import type { PostJobFormApi } from '@/components/PostJob/usePostJobForm';
 import HTMLViewer from '../HTMLViewer/HTMLViewer';
 import {
   AttributedClaim,
@@ -14,90 +14,97 @@ import {
 /**
  * Live preview of the listing as it will appear, built from the SAME trust
  * components the public job-detail uses — so what the poster sees is what gets
- * published. Register skin.
+ * published. Reactively reads the TanStack form values via form.Subscribe.
  */
-const JobPostPreview = () => {
-  const { watch } = useFormContext();
-  const {
-    companyName,
-    position,
-    description,
-    location,
-    dayRate,
-    howToApply,
-    workMode,
-    ir35Signal,
-  } = watch();
+const JobPostPreview = ({ form }: { form: PostJobFormApi }) => (
+  <form.Subscribe selector={(s) => s.values}>
+    {(values) => {
+      const {
+        companyName,
+        position,
+        description,
+        location,
+        dayRate,
+        howToApply,
+        workMode,
+        ir35Signal,
+      } = values;
 
-  const rate: number[] = Array.isArray(dayRate)
-    ? dayRate.filter((n) => Number(n) > 0).map(Number)
-    : [];
+      const rate: number[] = Array.isArray(dayRate)
+        ? dayRate.filter((n) => Number(n) > 0).map(Number)
+        : [];
 
-  const signal: JobIR35Signal = ir35Signal ?? 'UNKNOWN';
-  const isOutsideClaim =
-    signal === 'CLIENT_INTENDS_OUTSIDE' ||
-    signal === 'SDS_ISSUED' ||
-    signal === 'CONTRACT_REVIEW_HELD' ||
-    signal === 'SMALL_CLIENT_EXEMPT';
+      const signal: JobIR35Signal = (ir35Signal ?? 'UNKNOWN') as JobIR35Signal;
+      const isOutsideClaim =
+        signal === 'CLIENT_INTENDS_OUTSIDE' ||
+        signal === 'SDS_ISSUED' ||
+        signal === 'CONTRACT_REVIEW_HELD' ||
+        signal === 'SMALL_CLIENT_EXEMPT';
 
-  return (
-    <div className="lg:sticky lg:top-24 lg:self-start">
-      <p className="mb-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-        Live preview
-      </p>
-      <div className="rounded-lg border border-border bg-card p-6">
-        {position ? (
-          <h3 className="font-display text-3xl leading-tight">{position}</h3>
-        ) : (
-          <h3 className="font-display text-3xl leading-tight text-muted-foreground">
-            Job title
-          </h3>
-        )}
+      return (
+        <div className="lg:sticky lg:top-24 lg:self-start">
+          <p className="mb-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+            Live preview
+          </p>
+          <div className="rounded-lg border border-border bg-card p-6">
+            {position ? (
+              <h3 className="font-display text-3xl leading-tight">
+                {position}
+              </h3>
+            ) : (
+              <h3 className="font-display text-3xl leading-tight text-muted-foreground">
+                Job title
+              </h3>
+            )}
 
-        <div className="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
-          {companyName && (
-            <span className="font-medium text-foreground">{companyName}</span>
-          )}
-          {location?.address && (
-            <>
-              <span>·</span>
-              <span>{location.address}</span>
-            </>
-          )}
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
+              {companyName && (
+                <span className="font-medium text-foreground">
+                  {companyName}
+                </span>
+              )}
+              {location?.address && (
+                <>
+                  <span>·</span>
+                  <span>{location.address}</span>
+                </>
+              )}
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <IR35SignalChip signal={signal} />
+              {workMode && <WorkModePill mode={workMode as WorkMode} />}
+              {rate.length > 0 && (
+                <span className="ml-auto">
+                  <DayRatePill rate={rate} />
+                </span>
+              )}
+            </div>
+
+            {isOutsideClaim && (
+              <div className="mt-5">
+                <AttributedClaim
+                  claim="This role is intended to be outside IR35."
+                  attributedTo={`${companyName || 'Your company'} (client)`}
+                />
+              </div>
+            )}
+
+            {description && (
+              <div className="editor-preview mt-6 text-[15px] leading-relaxed text-foreground/90">
+                <HTMLViewer html={description} />
+              </div>
+            )}
+            {howToApply && (
+              <div className="editor-preview mt-4 text-[15px] leading-relaxed text-foreground/90">
+                <HTMLViewer html={howToApply} />
+              </div>
+            )}
+          </div>
         </div>
-
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <IR35SignalChip signal={signal} />
-          {workMode && <WorkModePill mode={workMode as WorkMode} />}
-          {rate.length > 0 && (
-            <span className="ml-auto">
-              <DayRatePill rate={rate} />
-            </span>
-          )}
-        </div>
-
-        {isOutsideClaim && (
-          <div className="mt-5">
-            <AttributedClaim
-              claim="This role is intended to be outside IR35."
-              attributedTo={`${companyName || 'Your company'} (client)`}
-            />
-          </div>
-        )}
-
-        {description && (
-          <div className="editor-preview mt-6 text-[15px] leading-relaxed text-foreground/90">
-            <HTMLViewer html={description} />
-          </div>
-        )}
-        {howToApply && (
-          <div className="editor-preview mt-4 text-[15px] leading-relaxed text-foreground/90">
-            <HTMLViewer html={howToApply} />
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
+      );
+    }}
+  </form.Subscribe>
+);
 
 export default JobPostPreview;

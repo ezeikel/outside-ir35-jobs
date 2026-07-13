@@ -1,4 +1,3 @@
-import type { AnyFieldApi } from '@tanstack/react-form';
 import { Input, type InputProps } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import cn from '@/utils/cn';
@@ -13,8 +12,21 @@ import cn from '@/utils/cn';
 // FormProvider/useFormContext — the `form` instance is threaded via props/context
 // by the owner, and each field is bound here through `field.state`/`field.handle*`.
 
+// Structural type for a TanStack field — only the bits this component uses. Kept
+// minimal (not the 20-generic AnyFieldApi) so any string-valued field from any
+// form instance is assignable without generic-soup mismatches.
+type TextFieldApi = {
+  name: string;
+  state: {
+    value: string;
+    meta: { isTouched: boolean; errors: unknown[] };
+  };
+  handleChange: (value: string) => void;
+  handleBlur: () => void;
+};
+
 type FormFieldProps = {
-  field: AnyFieldApi;
+  field: TextFieldApi;
   label: string;
   placeholder?: string;
   type?: InputProps['type'];

@@ -1,18 +1,10 @@
 import { JobIR35Signal, WorkMode } from '@outside-ir35-jobs/db/types';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useFormContext } from 'react-hook-form';
-import { createJobPost, draftJobSpec } from '@/app/actions';
+import { draftJobSpec } from '@/app/actions';
+import type { PostJobFormApi } from '@/components/PostJob/usePostJobForm';
 import TipTapEditor from '@/components/TipTapEditor/TipTapEditor';
 import { Button } from '@/components/ui/button';
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+import FormField from '@/components/ui/FormField';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
@@ -22,10 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { TRACKING_EVENTS } from '@/constants';
-import { PostJobFormValues } from '@/types';
-import { useAnalytics } from '@/utils/analytics-client';
 import cn from '@/utils/cn';
 import DayRateInputs from './DayRateInputs';
 import LocationInput from './LocationInput';
@@ -51,37 +39,29 @@ const IR35_OPTIONS: { value: JobIR35Signal; label: string }[] = [
 ];
 
 interface PostJobFormProps {
+  form: PostJobFormApi;
   className?: string;
-  // False for anonymous / not-yet-onboarded users: Publish saves the draft and
-  // routes to sign-in instead of starting checkout.
-  canPublish: boolean;
-  onSaveDraft: () => void;
+  // Submission (validation + checkout/sign-in routing) lives in the PostJob
+  // container; the form only renders + reports its state. These reflect that.
+  submitError: string | null;
+  submitting: boolean;
 }
 
 const PostJobForm = ({
+  form,
   className,
-  canPublish,
-  onSaveDraft,
+  submitError,
+  submitting,
 }: PostJobFormProps) => {
-  const router = useRouter();
-  const { track } = useAnalytics();
   const [descriptionContent, setDescriptionContent] = useState('');
   const [howToApplyContent, setHowToApplyContent] = useState('');
   const [drafting, setDrafting] = useState(false);
   const [draftError, setDraftError] = useState<string | null>(null);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const {
-    control,
-    handleSubmit,
-    setValue,
-    getValues,
-    formState: { isSubmitting },
-  } = useFormContext<PostJobFormValues>();
 
   // Draft the description / how-to-apply / keywords from the title + a few fields.
   const draftWithAi = async () => {
     setDraftError(null);
-    const values = getValues();
+    const values = form.state.values;
     if (!values.position?.trim()) {
       setDraftError('Add a role title first.');
       return;
@@ -99,7 +79,7 @@ const PostJobForm = ({
       });
       setDescriptionContent(draft.description);
       setHowToApplyContent(draft.howToApply);
-      if (draft.keywords) setValue('keywords', draft.keywords);
+      if (draft.keywords) form.setFieldValue('keywords', draft.keywords);
     } catch (e) {
       setDraftError(
         e instanceof Error ? e.message : 'Could not draft right now.',
@@ -109,86 +89,48 @@ const PostJobForm = ({
     }
   };
 
-  const onSubmit = async (values: PostJobFormValues) => {
-    // Top of the paid-posting funnel — fired on every valid submit (both the
-    // sign-in-first path and the checkout path start the post flow here).
-    track(TRACKING_EVENTS.JOB_POST_STARTED, {
-      surface: 'web',
-      workMode: values.workMode ?? null,
-      ir35Signal: values.ir35Signal ?? null,
-    });
-
-    // Anonymous (or not-yet-onboarded) poster: they've filled a valid form but
-    // can't publish yet. Stash the draft and send them to sign in — they return
-    // to the restored form and publish without re-typing. No wall to START.
-    if (!canPublish) {
-      onSaveDraft();
-      router.push('/signin?callbackUrl=/job/post');
-      return;
-    }
-
-    // createJobPost creates the job unpublished and returns a Stripe Checkout
-    // URL; the job only goes live after payment (webhook). Send the browser to
-    // Stripe's hosted checkout. On failure (e.g. billing misconfigured) surface a
-    // message rather than leaving the button stuck on "Redirecting…".
-    setSubmitError(null);
-    try {
-      const { checkoutUrl } = await createJobPost(values);
-      window.location.assign(checkoutUrl);
-    } catch (e) {
-      // Resolve (don't re-throw) so react-hook-form clears isSubmitting and the
-      // poster can retry; the error is shown by the submit button.
-      setSubmitError(
-        e instanceof Error
-          ? e.message
-          : 'Could not start checkout. Please try again.',
-      );
-    }
-  };
+  // Keep the TipTap-editor values mirrored into the form (they render outside a
+  // form.Field, so they push their content in on change).
+  useEffect(() => {
+    form.setFieldValue('description', descriptionContent);
+  }, [descriptionContent, form]);
 
   useEffect(() => {
-    setValue('description', descriptionContent);
-  }, [descriptionContent, setValue]);
-
-  useEffect(() => {
-    setValue('howToApply', howToApplyContent);
-  }, [howToApplyContent, setValue]);
+    form.setFieldValue('howToApply', howToApplyContent);
+  }, [howToApplyContent, form]);
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={(e) => {
+        e.preventDefault();
+        // Runs the schema (form-level onSubmit validator); our registered
+        // onSubmit handler fires only if it passes.
+        void form.handleSubmit();
+      }}
       className={cn({
         [className as string]: !!className,
       })}
     >
-      <FormField
-        control={control}
-        name="companyName"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="block mb-1">Company Name</FormLabel>
-            <FormControl>
-              {}
-              <Input placeholder="Enter your company name" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+      <form.Field name="companyName">
+        {(field) => (
+          <FormField
+            field={field}
+            label="Company Name"
+            placeholder="Enter your company name"
+          />
         )}
-      />
-      <FormField
-        control={control}
-        name="position"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="block mb-1">Position</FormLabel>
-            <FormControl>
-              {}
-              <Input placeholder="Enter the job position" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+      </form.Field>
+
+      <form.Field name="position">
+        {(field) => (
+          <FormField
+            field={field}
+            label="Position"
+            placeholder="Enter the job position"
+          />
         )}
-      />
+      </form.Field>
+
       <div>
         <div className="mb-1 flex items-center justify-between gap-2">
           <Label htmlFor="description">Job Description</Label>
@@ -218,42 +160,39 @@ const PostJobForm = ({
           }}
         />
       </div>
-      <FormField
-        control={control}
-        name="keywords"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="block mb-1">Keywords</FormLabel>
-            <FormControl>
-              <Input
-                placeholder="Enter relevant keywords (e.g. React, Node.js)"
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+
+      <form.Field name="keywords">
+        {(field) => (
+          <FormField
+            field={field}
+            label="Keywords"
+            placeholder="Enter relevant keywords (e.g. React, Node.js)"
+          />
         )}
-      />
-      <LocationInput />
-      <FormField
-        control={control}
-        name="companyLogo"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="block mb-1">Company Logo</FormLabel>
-            <FormControl>
-              <Input
-                accept="image/*"
-                placeholder="Upload your company logo"
-                type="file"
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+      </form.Field>
+
+      <LocationInput form={form} />
+
+      <form.Field name="companyLogo">
+        {(field) => (
+          <div className="grid gap-2">
+            <Label htmlFor={field.name}>Company Logo</Label>
+            <input
+              id={field.name}
+              type="file"
+              accept="image/*"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium"
+              // A logo upload isn't wired to storage in this form yet; keep the
+              // filename as the field value so the shape stays a string.
+              onChange={(e) => field.handleChange(e.target.value ?? '')}
+              onBlur={field.handleBlur}
+            />
+          </div>
         )}
-      />
-      <DayRateInputs />
+      </form.Field>
+
+      <DayRateInputs form={form} />
+
       <div>
         <Label className="block mb-1" htmlFor="howToApply">
           How to Apply
@@ -266,168 +205,162 @@ const PostJobForm = ({
           }}
         />
       </div>
-      <FormField
-        control={control}
-        name="applicationEmail"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="block mb-1">
-              Email to get job applications
-            </FormLabel>
-            <FormControl>
-              <Input
-                type="email"
-                placeholder="Apply email address"
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+
+      <form.Field name="applicationEmail">
+        {(field) => (
+          <FormField
+            field={field}
+            label="Email to get job applications"
+            type="email"
+            placeholder="Apply email address"
+          />
         )}
-      />
-      <FormField
-        control={control}
-        name="workMode"
-        // TODO: how to handle radio buttons
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="block mb-1">Work Mode</FormLabel>
-            <FormControl>
-              <RadioGroup
-                onValueChange={field.onChange}
-                className="flex items-center gap-4"
-              >
-                <FormItem className="flex items-center gap-2 space-y-0">
-                  <FormControl>
-                    <RadioGroupItem value={WorkMode.REMOTE} />
-                  </FormControl>
-                  <FormLabel className="mt-0">Remote</FormLabel>
-                </FormItem>
-                <FormItem className="flex items-center gap-2 space-y-0">
-                  <FormControl>
-                    <RadioGroupItem value={WorkMode.HYBRID} />
-                  </FormControl>
-                  <FormLabel>Hybrid</FormLabel>
-                </FormItem>
-                <FormItem className="flex items-center gap-2 space-y-0">
-                  <FormControl>
-                    <RadioGroupItem value={WorkMode.ON_SITE} />
-                  </FormControl>
-                  <FormLabel>On-site</FormLabel>
-                </FormItem>
-              </RadioGroup>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+      </form.Field>
+
+      <form.Field name="workMode">
+        {(field) => (
+          <div>
+            <Label className="block mb-1">Work Mode</Label>
+            <RadioGroup
+              value={field.state.value}
+              onValueChange={(v) => field.handleChange(v as WorkMode)}
+              className="flex items-center gap-4"
+            >
+              <Label className="flex items-center gap-2 font-normal">
+                <RadioGroupItem value={WorkMode.REMOTE} />
+                Remote
+              </Label>
+              <Label className="flex items-center gap-2 font-normal">
+                <RadioGroupItem value={WorkMode.HYBRID} />
+                Hybrid
+              </Label>
+              <Label className="flex items-center gap-2 font-normal">
+                <RadioGroupItem value={WorkMode.ON_SITE} />
+                On-site
+              </Label>
+            </RadioGroup>
+          </div>
         )}
-      />
-      <FormField
-        control={control}
-        name="ir35Signal"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="block mb-1">IR35 position</FormLabel>
-            <FormControl>
-              <Select
-                onValueChange={field.onChange}
-                value={field.value as string | undefined}
-              >
-                <SelectTrigger aria-label="IR35 position">
-                  <SelectValue placeholder="What does the client say about IR35?" />
-                </SelectTrigger>
-                <SelectContent>
-                  {IR35_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+      </form.Field>
+
+      <form.Field name="ir35Signal">
+        {(field) => (
+          <div>
+            <Label className="block mb-1">IR35 position</Label>
+            <Select
+              value={field.state.value as string | undefined}
+              onValueChange={(v) => field.handleChange(v as JobIR35Signal)}
+            >
+              <SelectTrigger aria-label="IR35 position">
+                <SelectValue placeholder="What does the client say about IR35?" />
+              </SelectTrigger>
+              <SelectContent>
+                {IR35_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         )}
-      />
-      <FormField
-        control={control}
-        name="ir35Attested"
-        render={({ field }) => (
-          <FormItem>
-            <label className="flex cursor-pointer items-start gap-2.5 rounded-md border border-border bg-muted/30 p-3 text-sm">
-              <input
-                type="checkbox"
-                className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--primary)]"
-                checked={Boolean(field.value)}
-                onChange={(e) => field.onChange(e.target.checked)}
-              />
-              <span className="text-muted-foreground">
-                I confirm this reflects the client&rsquo;s stated IR35 position.
-                The platform does not determine, verify or warrant IR35 status.
-                The SDS is the client&rsquo;s legal responsibility.
-              </span>
-            </label>
-            <FormMessage />
-          </FormItem>
+      </form.Field>
+
+      <form.Field name="ir35Attested">
+        {(field) => {
+          const first = field.state.meta.errors[0] as unknown;
+          const error =
+            field.state.meta.isTouched && field.state.meta.errors.length > 0
+              ? ((first as { message?: string } | undefined)?.message ?? null)
+              : null;
+          return (
+            <div>
+              <label className="flex cursor-pointer items-start gap-2.5 rounded-md border border-border bg-muted/30 p-3 text-sm">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--primary)]"
+                  checked={Boolean(field.state.value)}
+                  onChange={(e) => field.handleChange(e.target.checked)}
+                  onBlur={field.handleBlur}
+                />
+                <span className="text-muted-foreground">
+                  I confirm this reflects the client&rsquo;s stated IR35
+                  position. The platform does not determine, verify or warrant
+                  IR35 status. The SDS is the client&rsquo;s legal
+                  responsibility.
+                </span>
+              </label>
+              {error ? (
+                <p className="mt-1 text-sm text-destructive">{error}</p>
+              ) : null}
+            </div>
+          );
+        }}
+      </form.Field>
+
+      <form.Field name="companyTwitter">
+        {(field) => (
+          <FormField
+            field={field}
+            label="Company Twitter (Optional)"
+            placeholder="Enter your company's Twitter handle"
+          />
         )}
-      />
-      <FormField
-        control={control}
-        name="companyTwitter"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="block mb-1">
-              Company Twitter (Optional)
-            </FormLabel>
-            <FormControl>
-              <Input
-                placeholder="Enter your company's Twitter handle"
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+      </form.Field>
+
+      <form.Field name="companyEmail">
+        {(field) => (
+          <FormField
+            field={field}
+            label="Company Email (stays private, for invoices)"
+            type="email"
+            placeholder="Enter your company email"
+          />
         )}
-      />
-      <FormField
-        control={control}
-        name="companyEmail"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="block mb-1">
-              Company Email (stays private, for invoices)
-            </FormLabel>
-            <FormControl>
-              <Input
-                type="email"
-                placeholder="Enter your company email"
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+      </form.Field>
+
+      <form.Field name="invoiceAddress">
+        {(field) => (
+          <div className="grid gap-2">
+            <Label htmlFor={field.name}>Invoice Address</Label>
+            <textarea
+              id={field.name}
+              className="flex min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              placeholder="Enter your invoice address"
+              value={field.state.value ?? ''}
+              onChange={(e) => field.handleChange(e.target.value)}
+              onBlur={field.handleBlur}
+            />
+          </div>
         )}
-      />
-      <FormField
-        control={control}
-        name="invoiceAddress"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="block mb-1">Invoice Address</FormLabel>
-            <FormControl>
-              <Textarea placeholder="Enter your invoice address" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      </form.Field>
+
       <div className="flex flex-col items-end gap-2">
         <Button
           className="bg-primary text-white"
           type="submit"
-          disabled={isSubmitting}
+          disabled={submitting}
         >
-          {isSubmitting ? 'Redirecting to payment…' : 'Post Job - £219'}
+          {submitting ? 'Redirecting to payment…' : 'Post Job - £219'}
         </Button>
+        {/* After a submit attempt, show a hint if the schema blocked it (the
+            required fields below aren't inline-erroring: work mode, IR35
+            position and the attestation). */}
+        <form.Subscribe
+          selector={(s) => ({
+            tried: s.submissionAttempts > 0,
+            valid: s.isValid,
+          })}
+        >
+          {({ tried, valid }) =>
+            tried && !valid ? (
+              <p className="text-sm text-destructive">
+                Please set the work mode, IR35 position and confirm the
+                attestation before posting.
+              </p>
+            ) : null
+          }
+        </form.Subscribe>
         {submitError ? (
           <p className="text-sm text-destructive">{submitError}</p>
         ) : null}
