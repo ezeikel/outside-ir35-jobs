@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 const PUBLIC_LINKS = [
   { href: '/jobs', label: 'Jobs' },
   { href: '/day-rates', label: 'Day rates' },
+  { href: '/take-home-calculator', label: 'Calculator' },
   { href: '/partners', label: 'IR35 insurance' },
   { href: '/blog', label: 'Blog' },
 ];

@@ -41,6 +41,14 @@ const Header = ({ className }: HeaderProps) => (
           <li>
             <Link
               className="transition-colors hover:text-foreground"
+              href="/take-home-calculator"
+            >
+              Calculator
+            </Link>
+          </li>
+          <li>
+            <Link
+              className="transition-colors hover:text-foreground"
               href="/partners"
             >
               IR35 insurance
