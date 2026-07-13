@@ -191,6 +191,19 @@ const RootLayout = () => {
             animation: "slide_from_right",
           }}
         />
+        {/* Take-home calculator — a free tool pushed from Find / Profile. */}
+        <Stack.Screen
+          name="take-home-calculator"
+          options={{
+            headerShown: true,
+            headerTitle: "Take-home calculator",
+            headerBackTitle: "Back",
+            headerTintColor: "#17181a",
+            headerStyle: { backgroundColor: "#f6f5f3" },
+            headerShadowVisible: false,
+            animation: "slide_from_right",
+          }}
+        />
         {/* Per-listing analytics, pushed from the Listings tab's Insights button. */}
         <Stack.Screen
           name="listing-analytics/[jobId]"

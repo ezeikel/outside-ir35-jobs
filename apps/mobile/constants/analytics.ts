@@ -28,6 +28,10 @@ export const ANALYTICS_EVENTS = {
 
   // ── Onboarding (MOBILE-ONLY — role pick in the native carousel) ──
   ONBOARDING_ROLE_SELECTED: "onboarding_role_selected",
+
+  // ── Take-home calculator (shared with web — same string as
+  //    apps/web/constants.ts CALCULATOR_USED; a day-rate-benchmark signal) ──
+  CALCULATOR_USED: "calculator_used",
 } as const;
 
 export type AnalyticsEvent =

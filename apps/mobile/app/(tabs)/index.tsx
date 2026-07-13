@@ -310,6 +310,15 @@ const JobsScreen = () => {
             >
               <Text className="text-sm text-foreground">Day rates →</Text>
             </Pressable>
+            {/* Take-home calculator — same context: "what do these pay AFTER tax?" */}
+            <Pressable
+              className="self-start rounded-lg border border-border bg-card px-3 py-2 active:opacity-70"
+              onPress={() => router.push("/take-home-calculator")}
+              accessibilityRole="button"
+              accessibilityLabel="Open the take-home calculator"
+            >
+              <Text className="text-sm text-foreground">Take-home →</Text>
+            </Pressable>
           </View>
         ) : null}
       </View>
