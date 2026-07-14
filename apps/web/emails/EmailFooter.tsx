@@ -78,7 +78,7 @@ const EmailFooter = ({
     ) : null}
 
     <Text style={copyright}>
-      © {new Date().getFullYear()} Chewy Bytes Limited · outsideir35jobs.com
+      © {new Date().getFullYear()} Outside IR35 Jobs · outsideir35jobs.com
     </Text>
   </Section>
 );
