@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
+import { api } from '@/lib/api';
 
 // Authoritative premium state — read from our backend (the DB), NOT the RC client
 // SDK. This is what recognises a web Stripe subscriber on mobile and vice-versa:
@@ -12,19 +12,19 @@ export type PremiumStatus = {
   status: string | null;
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
-  provider: "STRIPE" | "REVENUECAT" | null;
+  provider: 'STRIPE' | 'REVENUECAT' | null;
 };
 
 export const fetchPremium = async (): Promise<PremiumStatus> => {
-  const { data } = await api.get<PremiumStatus>("/api/mobile/premium");
+  const { data } = await api.get<PremiumStatus>('/api/mobile/premium');
   return data;
 };
 
 export const usePremium = () => {
   const { isAuthenticated, user } = useAuth();
-  const enabled = isAuthenticated && user?.role === "JOB_SEEKER";
+  const enabled = isAuthenticated && user?.role === 'JOB_SEEKER';
   const query = useQuery({
-    queryKey: ["premium"],
+    queryKey: ['premium'],
     queryFn: fetchPremium,
     enabled,
     // Entitlement state is money-sensitive and cheap to fetch, so keep it fresh:

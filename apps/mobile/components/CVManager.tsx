@@ -1,8 +1,8 @@
-import { faCheck, faPlus } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import * as Haptics from "expo-haptics";
-import { useState } from "react";
+import { faCheck, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import * as Haptics from 'expo-haptics';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -10,11 +10,11 @@ import {
   Text,
   TextInput,
   View,
-} from "react-native";
-import { toast } from "sonner-native";
-import ConfirmSheet from "@/components/ConfirmSheet";
-import DocViewer from "@/components/DocViewer";
-import { useDocViewer } from "@/hooks/useDocViewer";
+} from 'react-native';
+import { toast } from 'sonner-native';
+import ConfirmSheet from '@/components/ConfirmSheet';
+import DocViewer from '@/components/DocViewer';
+import { useDocViewer } from '@/hooks/useDocViewer';
 import {
   type CV,
   deleteCV,
@@ -23,22 +23,22 @@ import {
   renameCV,
   setActiveCV,
   uploadCV,
-} from "@/lib/api-cvs";
-import { pickDocumentFile } from "@/lib/pick-document";
+} from '@/lib/api-cvs';
+import { pickDocumentFile } from '@/lib/pick-document';
 
 // Named, multi-version CVs. A contractor keeps several CVs tailored to different
 // role-types; the ACTIVE one drives job matching + the pitch shown to posters.
 // Add (name + file pick), set-active, delete. Parsing happens server-side; we show
 // a "Reading…" hint until parsed.
 
-export const CV_QUERY_KEY = ["cvs"] as const;
+export const CV_QUERY_KEY = ['cvs'] as const;
 
 // Default CV name from the picked file (strip the extension). The user can rename
 // it after — naming up-front in a bottom sheet was fragile (the keyboard hid the
 // sheet), so we pick the file first and name from it.
 const nameFromFile = (filename: string): string => {
-  const base = filename.replace(/\.[^./\\]+$/, "").trim();
-  return base.slice(0, 60) || "My CV";
+  const base = filename.replace(/\.[^./\\]+$/, '').trim();
+  return base.slice(0, 60) || 'My CV';
 };
 
 const CVManager = () => {
@@ -55,7 +55,7 @@ const CVManager = () => {
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: CV_QUERY_KEY });
     // The active CV drives the profile (parsedProfile) — refresh that too.
-    void queryClient.invalidateQueries({ queryKey: ["profile"] });
+    void queryClient.invalidateQueries({ queryKey: ['profile'] });
   };
 
   // Tap Add CV → open the file picker straight away → upload, named from the file.
@@ -69,14 +69,14 @@ const CVManager = () => {
     },
     onSuccess: (cv) => {
       if (cv) {
-        toast.success("CV added. We’re reading it now.");
+        toast.success('CV added. We’re reading it now.');
         invalidate();
       }
     },
     onError: (e: unknown) => {
       const msg =
         (e as { response?: { data?: { error?: string } } })?.response?.data
-          ?.error ?? (e instanceof Error ? e.message : "Couldn’t add the CV.");
+          ?.error ?? (e instanceof Error ? e.message : 'Couldn’t add the CV.');
       toast.error(msg);
     },
     onSettled: () => setPending(null),
@@ -85,23 +85,23 @@ const CVManager = () => {
   const activate = useMutation({
     mutationFn: (id: string) => setActiveCV(id),
     onSuccess: () => {
-      toast.success("Active CV updated.");
+      toast.success('Active CV updated.');
       invalidate();
     },
-    onError: () => toast.error("Couldn’t switch CV. Try again."),
+    onError: () => toast.error('Couldn’t switch CV. Try again.'),
   });
 
   const rename = useMutation({
     mutationFn: ({ id, name }: { id: string; name: string }) =>
       renameCV(id, name),
     onSuccess: () => invalidate(),
-    onError: () => toast.error("Couldn’t rename. Try again."),
+    onError: () => toast.error('Couldn’t rename. Try again.'),
   });
 
   const remove = useMutation({
     mutationFn: (id: string) => deleteCV(id),
     onSuccess: () => invalidate(),
-    onError: () => toast.error("Couldn’t delete the CV. Try again."),
+    onError: () => toast.error('Couldn’t delete the CV. Try again.'),
   });
 
   return (
@@ -122,7 +122,8 @@ const CVManager = () => {
         </Pressable>
       </View>
       <Text className="mt-1 text-xs text-muted-foreground">
-        Keep a CV per role-type. Your active CV is used to match you to contracts.
+        Keep a CV per role-type. Your active CV is used to match you to
+        contracts.
       </Text>
 
       {isLoading ? (
@@ -141,7 +142,10 @@ const CVManager = () => {
           {pending ? (
             <View className="flex-row items-center gap-3 rounded-lg border border-border bg-card p-3 opacity-70">
               <ActivityIndicator color="#a3a09e" />
-              <Text className="flex-1 text-sm text-foreground" numberOfLines={1}>
+              <Text
+                className="flex-1 text-sm text-foreground"
+                numberOfLines={1}
+              >
                 {pending.name}
               </Text>
               <Text className="text-xs text-muted-foreground">Uploading…</Text>
@@ -167,7 +171,7 @@ const CVManager = () => {
       <ConfirmSheet
         isOpen={toDelete !== null}
         onClose={() => setToDelete(null)}
-        title={`Delete “${toDelete?.name ?? "CV"}”?`}
+        title={`Delete “${toDelete?.name ?? 'CV'}”?`}
         description="This removes the CV and its parsed profile. If it’s your active CV, another will take over matching."
         confirmLabel="Delete"
         onConfirm={() => {
@@ -210,8 +214,8 @@ const CVRow = ({
 
   // Status line mirrors the pack rows' "On file" / "Not provided" — here it's the
   // parse state + active flag.
-  const statusLine = `${cv.parsed ? "Ready" : "Reading…"}${
-    cv.isActive ? " · used for matching" : ""
+  const statusLine = `${cv.parsed ? 'Ready' : 'Reading…'}${
+    cv.isActive ? ' · used for matching' : ''
   }`;
 
   return (
@@ -299,11 +303,11 @@ const CVRow = ({
 
 const styles = StyleSheet.create({
   renameInput: {
-    fontFamily: "InterTight-SemiBold",
+    fontFamily: 'InterTight-SemiBold',
     fontSize: 14,
-    color: "#17181a",
+    color: '#17181a',
     borderBottomWidth: 1,
-    borderBottomColor: "#17181a",
+    borderBottomColor: '#17181a',
     paddingVertical: 2,
     paddingHorizontal: 0,
   },

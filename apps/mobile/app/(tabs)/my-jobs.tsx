@@ -3,30 +3,30 @@ import {
   faChartSimple,
   faHeart,
   faRectangleList,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { FlashList } from "@shopify/flash-list";
-import { useQuery } from "@tanstack/react-query";
-import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { FlashList } from '@shopify/flash-list';
+import { useQuery } from '@tanstack/react-query';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
   RefreshControl,
   Text,
   View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import CandidateDeck from "@/components/CandidateDeck";
-import ErrorState from "@/components/ErrorState";
-import { TAB_BAR_HEIGHT } from "@/components/GlassTabBar";
-import JobCard from "@/components/JobCard";
-import ProfileViewsCard from "@/components/ProfileViewsCard";
-import { useAuth } from "@/contexts/AuthContext";
-import { useSavedJobs } from "@/hooks/useSavedJobs";
-import { useViewMode } from "@/hooks/useViewMode";
-import { fetchApplications } from "@/lib/api-applications";
-import { fetchMyPosts, type PostSummary } from "@/lib/api-posts";
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import CandidateDeck from '@/components/CandidateDeck';
+import ErrorState from '@/components/ErrorState';
+import { TAB_BAR_HEIGHT } from '@/components/GlassTabBar';
+import JobCard from '@/components/JobCard';
+import ProfileViewsCard from '@/components/ProfileViewsCard';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSavedJobs } from '@/hooks/useSavedJobs';
+import { useViewMode } from '@/hooks/useViewMode';
+import { fetchApplications } from '@/lib/api-applications';
+import { fetchMyPosts, type PostSummary } from '@/lib/api-posts';
 
 // "My jobs" (seeker) / "My roles" (hiring). Mode-aware. Seekers get Saved +
 // Applications sub-tabs; hirers get their listings. The data surfaces (saved
@@ -44,13 +44,13 @@ const SegTab = ({
 }) => (
   <Pressable
     className="flex-1 items-center border-b-2 pb-3 pt-2 active:opacity-70"
-    style={{ borderBottomColor: active ? "#17181a" : "transparent" }}
+    style={{ borderBottomColor: active ? '#17181a' : 'transparent' }}
     onPress={onPress}
     accessibilityRole="button"
     accessibilityState={{ selected: active }}
   >
     <Text
-      className={`text-base ${active ? "font-sans-semibold text-foreground" : "text-muted-foreground"}`}
+      className={`text-base ${active ? 'font-sans-semibold text-foreground' : 'text-muted-foreground'}`}
     >
       {label}
     </Text>
@@ -91,7 +91,7 @@ const SignedOut = ({ insetTop }: { insetTop: number }) => {
       </Text>
       <Pressable
         className="mt-6 rounded-lg bg-primary px-6 py-3 active:opacity-90"
-        onPress={() => router.push("/(tabs)/profile")}
+        onPress={() => router.push('/(tabs)/profile')}
         accessibilityRole="button"
         accessibilityLabel="Sign in"
       >
@@ -107,19 +107,24 @@ const MyJobsScreen = () => {
   const insets = useSafeAreaInsets();
   const { isAuthenticated } = useAuth();
   const { mode } = useViewMode();
-  const [tab, setTab] = useState<"saved" | "applications">("saved");
+  const [tab, setTab] = useState<'saved' | 'applications'>('saved');
 
   // Signed-out HIRING gets the sign-in prompt (posting needs an account). A
   // signed-out SEEKER, though, can have locally-saved jobs (frictionless deck
   // triage) — so they fall through to the Saved tab below, which reads the local
   // store. Applications still needs auth (handled inside ApplicationsTab).
-  if (!isAuthenticated && mode === "hiring") {
+  if (!isAuthenticated && mode === 'hiring') {
     return <SignedOut insetTop={insets.top} />;
   }
 
   // Hiring view — Applicants (swipe to shortlist/pass) + Listings.
-  if (mode === "hiring") {
-    return <MyPosts bottomInset={insets.bottom + TAB_BAR_HEIGHT} topInset={insets.top} />;
+  if (mode === 'hiring') {
+    return (
+      <MyPosts
+        bottomInset={insets.bottom + TAB_BAR_HEIGHT}
+        topInset={insets.top}
+      />
+    );
   }
 
   // Seeker view — Saved + Applications.
@@ -134,17 +139,17 @@ const MyJobsScreen = () => {
       <View className="flex-row border-b border-border px-6">
         <SegTab
           label="Saved"
-          active={tab === "saved"}
-          onPress={() => setTab("saved")}
+          active={tab === 'saved'}
+          onPress={() => setTab('saved')}
         />
         <SegTab
           label="Applications"
-          active={tab === "applications"}
-          onPress={() => setTab("applications")}
+          active={tab === 'applications'}
+          onPress={() => setTab('applications')}
         />
       </View>
 
-      {tab === "saved" ? (
+      {tab === 'saved' ? (
         <SavedTab bottomInset={insets.bottom + TAB_BAR_HEIGHT} />
       ) : (
         <ApplicationsTab bottomInset={insets.bottom + TAB_BAR_HEIGHT} />
@@ -164,7 +169,7 @@ const ApplicationsTab = ({ bottomInset }: { bottomInset: number }) => {
     isRefetching,
     refetch,
   } = useQuery({
-    queryKey: ["applications"],
+    queryKey: ['applications'],
     queryFn: fetchApplications,
     // Applying needs an account, so the list is only fetched when signed in.
     enabled: isAuthenticated,
@@ -232,11 +237,11 @@ const ApplicationsTab = ({ bottomInset }: { bottomInset: number }) => {
             job={item.job}
             saved={false}
             canSave={false}
-            onToggleSave={() => {}}
+            onToggleSave={() => undefined}
           />
           <View className="-mt-2 mb-3 flex-row items-center gap-2 px-1">
             <Text className="text-xs text-muted-foreground">
-              Applied {new Date(item.appliedAt).toLocaleDateString("en-GB")}
+              Applied {new Date(item.appliedAt).toLocaleDateString('en-GB')}
             </Text>
             {item.viewed ? (
               <View className="rounded-full bg-secondary px-2 py-0.5">
@@ -330,7 +335,7 @@ const SavedTab = ({ bottomInset }: { bottomInset: number }) => {
         !isAuthenticated ? (
           <Pressable
             className="mb-3 flex-row items-center justify-between rounded-lg border border-border bg-card px-4 py-3 active:opacity-80"
-            onPress={() => router.push("/(tabs)/profile")}
+            onPress={() => router.push('/(tabs)/profile')}
             accessibilityRole="button"
             accessibilityLabel="Sign in to sync saved jobs"
           >
@@ -369,15 +374,15 @@ const SavedTab = ({ bottomInset }: { bottomInset: number }) => {
 // not yet paid), or CLOSED (paid but no longer active). Colour-coded so state reads
 // at a glance without reading the label.
 const StatusPill = ({ post }: { post: PostSummary }) => {
-  const live = post.isActive && post.paymentStatus !== "PENDING";
-  const pending = post.paymentStatus === "PENDING";
-  const label = live ? "Live" : pending ? "Payment due" : "Closed";
+  const live = post.isActive && post.paymentStatus !== 'PENDING';
+  const pending = post.paymentStatus === 'PENDING';
+  const label = live ? 'Live' : pending ? 'Payment due' : 'Closed';
   // Green = live, amber = payment due, grey = closed.
   const tone = live
-    ? { bg: "#e7f2ec", fg: "#1f5d43" }
+    ? { bg: '#e7f2ec', fg: '#1f5d43' }
     : pending
-      ? { bg: "#fdf1dc", fg: "#8a5a00" }
-      : { bg: "#efedea", fg: "#78716c" };
+      ? { bg: '#fdf1dc', fg: '#8a5a00' }
+      : { bg: '#efedea', fg: '#78716c' };
   return (
     <View
       className="self-start rounded-full px-2.5 py-1"
@@ -430,8 +435,8 @@ const PostRow = ({
       <View className="mt-3 flex-row items-center gap-4">
         <Text className="text-sm text-muted-foreground">
           {post.applicantCount === 0
-            ? "No applicants yet"
-            : `${post.applicantCount} applicant${post.applicantCount === 1 ? "" : "s"}`}
+            ? 'No applicants yet'
+            : `${post.applicantCount} applicant${post.applicantCount === 1 ? '' : 's'}`}
         </Text>
         {post.newApplicantCount > 0 ? (
           <View className="rounded-full bg-primary px-2 py-0.5">
@@ -469,7 +474,7 @@ const ListingsTab = ({ bottomInset }: { bottomInset: number }) => {
     isRefetching,
     refetch,
   } = useQuery({
-    queryKey: ["my-posts"],
+    queryKey: ['my-posts'],
     queryFn: fetchMyPosts,
   });
 
@@ -545,27 +550,30 @@ const MyPosts = ({
   topInset: number;
   bottomInset: number;
 }) => {
-  const [tab, setTab] = useState<"applicants" | "listings">("applicants");
+  const [tab, setTab] = useState<'applicants' | 'listings'>('applicants');
 
   return (
-    <View className="flex-1 bg-background" style={{ paddingTop: topInset + 12 }}>
+    <View
+      className="flex-1 bg-background"
+      style={{ paddingTop: topInset + 12 }}
+    >
       <Text className="px-6 pb-2 font-display text-3xl text-foreground">
         My roles
       </Text>
       <View className="flex-row border-b border-border px-6">
         <SegTab
           label="Applicants"
-          active={tab === "applicants"}
-          onPress={() => setTab("applicants")}
+          active={tab === 'applicants'}
+          onPress={() => setTab('applicants')}
         />
         <SegTab
           label="Listings"
-          active={tab === "listings"}
-          onPress={() => setTab("listings")}
+          active={tab === 'listings'}
+          onPress={() => setTab('listings')}
         />
       </View>
 
-      {tab === "applicants" ? (
+      {tab === 'applicants' ? (
         <CandidateDeck bottomInset={bottomInset} />
       ) : (
         <ListingsTab bottomInset={bottomInset} />

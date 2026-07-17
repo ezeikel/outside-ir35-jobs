@@ -1,7 +1,7 @@
-import { faShareNodes, faXmark } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { Image } from "expo-image";
-import { useState } from "react";
+import { faShareNodes, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Image } from 'expo-image';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -9,9 +9,9 @@ import {
   Share,
   Text,
   View,
-} from "react-native";
-import Pdf from "react-native-pdf";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+} from 'react-native';
+import Pdf from 'react-native-pdf';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // A full-screen, in-app document viewer (VIEW-ONLY). Renders a PDF natively
 // (react-native-pdf: pinch-zoom, page swipe, thumbnails) or an image
@@ -29,7 +29,7 @@ type DocViewerProps = {
   url: string | null;
   title: string;
   // Drives the renderer. Falls back to PDF when unknown (the common case).
-  kind?: "pdf" | "image";
+  kind?: 'pdf' | 'image';
 };
 
 const DocViewer = ({ isOpen, onClose, url, title, kind }: DocViewerProps) => {
@@ -37,7 +37,7 @@ const DocViewer = ({ isOpen, onClose, url, title, kind }: DocViewerProps) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  const isImage = kind === "image";
+  const isImage = kind === 'image';
 
   const share = async () => {
     if (!url) return;
@@ -106,7 +106,7 @@ const DocViewer = ({ isOpen, onClose, url, title, kind }: DocViewerProps) => {
             <Pdf
               source={{ uri: url, cache: true }}
               trustAllCerts={false}
-              style={{ flex: 1, backgroundColor: "#f6f5f3" }}
+              style={{ flex: 1, backgroundColor: '#f6f5f3' }}
               onLoadComplete={() => setLoading(false)}
               onError={() => setError(true)}
               renderActivityIndicator={() => (

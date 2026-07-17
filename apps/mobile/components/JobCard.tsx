@@ -1,10 +1,10 @@
-import { faShieldHalved } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { Link } from "expo-router";
-import { Pressable, Text, View } from "react-native";
-import SaveHeart from "@/components/SaveHeart";
-import type { MobileJobCard } from "@/lib/api-jobs";
-import { formatDayRate, postedLabel } from "@/lib/format";
+import { faShieldHalved } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Link } from 'expo-router';
+import { Pressable, Text, View } from 'react-native';
+import SaveHeart from '@/components/SaveHeart';
+import type { MobileJobCard } from '@/lib/api-jobs';
+import { formatDayRate, postedLabel } from '@/lib/format';
 
 // One board card. Honest IR35 presentation: shows only the client's stated
 // position label (ir35Label), never a platform assertion. INSIDE never reaches

@@ -1,7 +1,7 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
-import type { MobileJobCard } from "@/lib/api-jobs";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import type { MobileJobCard } from '@/lib/api-jobs';
 
 // Saved jobs for a SIGNED-OUT user. The whole point of the swipe deck is
 // frictionless triage — a brand-new user should be able to land, swipe, and save
@@ -44,7 +44,7 @@ export const useLocalSavedJobsStore = create<
       clear: () => set({ items: [] }),
     }),
     {
-      name: "local-saved-jobs-store",
+      name: 'local-saved-jobs-store',
       storage: createJSONStorage(() => AsyncStorage),
     },
   ),

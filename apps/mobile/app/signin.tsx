@@ -1,9 +1,9 @@
-import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
-import { faFacebook, faGoogle } from "@fortawesome/free-brands-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import * as AppleAuthentication from "expo-apple-authentication";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { faFacebook, faGoogle } from '@fortawesome/free-brands-svg-icons';
+import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Platform,
@@ -11,12 +11,12 @@ import {
   Text,
   TextInput,
   View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useAuth } from "@/contexts/AuthContext";
-import type { OAuthSignInResponse } from "@/lib/api-auth";
-import { submitOnboarding } from "@/lib/api-account";
-import { useOnboardingStore } from "@/stores/onboardingStore";
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAuth } from '@/contexts/AuthContext';
+import { submitOnboarding } from '@/lib/api-account';
+import type { OAuthSignInResponse } from '@/lib/api-auth';
+import { useOnboardingStore } from '@/stores/onboardingStore';
 
 // The dedicated, opt-in sign-in screen — the one canonical place to sign in
 // (reached from Profile → "Sign in", or deep-linked). Onboarding never asks for
@@ -38,7 +38,7 @@ const SignInScreen = () => {
   const pendingRole = useOnboardingStore((s) => s.pendingRole);
   const clearPendingRole = useOnboardingStore((s) => s.clearPendingRole);
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('');
   const [sendingLink, setSendingLink] = useState(false);
   const [linkSent, setLinkSent] = useState(false);
 
@@ -58,7 +58,7 @@ const SignInScreen = () => {
     }
     clearPendingRole();
     if (router.canGoBack()) router.back();
-    else router.replace("/(tabs)");
+    else router.replace('/(tabs)');
   };
 
   const sendLink = async () => {
@@ -115,7 +115,7 @@ const SignInScreen = () => {
               </Text>
             </Pressable>
 
-            {Platform.OS === "ios" ? (
+            {Platform.OS === 'ios' ? (
               <AppleAuthentication.AppleAuthenticationButton
                 buttonType={
                   AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN
@@ -168,7 +168,7 @@ const SignInScreen = () => {
               editable={!sendingLink}
             />
             <Pressable
-              className={`flex-row items-center justify-center gap-3 rounded-lg border border-border bg-card p-4 ${emailValid ? "active:opacity-80" : "opacity-40"}`}
+              className={`flex-row items-center justify-center gap-3 rounded-lg border border-border bg-card p-4 ${emailValid ? 'active:opacity-80' : 'opacity-40'}`}
               disabled={!emailValid || sendingLink}
               onPress={sendLink}
             >
@@ -176,7 +176,11 @@ const SignInScreen = () => {
                 <ActivityIndicator color="#17181a" />
               ) : (
                 <>
-                  <FontAwesomeIcon icon={faEnvelope} color="#17181a" size={18} />
+                  <FontAwesomeIcon
+                    icon={faEnvelope}
+                    color="#17181a"
+                    size={18}
+                  />
                   <Text className="font-sans-semibold text-foreground">
                     Email me a sign-in link
                   </Text>

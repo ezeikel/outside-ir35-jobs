@@ -1,8 +1,8 @@
-import { faLocationDot, faXmark } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { useEffect, useRef, useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
-import { geocodePlaces, type GeoSuggestion } from "@/lib/api-mapbox";
+import { faLocationDot, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { useEffect, useRef, useState } from 'react';
+import { Pressable, Text, TextInput, View } from 'react-native';
+import { type GeoSuggestion, geocodePlaces } from '@/lib/api-mapbox';
 
 // Location input with Mapbox city-level suggestions (GB). Debounced so we don't
 // fire a geocode per keystroke; an AbortController cancels the superseded request.
@@ -77,7 +77,7 @@ const LocationField = ({
           <Pressable
             hitSlop={8}
             onPress={() => {
-              onChangeText("");
+              onChangeText('');
               setSuggestions([]);
             }}
             accessibilityRole="button"
@@ -94,7 +94,7 @@ const LocationField = ({
             <Pressable
               key={s.id}
               className={`px-3 py-3 active:bg-secondary ${
-                i > 0 ? "border-t border-border" : ""
+                i > 0 ? 'border-t border-border' : ''
               }`}
               onPress={() => pick(s)}
               accessibilityRole="button"

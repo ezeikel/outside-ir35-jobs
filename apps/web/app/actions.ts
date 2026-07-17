@@ -5,6 +5,7 @@ import {
   ContractorDocType,
   type ContractorTrustTier,
   DocStatus,
+  isDatabaseConfigured,
   type JobIR35Signal,
   type JobSource,
   Prisma,
@@ -449,8 +450,11 @@ export const fulfilJobPayment = async (jobId: string): Promise<void> => {
   revalidatePath('/');
 };
 
-export const getJobs = async () =>
-  prisma.job.findMany({
+export const getJobs = async () => {
+  // DB-less builds (fresh clone, CI) prerender an empty board; every deployed
+  // environment has DATABASE_URL, so runtime behavior is unchanged.
+  if (!isDatabaseConfigured()) return [];
+  return prisma.job.findMany({
     // Outside-IR35 board: the homepage latest-jobs never shows explicit INSIDE
     // listings (they stay in the DB for the day-rates benchmark only).
     // boardVisible is the absolute gate; the ir35Signal clause is belt-and-braces.
@@ -461,6 +465,7 @@ export const getJobs = async () =>
     },
     orderBy: { createdAt: 'desc' },
   });
+};
 
 // A row shaped for jobToCard (the columns the card needs). Raw queries return
 // snake/camel exactly as the columns are named in Postgres.
@@ -797,6 +802,9 @@ export type DayRateBenchmark = {
  * publish a benchmark off thin data (honesty, per docs/ir35-trust-model.md).
  */
 export const getDayRateBenchmarks = async (): Promise<DayRateBenchmark[]> => {
+  // DB-less builds (fresh clone, CI) prerender an empty benchmark table; every
+  // deployed environment has DATABASE_URL, so runtime behavior is unchanged.
+  if (!isDatabaseConfigured()) return [];
   return prisma.$queryRaw<DayRateBenchmark[]>`
     WITH job_rates AS (
       SELECT
@@ -845,6 +853,8 @@ export const getDayRateBenchmarks = async (): Promise<DayRateBenchmark[]> => {
 // board-visible active job AND a benchmark clearing MIN_SAMPLE in any bucket.
 // Returns the raw skill slugs (lowercased) for generateStaticParams + the sitemap.
 export const getSeoSkills = async (): Promise<string[]> => {
+  // DB-less builds (fresh clone, CI): no programmatic pages to enumerate.
+  if (!isDatabaseConfigured()) return [];
   const rows = await prisma.$queryRaw<{ skill: string }[]>`
     WITH job_rates AS (
       SELECT j.id, lower(trim(skill)) AS skill,

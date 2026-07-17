@@ -1,25 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Slider from "@/components/Slider";
-import { ANALYTICS_EVENTS } from "@/constants/analytics";
-import { useAnalytics } from "@/lib/analytics";
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Slider from '@/components/Slider';
+import { ANALYTICS_EVENTS } from '@/constants/analytics';
+import { useAnalytics } from '@/lib/analytics';
 import {
   calculateTakeHome,
   DEFAULT_SALARY,
   DEFAULT_TAX_YEAR,
   TAKE_HOME_CAVEATS,
   taxConstants,
-} from "@/lib/tax/takeHome";
+} from '@/lib/tax/takeHome';
 
-const fmt = (n: number) => `£${Math.round(n).toLocaleString("en-GB")}`;
-const digits = (s: string) => s.replace(/[^0-9]/g, "");
+const fmt = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
+const digits = (s: string) => s.replace(/[^0-9]/g, '');
 const toNum = (s: string) => {
   const n = Number(s);
   return Number.isFinite(n) && n >= 0 ? n : 0;
@@ -37,17 +31,17 @@ const TakeHomeCalculatorScreen = () => {
   const insets = useSafeAreaInsets();
   const { trackEvent } = useAnalytics();
 
-  const [dayRateStr, setDayRateStr] = useState("500");
-  const [daysStr, setDaysStr] = useState("220");
+  const [dayRateStr, setDayRateStr] = useState('500');
+  const [daysStr, setDaysStr] = useState('220');
   const [salary, setSalary] = useState(DEFAULT_SALARY);
-  const [expensesStr, setExpensesStr] = useState("");
-  const [divMode, setDivMode] = useState<"all" | "custom">("all");
+  const [expensesStr, setExpensesStr] = useState('');
+  const [divMode, setDivMode] = useState<'all' | 'custom'>('all');
   const [customDividends, setCustomDividends] = useState(0);
   const [showBreakdown, setShowBreakdown] = useState(false);
 
   const dayRate = toNum(dayRateStr);
   const daysWorked = toNum(daysStr);
-  const expenses = expensesStr === "" ? undefined : toNum(expensesStr);
+  const expenses = expensesStr === '' ? undefined : toNum(expensesStr);
 
   const maxResult = useMemo(
     () => calculateTakeHome({ dayRate, daysWorked, salary, expenses }),
@@ -62,7 +56,7 @@ const TakeHomeCalculatorScreen = () => {
 
   const result = useMemo(
     () =>
-      divMode === "all"
+      divMode === 'all'
         ? maxResult
         : calculateTakeHome({
             dayRate,
@@ -71,16 +65,24 @@ const TakeHomeCalculatorScreen = () => {
             expenses,
             dividends: customDividends,
           }),
-    [divMode, maxResult, dayRate, daysWorked, salary, expenses, customDividends],
+    [
+      divMode,
+      maxResult,
+      dayRate,
+      daysWorked,
+      salary,
+      expenses,
+      customDividends,
+    ],
   );
 
   const retainedInCompany = Math.max(0, maxDividends - result.dividends);
 
   // Debounced market-intelligence event (settled inputs, not every drag frame).
-  const lastTracked = useRef("");
+  const lastTracked = useRef('');
   useEffect(() => {
     if (dayRate <= 0 || daysWorked <= 0) return;
-    const key = `${dayRate}|${daysWorked}|${salary}|${expenses ?? ""}|${divMode}|${result.dividends}`;
+    const key = `${dayRate}|${daysWorked}|${salary}|${expenses ?? ''}|${divMode}|${result.dividends}`;
     if (key === lastTracked.current) return;
     const id = setTimeout(() => {
       lastTracked.current = key;
@@ -110,7 +112,7 @@ const TakeHomeCalculatorScreen = () => {
 
   const enterCustom = () => {
     setCustomDividends(Math.round(maxDividends));
-    setDivMode("custom");
+    setDivMode('custom');
   };
 
   return (
@@ -185,10 +187,10 @@ const TakeHomeCalculatorScreen = () => {
         />
         <Text className="text-xs text-muted-foreground">
           {salary === DEFAULT_SALARY
-            ? "The usual low-salary split (matches the personal allowance)."
+            ? 'The usual low-salary split (matches the personal allowance).'
             : salary < DEFAULT_SALARY
-              ? "Below the personal allowance."
-              : "Above the NI threshold, so extra salary is taxed."}
+              ? 'Below the personal allowance.'
+              : 'Above the NI threshold, so extra salary is taxed.'}
         </Text>
       </View>
 
@@ -202,7 +204,7 @@ const TakeHomeCalculatorScreen = () => {
             {fmt(result.dividends)}
           </Text>
         </View>
-        {divMode === "all" ? (
+        {divMode === 'all' ? (
           <Pressable onPress={enterCustom} className="mt-1 active:opacity-70">
             <Text className="text-sm font-sans-medium text-link">
               Taking all profit as dividends. Draw less instead?
@@ -222,7 +224,7 @@ const TakeHomeCalculatorScreen = () => {
                 First {fmt(C.DIVIDEND_ALLOWANCE)} tax-free ({DEFAULT_TAX_YEAR})
               </Text>
               <Pressable
-                onPress={() => setDivMode("all")}
+                onPress={() => setDivMode('all')}
                 className="active:opacity-70"
               >
                 <Text className="text-xs font-sans-medium text-link">
@@ -262,10 +264,10 @@ const TakeHomeCalculatorScreen = () => {
           {fmt(result.takeHome)}
         </Text>
         <Text className="mt-2 text-sm text-muted-foreground">
-          You keep{" "}
+          You keep{' '}
           <Text className="font-sans-semibold text-foreground">
             {Math.round(result.retentionRate * 100)}%
-          </Text>{" "}
+          </Text>{' '}
           of {fmt(result.revenue)} billed.
         </Text>
         {retainedInCompany > 0 ? (
@@ -291,14 +293,17 @@ const TakeHomeCalculatorScreen = () => {
         className="mt-4 active:opacity-70"
       >
         <Text className="text-sm font-sans-medium text-link">
-          {showBreakdown ? "Hide breakdown" : "Show breakdown"}
+          {showBreakdown ? 'Hide breakdown' : 'Show breakdown'}
         </Text>
       </Pressable>
       {showBreakdown ? (
         <View className="mt-3 gap-2">
           <BreakdownRow label="Company revenue" value={fmt(result.revenue)} />
           {result.expenses > 0 ? (
-            <BreakdownRow label="Expenses" value={`− ${fmt(result.expenses)}`} />
+            <BreakdownRow
+              label="Expenses"
+              value={`− ${fmt(result.expenses)}`}
+            />
           ) : null}
           <BreakdownRow
             label="Corporation tax"

@@ -1,5 +1,5 @@
-import { type ReactNode } from "react";
-import { View, type ViewStyle } from "react-native";
+import { type ReactNode } from 'react';
+import { View, type ViewStyle } from 'react-native';
 
 // A centred, max-width reading column. On a phone the cap is wider than the
 // screen so it's a no-op (full-bleed as before); on a tablet it keeps text and
@@ -18,7 +18,7 @@ const ContentColumn = ({
   maxWidth?: number;
   style?: ViewStyle;
 }) => (
-  <View style={[{ width: "100%", maxWidth, alignSelf: "center" }, style]}>
+  <View style={[{ width: '100%', maxWidth, alignSelf: 'center' }, style]}>
     {children}
   </View>
 );

@@ -25,26 +25,32 @@
     ]
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.16",
-    "husky": "^9.0.11",
-    "lint-staged": "^15.2.2",
-    "turbo": "^2.5.6",
+    "@biomejs/biome": "^2.5.4",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.2",
+    "turbo": "^2.10.5",
     "typescript": "~6.0.3"
   },
   "packageManager": "pnpm@10.25.0",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "pnpm": {
     "overrides": {
-      "@types/react": "^19.2.0",
-      "@types/react-dom": "^19.2.0",
-      "next": "16.1.0",
-      "lightningcss": "1.30.1"
+      "@types/react": "19.2.14",
+      "@types/react-dom": "19.2.3",
+      "next": "16.2.10",
+      "lightningcss": "1.30.1",
+      "react": "19.2.3",
+      "react-dom": "19.2.3"
     },
     "onlyBuiltDependencies": [
+      "@prisma/engines",
+      "@sentry/cli",
       "@shopify/react-native-skia",
+      "core-js",
       "esbuild",
+      "prisma",
       "sharp",
       "unrs-resolver"
     ]

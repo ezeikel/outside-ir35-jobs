@@ -1,4 +1,4 @@
-import { Text, TextInput, View } from "react-native";
+import { Text, TextInput, View } from 'react-native';
 
 // Day-rate input for the post-a-job form. A contract's rate is either a single
 // figure (£550/day) or a range (£500–£600/day) — the web PostJobForm supports
@@ -32,7 +32,7 @@ const RateBox = ({
         placeholder={placeholder}
         placeholderTextColor="#a3a09e"
         value={value}
-        onChangeText={(t) => onChangeText(t.replace(/[^0-9]/g, ""))}
+        onChangeText={(t) => onChangeText(t.replace(/[^0-9]/g, ''))}
         keyboardType="number-pad"
         maxLength={5}
       />

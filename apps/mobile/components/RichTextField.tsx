@@ -4,22 +4,16 @@ import {
   faLink,
   faListOl,
   faListUl,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { ModalBottomSheet } from "@swmansion/react-native-bottom-sheet";
-import { useRef, useState } from "react";
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { ModalBottomSheet } from '@swmansion/react-native-bottom-sheet';
+import { useRef, useState } from 'react';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import {
   EnrichedTextInput,
   type EnrichedTextInputInstance,
-} from "react-native-enriched";
+} from 'react-native-enriched';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Brand-styled rich-text field built on react-native-enriched (Swmansion's
 // fully-native editor — no webview). Produces HTML via onChangeHtml that
@@ -31,8 +25,8 @@ import {
 // is uncontrolled (the native view owns its value); `defaultValue` seeds it once
 // and onChangeHtml streams the HTML out to the form.
 
-const ACTIVE = "#17181a";
-const INACTIVE = "#a3a09e";
+const ACTIVE = '#17181a';
+const INACTIVE = '#a3a09e';
 
 type RichTextFieldProps = {
   label: string;
@@ -74,9 +68,7 @@ const ToolbarButton = ({
         color={isActive ? ACTIVE : INACTIVE}
       />
     ) : (
-      <Text
-        style={[styles.toolText, { color: isActive ? ACTIVE : INACTIVE }]}
-      >
+      <Text style={[styles.toolText, { color: isActive ? ACTIVE : INACTIVE }]}>
         {text}
       </Text>
     )}
@@ -104,9 +96,9 @@ const RichTextField = ({
     link: false,
   });
   // The live selection range + text, so the link button knows what to wrap.
-  const selection = useRef({ start: 0, end: 0, text: "" });
+  const selection = useRef({ start: 0, end: 0, text: '' });
   const [linkSheetOpen, setLinkSheetOpen] = useState(false);
-  const [linkUrl, setLinkUrl] = useState("");
+  const [linkUrl, setLinkUrl] = useState('');
 
   // Tapping the link button: if the cursor is in an existing link, remove it;
   // otherwise (text selected) open the URL sheet to wrap the selection.
@@ -117,7 +109,7 @@ const RichTextField = ({
       return;
     }
     if (end <= start) return; // nothing selected — a link needs a target range
-    setLinkUrl("");
+    setLinkUrl('');
     setLinkSheetOpen(true);
   };
 
@@ -130,7 +122,7 @@ const RichTextField = ({
       ref.current?.setLink(start, end, text, url);
     }
     setLinkSheetOpen(false);
-    setLinkUrl("");
+    setLinkUrl('');
   };
 
   return (
@@ -140,7 +132,7 @@ const RichTextField = ({
       </Text>
 
       <View
-        className={`rounded-lg border bg-background ${error ? "border-destructive" : "border-border"}`}
+        className={`rounded-lg border bg-background ${error ? 'border-destructive' : 'border-border'}`}
       >
         {/* Formatting toolbar — mirrors the web TipTap controls. */}
         <View style={styles.toolbar}>
@@ -187,7 +179,7 @@ const RichTextField = ({
             icon={faLink}
             isActive={active.link}
             onPress={onLinkPress}
-            a11y={active.link ? "Remove link" : "Add link"}
+            a11y={active.link ? 'Remove link' : 'Add link'}
           />
         </View>
 
@@ -217,9 +209,7 @@ const RichTextField = ({
         />
       </View>
 
-      {error ? (
-        <Text className="text-xs text-destructive">{error}</Text>
-      ) : null}
+      {error ? <Text className="text-xs text-destructive">{error}</Text> : null}
 
       {/* Link URL entry — a small bottom sheet (no Alert.prompt per the app's
           rule). Only mounted while open. */}
@@ -289,32 +279,32 @@ const RichTextField = ({
 
 const styles = StyleSheet.create({
   toolbar: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 4,
     padding: 6,
     borderBottomWidth: 1,
-    borderBottomColor: "#e8e7e5",
+    borderBottomColor: '#e8e7e5',
   },
   toolBtn: {
     minWidth: 34,
     height: 34,
     paddingHorizontal: 6,
     borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   toolBtnActive: {
-    backgroundColor: "#f6f5f4",
+    backgroundColor: '#f6f5f4',
   },
   toolText: {
-    fontFamily: "InterTight-SemiBold",
+    fontFamily: 'InterTight-SemiBold',
     fontSize: 13,
   },
   divider: {
     width: StyleSheet.hairlineWidth,
     height: 20,
-    backgroundColor: "#e8e7e5",
+    backgroundColor: '#e8e7e5',
     marginHorizontal: 2,
   },
   pressed: {
@@ -324,21 +314,21 @@ const styles = StyleSheet.create({
     minHeight: 140,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    color: "#17181a",
+    color: '#17181a',
     fontSize: 15,
   },
   linkSheet: {
-    backgroundColor: "#ffffff",
+    backgroundColor: '#ffffff',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingTop: 10,
   },
   handle: {
-    alignSelf: "center",
+    alignSelf: 'center',
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#d6d4d1",
+    backgroundColor: '#d6d4d1',
     marginBottom: 12,
   },
   linkContent: {
@@ -347,21 +337,21 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   linkTitle: {
-    fontFamily: "InterTight-SemiBold",
+    fontFamily: 'InterTight-SemiBold',
     fontSize: 18,
-    color: "#17181a",
+    color: '#17181a',
   },
   linkInput: {
     borderWidth: 1,
-    borderColor: "#e8e7e5",
+    borderColor: '#e8e7e5',
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
-    color: "#17181a",
+    color: '#17181a',
   },
   linkActions: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 10,
     marginTop: 4,
   },
@@ -369,26 +359,26 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 12,
     paddingVertical: 14,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   linkCancel: {
-    backgroundColor: "#ffffff",
+    backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: "#e8e7e5",
+    borderColor: '#e8e7e5',
   },
   linkApply: {
-    backgroundColor: "#17181a",
+    backgroundColor: '#17181a',
   },
   linkCancelText: {
-    fontFamily: "InterTight-SemiBold",
+    fontFamily: 'InterTight-SemiBold',
     fontSize: 15,
-    color: "#17181a",
+    color: '#17181a',
   },
   linkApplyText: {
-    fontFamily: "InterTight-SemiBold",
+    fontFamily: 'InterTight-SemiBold',
     fontSize: 15,
-    color: "#fbfaf9",
+    color: '#fbfaf9',
   },
 });
 

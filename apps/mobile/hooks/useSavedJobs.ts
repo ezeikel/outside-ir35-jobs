@@ -1,23 +1,23 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo } from "react";
-import { toast } from "sonner-native";
-import { useAuth } from "@/contexts/AuthContext";
-import { useViewMode } from "@/hooks/useViewMode";
-import type { MobileJobCard } from "@/lib/api-jobs";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo } from 'react';
+import { toast } from 'sonner-native';
+import { useAuth } from '@/contexts/AuthContext';
+import { useViewMode } from '@/hooks/useViewMode';
+import type { MobileJobCard } from '@/lib/api-jobs';
 import {
   fetchSavedJobs,
   type SavedJob,
   saveJob,
   unsaveJob,
-} from "@/lib/api-saved-jobs";
+} from '@/lib/api-saved-jobs';
 import {
   applyOptimisticToggle,
   nextToggleAction,
   reverseOptimisticToggle,
-} from "@/lib/saved-jobs-cache";
-import { useLocalSavedJobsStore } from "@/stores/localSavedJobsStore";
+} from '@/lib/saved-jobs-cache';
+import { useLocalSavedJobsStore } from '@/stores/localSavedJobsStore';
 
-export const SAVED_JOBS_KEY = ["savedJobs"] as const;
+export const SAVED_JOBS_KEY = ['savedJobs'] as const;
 
 // Stamp used for local saves (Date.now is fine on-device; only ordering matters).
 const nowIso = () => new Date().toISOString();
@@ -43,7 +43,7 @@ export const useSavedJobs = () => {
 
   // Saving is a seeker action, but it does NOT require an account: signed-out
   // seekers save locally (frictionless deck triage) and we sync on sign-in.
-  const isSeeker = mode === "seeker";
+  const isSeeker = mode === 'seeker';
   // The SERVER query only runs when signed in; signed-out reads come from the
   // local store.
   const serverEnabled = isAuthenticated && isSeeker;
@@ -168,7 +168,7 @@ export const useSavedJobs = () => {
           reverseOptimisticToggle(list, ctx.job, ctx.wasSaved),
         );
       }
-      toast.error("Couldn’t update saved jobs. Try again.");
+      toast.error('Couldn’t update saved jobs. Try again.');
     },
     // Reconcile with the server once the LAST concurrent toggle settles. The write
     // has already committed (the mutationFn await resolved before onSettled), so
@@ -202,7 +202,7 @@ export const useSavedJobs = () => {
         nextToggleAction(
           queryClient.getQueryData<SavedJob[]>(SAVED_JOBS_KEY) ?? [],
           job.id,
-        ) === "unsave";
+        ) === 'unsave';
       toggle.mutate({ job, wasSaved });
     },
     [isAuthenticated, savedIds, localUnsave, localSave, queryClient, toggle],

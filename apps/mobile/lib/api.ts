@@ -1,6 +1,6 @@
-import axios, { type AxiosInstance } from "axios";
-import { Platform } from "react-native";
-import { getSessionToken } from "@/lib/auth";
+import axios, { type AxiosInstance } from 'axios';
+import { Platform } from 'react-native';
+import { getSessionToken } from '@/lib/auth';
 
 // Base URL resolution. Prod is the live site; in dev each platform reaches the
 // host machine differently (iOS sim → 127.0.0.1, Android emulator → 10.0.2.2).
@@ -10,14 +10,14 @@ import { getSessionToken } from "@/lib/auth";
 // http://192.168.1.x:3000). EXPO_PUBLIC_API_URL also overrides for
 // preview/staging builds.
 const DEV_PORT = 3000;
-const PROD_BASE_URL = "https://www.outsideir35jobs.com";
+const PROD_BASE_URL = 'https://www.outsideir35jobs.com';
 const DEV_BASE_URL = Platform.select({
   ios: `http://127.0.0.1:${DEV_PORT}`,
   android: `http://10.0.2.2:${DEV_PORT}`,
   default: `http://127.0.0.1:${DEV_PORT}`,
 });
 
-const isDev = process.env.NODE_ENV !== "production";
+const isDev = process.env.NODE_ENV !== 'production';
 
 export const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_URL ?? (isDev ? DEV_BASE_URL : PROD_BASE_URL);
@@ -28,7 +28,7 @@ export const API_BASE_URL =
 // them"), so web + mobile share one implementation.
 export const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  headers: { "Content-Type": "application/json" },
+  headers: { 'Content-Type': 'application/json' },
   timeout: 20_000,
 });
 

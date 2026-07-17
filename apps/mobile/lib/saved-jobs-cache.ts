@@ -1,5 +1,5 @@
-import type { MobileJobCard } from "@/lib/api-jobs";
-import type { SavedJob } from "@/lib/api-saved-jobs";
+import type { MobileJobCard } from '@/lib/api-jobs';
+import type { SavedJob } from '@/lib/api-saved-jobs';
 
 // Pure cache transforms for the optimistic saved-jobs flow. Extracted from the
 // useSavedJobs hook so the race-critical logic (what happens when several
@@ -12,7 +12,7 @@ import type { SavedJob } from "@/lib/api-saved-jobs";
 
 const synthetic = (job: MobileJobCard): SavedJob => ({
   id: `optimistic-${job.id}`,
-  savedAt: "",
+  savedAt: '',
   job,
 });
 
@@ -60,9 +60,9 @@ export const isJobSaved = (list: SavedJob[], jobId: string): boolean =>
 // the cache AFTER the optimistic toggle already flipped it — an unsave then reads as
 // "not saved" and fires a SAVE ("unliking doesn't work"). Always decide up-front and
 // thread the result through.
-export type ToggleAction = "save" | "unsave";
+export type ToggleAction = 'save' | 'unsave';
 
 export const nextToggleAction = (
   list: SavedJob[],
   jobId: string,
-): ToggleAction => (isJobSaved(list, jobId) ? "unsave" : "save");
+): ToggleAction => (isJobSaved(list, jobId) ? 'unsave' : 'save');

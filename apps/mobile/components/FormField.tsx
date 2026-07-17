@@ -1,5 +1,5 @@
-import type { AnyFieldApi } from "@tanstack/react-form";
-import { Text, TextInput, type TextInputProps, View } from "react-native";
+import type { AnyFieldApi } from '@tanstack/react-form';
+import { Text, TextInput, type TextInputProps, View } from 'react-native';
 
 // Styled field for TanStack Form (v1). Render inside a `form.Field`'s children
 // render-prop and pass it the `field`. Shows the label, a brand-styled input,
@@ -10,8 +10,8 @@ type FormFieldProps = {
   field: AnyFieldApi;
   label: string;
   placeholder?: string;
-  keyboardType?: TextInputProps["keyboardType"];
-  autoCapitalize?: TextInputProps["autoCapitalize"];
+  keyboardType?: TextInputProps['keyboardType'];
+  autoCapitalize?: TextInputProps['autoCapitalize'];
 };
 
 const FormField = ({
@@ -36,7 +36,7 @@ const FormField = ({
       </Text>
       <TextInput
         className={`rounded-lg border bg-background px-3 py-3 text-sm text-foreground ${
-          error ? "border-destructive" : "border-border"
+          error ? 'border-destructive' : 'border-border'
         }`}
         placeholder={placeholder}
         placeholderTextColor="#a3a09e"
@@ -46,9 +46,7 @@ const FormField = ({
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize}
       />
-      {error ? (
-        <Text className="text-xs text-destructive">{error}</Text>
-      ) : null}
+      {error ? <Text className="text-xs text-destructive">{error}</Text> : null}
     </View>
   );
 };

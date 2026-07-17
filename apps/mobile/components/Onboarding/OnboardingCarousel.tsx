@@ -2,8 +2,8 @@ import {
   faBriefcase,
   faIdBadge,
   faShieldHalved,
-} from "@fortawesome/free-solid-svg-icons";
-import { useCallback, useRef, useState } from "react";
+} from '@fortawesome/free-solid-svg-icons';
+import { useCallback, useRef, useState } from 'react';
 import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
@@ -12,18 +12,18 @@ import {
   Text,
   useWindowDimensions,
   View,
-} from "react-native";
+} from 'react-native';
 import Animated, {
   interpolate,
   type SharedValue,
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
-} from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import type { OnboardingInput } from "@/lib/api-account";
-import OnboardingSlide from "./OnboardingSlide";
-import RolePickerSlide from "./RolePickerSlide";
+} from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import type { OnboardingInput } from '@/lib/api-account';
+import OnboardingSlide from './OnboardingSlide';
+import RolePickerSlide from './RolePickerSlide';
 
 // Swipeable onboarding: three value-prop slides then the role picker. Paging is a
 // native horizontal paging ScrollView (the chunky-crayon / go-unbeaten pattern —
@@ -35,20 +35,20 @@ const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 const INTRO_SLIDES = [
   {
     icon: faBriefcase,
-    iconColor: "#17181a",
-    title: "Only Outside IR35",
+    iconColor: '#17181a',
+    title: 'Only Outside IR35',
     body: "One board with just Outside IR35 contracts. Day rate, work mode and the client's IR35 position shown up front.",
   },
   {
     icon: faIdBadge,
-    iconColor: "#1f5d43",
-    title: "Verify once",
-    body: "Build your compliance pack once (company, insurance, right-to-work) and share it in a tap instead of re-sending it to every agency.",
+    iconColor: '#1f5d43',
+    title: 'Verify once',
+    body: 'Build your compliance pack once (company, insurance, right-to-work) and share it in a tap instead of re-sending it to every agency.',
   },
   {
     icon: faShieldHalved,
-    iconColor: "#2b3a55",
-    title: "Honest by design",
+    iconColor: '#2b3a55',
+    title: 'Honest by design',
     body: "We never claim a role is outside IR35. We show only what the client states, attributed and dated. The SDS stays the client's call.",
   },
 ];
@@ -68,8 +68,8 @@ const PaginationDot = ({
   const style = useAnimatedStyle(() => {
     const inputRange = [index - 1, index, index + 1];
     return {
-      width: interpolate(progress.get(), inputRange, [8, 24, 8], "clamp"),
-      opacity: interpolate(progress.get(), inputRange, [0.4, 1, 0.4], "clamp"),
+      width: interpolate(progress.get(), inputRange, [8, 24, 8], 'clamp'),
+      opacity: interpolate(progress.get(), inputRange, [0.4, 1, 0.4], 'clamp'),
     };
   });
   return (
@@ -79,7 +79,7 @@ const PaginationDot = ({
           height: 8,
           borderRadius: 4,
           marginHorizontal: 4,
-          backgroundColor: "#17181a",
+          backgroundColor: '#17181a',
         },
         style,
       ]}

@@ -1,11 +1,11 @@
-import * as Sentry from "@sentry/react-native";
+import * as Sentry from '@sentry/react-native';
+import { Platform } from 'react-native';
 import Purchases, {
   type CustomerInfo,
   LOG_LEVEL,
   type PurchasesOffering,
   type PurchasesPackage,
-} from "react-native-purchases";
-import { Platform } from "react-native";
+} from 'react-native-purchases';
 
 // RevenueCat client. Mobile premium is bought via StoreKit / Play Billing
 // (App/Play store rules forbid Stripe in-app), wrapped by RevenueCat. We
@@ -16,14 +16,14 @@ import { Platform } from "react-native";
 
 // The RevenueCat "entitlement" id configured in the RC dashboard that grants
 // premium. Keep in sync with the dashboard.
-export const PREMIUM_ENTITLEMENT_ID = "premium";
+export const PREMIUM_ENTITLEMENT_ID = 'premium';
 
 // Where the user manages a store-billed (RevenueCat) subscription. Store
 // subscriptions can only be cancelled/changed in the store that sold them, and
 // each platform has its own page.
 export const STORE_SUBSCRIPTIONS_URL = Platform.select({
-  android: "https://play.google.com/store/account/subscriptions",
-  default: "https://apps.apple.com/account/subscriptions",
+  android: 'https://play.google.com/store/account/subscriptions',
+  default: 'https://apps.apple.com/account/subscriptions',
 });
 
 const API_KEYS = {
@@ -40,7 +40,7 @@ const API_KEYS = {
 // go-unbeaten / titrra pattern. (We deliberately do NOT set the RC key in the
 // development EAS env / local .env, so this is belt-and-braces.)
 const RC_ENABLED =
-  (process.env.EXPO_PUBLIC_ENVIRONMENT ?? "development") !== "development";
+  (process.env.EXPO_PUBLIC_ENVIRONMENT ?? 'development') !== 'development';
 
 let isConfigured = false;
 let configuredUserId: string | null = null;
@@ -51,7 +51,9 @@ let configuredUserId: string | null = null;
  * then simply unavailable — the paywall shows an "unavailable" state rather than
  * crashing).
  */
-export const initializeRevenueCat = async (userId?: string): Promise<boolean> => {
+export const initializeRevenueCat = async (
+  userId?: string,
+): Promise<boolean> => {
   // Dev / simulator: RC intentionally inert (no .dev RevenueCat app exists).
   if (!RC_ENABLED) return false;
 
@@ -69,7 +71,7 @@ export const initializeRevenueCat = async (userId?: string): Promise<boolean> =>
     return true;
   }
 
-  const apiKey = Platform.OS === "ios" ? API_KEYS.ios : API_KEYS.android;
+  const apiKey = Platform.OS === 'ios' ? API_KEYS.ios : API_KEYS.android;
   if (!apiKey) {
     // No key configured yet (RC project not provisioned) — premium unavailable.
     return false;
@@ -78,8 +80,8 @@ export const initializeRevenueCat = async (userId?: string): Promise<boolean> =>
   // A non-dev build using a test_ key points at the RC test store — purchases
   // would never reach the real store. Fail LOUDLY (captured by Sentry) instead
   // of shipping a dead paywall.
-  const env = process.env.EXPO_PUBLIC_ENVIRONMENT ?? "development";
-  if (env !== "development" && apiKey.startsWith("test_")) {
+  const env = process.env.EXPO_PUBLIC_ENVIRONMENT ?? 'development';
+  if (env !== 'development' && apiKey.startsWith('test_')) {
     console.error(
       `[RevenueCat] FATAL: ${env} build using a TEST API key for ${Platform.OS} — purchases point at the test store.`,
     );
@@ -95,7 +97,7 @@ export const initializeRevenueCat = async (userId?: string): Promise<boolean> =>
     configuredUserId = userId ?? null;
     return true;
   } catch (e) {
-    console.error("[RevenueCat] configure failed:", e);
+    console.error('[RevenueCat] configure failed:', e);
     return false;
   }
 };
@@ -126,9 +128,9 @@ export const getPremiumOffering =
       const pkgCount = current?.availablePackages?.length ?? 0;
       if (!current || pkgCount === 0) {
         Sentry.captureMessage(
-          "[RevenueCat] premium offering empty — store served no purchasable package",
+          '[RevenueCat] premium offering empty — store served no purchasable package',
           {
-            level: "warning",
+            level: 'warning',
             extra: {
               platform: Platform.OS,
               environment: process.env.EXPO_PUBLIC_ENVIRONMENT,
@@ -142,7 +144,7 @@ export const getPremiumOffering =
       return current;
     } catch (e) {
       Sentry.captureException(e, {
-        tags: { area: "revenuecat", op: "getOfferings" },
+        tags: { area: 'revenuecat', op: 'getOfferings' },
         extra: {
           platform: Platform.OS,
           environment: process.env.EXPO_PUBLIC_ENVIRONMENT,
@@ -168,8 +170,8 @@ export const purchasePackage = async (
     // User cancellation is not an error worth surfacing.
     if (
       e &&
-      typeof e === "object" &&
-      "userCancelled" in e &&
+      typeof e === 'object' &&
+      'userCancelled' in e &&
       (e as { userCancelled?: boolean }).userCancelled
     ) {
       return null;

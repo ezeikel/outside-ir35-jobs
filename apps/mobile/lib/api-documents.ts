@@ -1,4 +1,4 @@
-import { api } from "@/lib/api";
+import { api } from '@/lib/api';
 
 // Compliance-pack document upload/delete. Posts multipart to /api/mobile/documents
 // (the bearer interceptor attaches the token). The server validates MIME + size +
@@ -7,10 +7,10 @@ import { api } from "@/lib/api";
 // Mirror of the server's allow-list (apps/web/lib/documents/validate.ts) so the
 // picker can filter + the UI can reject before a round-trip.
 export const ALLOWED_MIME_TYPES = [
-  "application/pdf",
-  "image/png",
-  "image/jpeg",
-  "image/webp",
+  'application/pdf',
+  'image/png',
+  'image/jpeg',
+  'image/webp',
 ] as const;
 
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB
@@ -25,12 +25,42 @@ export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB
 // isn't worth that exposure; the user types it by hand (on-device OCR is the
 // planned path for auto-filling those without anything leaving the phone).
 export const UPLOADABLE_DOC_TYPES = [
-  { type: "INCORPORATION", label: "Certificate of incorporation", tracksExpiry: false, extractable: false },
-  { type: "VAT_CERTIFICATE", label: "VAT certificate", tracksExpiry: false, extractable: false },
-  { type: "PI_INSURANCE", label: "Professional indemnity insurance", tracksExpiry: true, extractable: true },
-  { type: "PL_INSURANCE", label: "Public liability insurance", tracksExpiry: true, extractable: true },
-  { type: "EL_INSURANCE", label: "Employers’ liability insurance", tracksExpiry: true, extractable: true },
-  { type: "RIGHT_TO_WORK", label: "Right to work", tracksExpiry: true, extractable: false },
+  {
+    type: 'INCORPORATION',
+    label: 'Certificate of incorporation',
+    tracksExpiry: false,
+    extractable: false,
+  },
+  {
+    type: 'VAT_CERTIFICATE',
+    label: 'VAT certificate',
+    tracksExpiry: false,
+    extractable: false,
+  },
+  {
+    type: 'PI_INSURANCE',
+    label: 'Professional indemnity insurance',
+    tracksExpiry: true,
+    extractable: true,
+  },
+  {
+    type: 'PL_INSURANCE',
+    label: 'Public liability insurance',
+    tracksExpiry: true,
+    extractable: true,
+  },
+  {
+    type: 'EL_INSURANCE',
+    label: 'Employers’ liability insurance',
+    tracksExpiry: true,
+    extractable: true,
+  },
+  {
+    type: 'RIGHT_TO_WORK',
+    label: 'Right to work',
+    tracksExpiry: true,
+    extractable: false,
+  },
 ] as const;
 
 export type PickedFile = {
@@ -52,7 +82,7 @@ export const uploadDocument = async (
   meta?: UploadMeta,
 ): Promise<{ type: string; status: string }> => {
   const form = new FormData();
-  form.append("type", docType);
+  form.append('type', docType);
   // RN multipart file part — the { uri, name, type } shape is what fetch/axios
   // turns into a real file upload on device. RN's FormData accepts this object,
   // but the DOM FormData type doesn't model it, so cast through unknown.
@@ -61,15 +91,15 @@ export const uploadDocument = async (
     name: file.name,
     type: file.mimeType,
   } as unknown as Blob;
-  form.append("file", filePart);
-  if (meta?.insurer) form.append("insurer", meta.insurer);
-  if (meta?.coverLimit) form.append("coverLimit", meta.coverLimit);
-  if (meta?.expiresAt) form.append("expiresAt", meta.expiresAt);
+  form.append('file', filePart);
+  if (meta?.insurer) form.append('insurer', meta.insurer);
+  if (meta?.coverLimit) form.append('coverLimit', meta.coverLimit);
+  if (meta?.expiresAt) form.append('expiresAt', meta.expiresAt);
 
   const { data } = await api.post<{ type: string; status: string }>(
-    "/api/mobile/documents",
+    '/api/mobile/documents',
     form,
-    { headers: { "Content-Type": "multipart/form-data" } },
+    { headers: { 'Content-Type': 'multipart/form-data' } },
   );
   return data;
 };
@@ -103,18 +133,18 @@ export const extractDocFacts = async (
   file: PickedFile,
 ): Promise<ExtractedDocFacts> => {
   const form = new FormData();
-  form.append("type", docType);
+  form.append('type', docType);
   const filePart = {
     uri: file.uri,
     name: file.name,
     type: file.mimeType,
   } as unknown as Blob;
-  form.append("file", filePart);
+  form.append('file', filePart);
   try {
     const { data } = await api.post<{ facts: ExtractedDocFacts }>(
-      "/api/mobile/documents/extract",
+      '/api/mobile/documents/extract',
       form,
-      { headers: { "Content-Type": "multipart/form-data" } },
+      { headers: { 'Content-Type': 'multipart/form-data' } },
     );
     return data.facts;
   } catch {

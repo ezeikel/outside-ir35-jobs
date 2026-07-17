@@ -1,0 +1,32 @@
+# Smoke: the dev build installs, the bundle boots, and the app reaches its first
+# real screen past every dev overlay. Fast sanity check.
+#
+# A fresh install lands on the one-time onboarding carousel ("Only Outside IR35"
+# / role picker with "Browse first"); an already-onboarded install lands on the
+# public job board (search placeholder "Role, skill or company"). If we're on
+# onboarding, skip through via "Browse first" so the flow always finishes on the
+# board — browsing is public, no sign-in needed.
+appId: com.chewybytes.outsideir35jobs.app.dev
+---
+- runFlow: launch.yaml
+
+# One of the two entry screens must be visible.
+- assertVisible: '.*(Only Outside IR35|Browse first|Role, skill or company).*'
+
+# Fresh install: step past the carousel to the role picker, then browse.
+- repeat:
+    times: 4
+    commands:
+      - runFlow:
+          when:
+            visible: '.*(Continue|Next).*'
+          commands:
+            - tapOn: '.*(Continue|Next).*'
+- tapOn:
+    text: '.*Browse first.*'
+    optional: true
+
+# Either way we should now be on the public job board.
+- assertVisible:
+    text: '.*(Role, skill or company|Outside IR35).*'
+    timeout: 15000

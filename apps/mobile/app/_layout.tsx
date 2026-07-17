@@ -1,29 +1,29 @@
-import { GeistMono_400Regular } from "@expo-google-fonts/geist-mono";
-import { InstrumentSerif_400Regular } from "@expo-google-fonts/instrument-serif";
+import { GeistMono_400Regular } from '@expo-google-fonts/geist-mono';
+import { InstrumentSerif_400Regular } from '@expo-google-fonts/instrument-serif';
 import {
   InterTight_400Regular,
   InterTight_500Medium,
   InterTight_600SemiBold,
   InterTight_700Bold,
-} from "@expo-google-fonts/inter-tight";
-import notifee, { EventType } from "@notifee/react-native";
-import * as Sentry from "@sentry/react-native";
-import * as Application from "expo-application";
-import Constants from "expo-constants";
-import { useFonts } from "expo-font";
-import { Redirect, Stack, useRouter } from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
-import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
-import Providers from "@/providers";
-import { useOnboardingStore } from "@/stores/onboardingStore";
-import "@/global.css";
+} from '@expo-google-fonts/inter-tight';
+import notifee, { EventType } from '@notifee/react-native';
+import * as Sentry from '@sentry/react-native';
+import * as Application from 'expo-application';
+import Constants from 'expo-constants';
+import { useFonts } from 'expo-font';
+import { Redirect, Stack, useRouter } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
+import { useEffect, useState } from 'react';
+import Providers from '@/providers';
+import { useOnboardingStore } from '@/stores/onboardingStore';
+import '@/global.css';
 
 // release/dist must match the source maps uploaded at build time (the Sentry
 // Expo plugin uploads them) so crashes symbolicate. version+build is stable per
 // binary; dist = native build number.
-const SENTRY_RELEASE = `${Constants.expoConfig?.version ?? "0.0.0"}+${
-  Application.nativeBuildVersion ?? "0"
+const SENTRY_RELEASE = `${Constants.expoConfig?.version ?? '0.0.0'}+${
+  Application.nativeBuildVersion ?? '0'
 }`;
 
 // DSN is a public client key (safe to ship), not a secret. EXPO_PUBLIC_SENTRY_DSN
@@ -32,9 +32,9 @@ Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
   // OFF in local dev (Metro HMR noise), ON for preview/production builds.
   enabled: !__DEV__ && Boolean(process.env.EXPO_PUBLIC_SENTRY_DSN),
-  environment: process.env.EXPO_PUBLIC_ENVIRONMENT ?? "development",
+  environment: process.env.EXPO_PUBLIC_ENVIRONMENT ?? 'development',
   release: SENTRY_RELEASE,
-  dist: String(Application.nativeBuildVersion ?? "0"),
+  dist: String(Application.nativeBuildVersion ?? '0'),
   tracesSampleRate: 1.0,
   sendDefaultPii: false,
 });
@@ -54,7 +54,7 @@ const NotificationRouter = () => {
 
   useEffect(() => {
     const go = (url?: unknown) => {
-      if (typeof url === "string" && url.length > 0) {
+      if (typeof url === 'string' && url.length > 0) {
         // expo-router accepts our app paths (e.g. "/(tabs)/alerts", "/job/123").
         router.push(url as never);
       }
@@ -80,12 +80,12 @@ const RootLayout = () => {
   // --font-display, --font-mono) — that's what NativeWind's font-* classes
   // resolve to at runtime.
   const [fontsLoaded] = useFonts({
-    "InterTight-Regular": InterTight_400Regular,
-    "InterTight-Medium": InterTight_500Medium,
-    "InterTight-SemiBold": InterTight_600SemiBold,
-    "InterTight-Bold": InterTight_700Bold,
-    "InstrumentSerif-Regular": InstrumentSerif_400Regular,
-    "GeistMono-Regular": GeistMono_400Regular,
+    'InterTight-Regular': InterTight_400Regular,
+    'InterTight-Medium': InterTight_500Medium,
+    'InterTight-SemiBold': InterTight_600SemiBold,
+    'InterTight-Bold': InterTight_700Bold,
+    'InstrumentSerif-Regular': InstrumentSerif_400Regular,
+    'GeistMono-Regular': GeistMono_400Regular,
   });
 
   // First-launch onboarding gate. `hasCompleted` persists in AsyncStorage and
@@ -119,7 +119,7 @@ const RootLayout = () => {
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: "#f6f5f3" },
+          contentStyle: { backgroundColor: '#f6f5f3' },
         }}
       >
         <Stack.Screen name="(tabs)" />
@@ -130,39 +130,42 @@ const RootLayout = () => {
           name="signin"
           options={{
             headerShown: true,
-            headerTitle: "",
-            headerBackTitle: "Profile",
-            headerTintColor: "#17181a",
-            headerStyle: { backgroundColor: "#f6f5f3" },
+            headerTitle: '',
+            headerBackTitle: 'Profile',
+            headerTintColor: '#17181a',
+            headerStyle: { backgroundColor: '#f6f5f3' },
             headerShadowVisible: false,
-            animation: "slide_from_right",
+            animation: 'slide_from_right',
           }}
         />
         {/* Magic-link deep-link target (outsideir35://auth/magic-link?token=…):
             redeems the emailed token and signs the user in. */}
-        <Stack.Screen name="auth/magic-link" options={{ gestureEnabled: false }} />
+        <Stack.Screen
+          name="auth/magic-link"
+          options={{ gestureEnabled: false }}
+        />
         <Stack.Screen
           name="job/[id]"
           options={{
             headerShown: true,
-            headerTitle: "",
-            headerBackTitle: "Contracts",
-            headerTintColor: "#17181a",
-            headerStyle: { backgroundColor: "#f6f5f3" },
+            headerTitle: '',
+            headerBackTitle: 'Contracts',
+            headerTintColor: '#17181a',
+            headerStyle: { backgroundColor: '#f6f5f3' },
             headerShadowVisible: false,
-            animation: "slide_from_right",
+            animation: 'slide_from_right',
           }}
         />
         <Stack.Screen
           name="post-job"
           options={{
             headerShown: true,
-            headerTitle: "",
-            headerBackTitle: "Profile",
-            headerTintColor: "#17181a",
-            headerStyle: { backgroundColor: "#f6f5f3" },
+            headerTitle: '',
+            headerBackTitle: 'Profile',
+            headerTintColor: '#17181a',
+            headerStyle: { backgroundColor: '#f6f5f3' },
             headerShadowVisible: false,
-            animation: "slide_from_right",
+            animation: 'slide_from_right',
           }}
         />
         {/* Day rates + Premium are destinations pushed from Find / Profile (no
@@ -171,24 +174,24 @@ const RootLayout = () => {
           name="day-rates"
           options={{
             headerShown: true,
-            headerTitle: "",
-            headerBackTitle: "Find",
-            headerTintColor: "#17181a",
-            headerStyle: { backgroundColor: "#f6f5f3" },
+            headerTitle: '',
+            headerBackTitle: 'Find',
+            headerTintColor: '#17181a',
+            headerStyle: { backgroundColor: '#f6f5f3' },
             headerShadowVisible: false,
-            animation: "slide_from_right",
+            animation: 'slide_from_right',
           }}
         />
         <Stack.Screen
           name="premium"
           options={{
             headerShown: true,
-            headerTitle: "",
-            headerBackTitle: "Profile",
-            headerTintColor: "#17181a",
-            headerStyle: { backgroundColor: "#f6f5f3" },
+            headerTitle: '',
+            headerBackTitle: 'Profile',
+            headerTintColor: '#17181a',
+            headerStyle: { backgroundColor: '#f6f5f3' },
             headerShadowVisible: false,
-            animation: "slide_from_right",
+            animation: 'slide_from_right',
           }}
         />
         {/* Take-home calculator — a free tool pushed from Find / Profile. */}
@@ -196,12 +199,12 @@ const RootLayout = () => {
           name="take-home-calculator"
           options={{
             headerShown: true,
-            headerTitle: "Take-home calculator",
-            headerBackTitle: "Back",
-            headerTintColor: "#17181a",
-            headerStyle: { backgroundColor: "#f6f5f3" },
+            headerTitle: 'Take-home calculator',
+            headerBackTitle: 'Back',
+            headerTintColor: '#17181a',
+            headerStyle: { backgroundColor: '#f6f5f3' },
             headerShadowVisible: false,
-            animation: "slide_from_right",
+            animation: 'slide_from_right',
           }}
         />
         {/* Per-listing analytics, pushed from the Listings tab's Insights button. */}
@@ -209,12 +212,12 @@ const RootLayout = () => {
           name="listing-analytics/[jobId]"
           options={{
             headerShown: true,
-            headerTitle: "",
-            headerBackTitle: "My roles",
-            headerTintColor: "#17181a",
-            headerStyle: { backgroundColor: "#f6f5f3" },
+            headerTitle: '',
+            headerBackTitle: 'My roles',
+            headerTintColor: '#17181a',
+            headerStyle: { backgroundColor: '#f6f5f3' },
             headerShadowVisible: false,
-            animation: "slide_from_right",
+            animation: 'slide_from_right',
           }}
         />
       </Stack>

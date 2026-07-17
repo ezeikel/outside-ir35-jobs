@@ -1,12 +1,18 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { toast } from "sonner-native";
-import ErrorState from "@/components/ErrorState";
-import { TAB_BAR_HEIGHT } from "@/components/GlassTabBar";
-import { useAuth } from "@/contexts/AuthContext";
-import { useViewMode } from "@/hooks/useViewMode";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { toast } from 'sonner-native';
+import ErrorState from '@/components/ErrorState';
+import { TAB_BAR_HEIGHT } from '@/components/GlassTabBar';
+import { useAuth } from '@/contexts/AuthContext';
+import { useViewMode } from '@/hooks/useViewMode';
 import {
   type AlertFrequency,
   deleteSavedSearch,
@@ -15,7 +21,7 @@ import {
   searchLabel,
   setSavedSearchAlerts,
   setSavedSearchFrequency,
-} from "@/lib/api-searches";
+} from '@/lib/api-searches';
 
 // Saved searches + alerts (seeker view). Mirrors the web /alerts page. Gated on
 // the active view mode — any onboarded user can switch into the seeker view.
@@ -25,9 +31,9 @@ const AlertsScreen = () => {
   const { isLoading: authLoading, isAuthenticated } = useAuth();
   const { mode } = useViewMode();
 
-  const enabled = isAuthenticated && mode === "seeker";
+  const enabled = isAuthenticated && mode === 'seeker';
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["savedSearches"],
+    queryKey: ['savedSearches'],
     queryFn: fetchSavedSearches,
     enabled,
   });
@@ -48,7 +54,7 @@ const AlertsScreen = () => {
         </Text>
         <Pressable
           className="mt-6 rounded-lg bg-primary px-5 py-3 active:opacity-90"
-          onPress={() => router.push("/(tabs)/profile")}
+          onPress={() => router.push('/(tabs)/profile')}
         >
           <Text className="font-sans-semibold text-primary-foreground">
             Sign in
@@ -58,7 +64,7 @@ const AlertsScreen = () => {
     );
   }
 
-  if (mode !== "seeker") {
+  if (mode !== 'seeker') {
     return (
       <Empty insetTop={insets.top}>
         <Text className="text-center text-muted-foreground">
@@ -67,7 +73,7 @@ const AlertsScreen = () => {
         </Text>
         <Pressable
           className="mt-6 rounded-lg border border-border px-5 py-3 active:opacity-70"
-          onPress={() => router.push("/(tabs)/profile")}
+          onPress={() => router.push('/(tabs)/profile')}
         >
           <Text className="font-sans-semibold text-foreground">
             Go to profile
@@ -78,9 +84,14 @@ const AlertsScreen = () => {
   }
 
   return (
-    <View className="flex-1 bg-background" style={{ paddingTop: insets.top + 8 }}>
+    <View
+      className="flex-1 bg-background"
+      style={{ paddingTop: insets.top + 8 }}
+    >
       <View className="px-6 pb-2">
-        <Text className="font-display text-3xl text-foreground">Job alerts</Text>
+        <Text className="font-display text-3xl text-foreground">
+          Job alerts
+        </Text>
         <Text className="mt-1 text-sm text-muted-foreground">
           Searches you’ve saved. We email you new matching contracts. Pause or
           delete any alert.
@@ -125,22 +136,22 @@ const SavedSearchRow = ({ search }: { search: SavedSearch }) => {
   const toggle = useMutation({
     mutationFn: () => setSavedSearchAlerts(search.id, !search.alertsEnabled),
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["savedSearches"] }),
-    onError: () => toast.error("Couldn’t update. Try again."),
+      queryClient.invalidateQueries({ queryKey: ['savedSearches'] }),
+    onError: () => toast.error('Couldn’t update. Try again.'),
   });
 
   const remove = useMutation({
     mutationFn: () => deleteSavedSearch(search.id),
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["savedSearches"] }),
-    onError: () => toast.error("Couldn’t delete. Try again."),
+      queryClient.invalidateQueries({ queryKey: ['savedSearches'] }),
+    onError: () => toast.error('Couldn’t delete. Try again.'),
   });
 
   const setFreq = useMutation({
     mutationFn: (f: AlertFrequency) => setSavedSearchFrequency(search.id, f),
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["savedSearches"] }),
-    onError: () => toast.error("Couldn’t update. Try again."),
+      queryClient.invalidateQueries({ queryKey: ['savedSearches'] }),
+    onError: () => toast.error('Couldn’t update. Try again.'),
   });
 
   const busy = toggle.isPending || remove.isPending || setFreq.isPending;
@@ -156,7 +167,7 @@ const SavedSearchRow = ({ search }: { search: SavedSearch }) => {
             {searchLabel(search)}
           </Text>
           <Text className="text-xs text-muted-foreground">
-            {search.alertsEnabled ? "Alerts on" : "Alerts paused"}
+            {search.alertsEnabled ? 'Alerts on' : 'Alerts paused'}
           </Text>
         </View>
         <View className="flex-row gap-2">
@@ -166,7 +177,7 @@ const SavedSearchRow = ({ search }: { search: SavedSearch }) => {
             onPress={() => toggle.mutate()}
           >
             <Text className="text-sm text-foreground">
-              {search.alertsEnabled ? "Pause" : "Resume"}
+              {search.alertsEnabled ? 'Pause' : 'Resume'}
             </Text>
           </Pressable>
           <Pressable
@@ -182,23 +193,23 @@ const SavedSearchRow = ({ search }: { search: SavedSearch }) => {
       {/* Frequency segmented control — only when alerts are on. */}
       {search.alertsEnabled ? (
         <View className="mt-3 flex-row rounded-lg border border-border bg-background p-0.5">
-          {(["INSTANT", "DAILY", "WEEKLY"] as const).map((f) => {
+          {(['INSTANT', 'DAILY', 'WEEKLY'] as const).map((f) => {
             const active = search.alertFrequency === f;
             return (
               <Pressable
                 key={f}
-                className={`flex-1 rounded-md py-1.5 ${active ? "bg-primary" : ""}`}
+                className={`flex-1 rounded-md py-1.5 ${active ? 'bg-primary' : ''}`}
                 disabled={busy || active}
                 onPress={() => setFreq.mutate(f)}
               >
                 <Text
-                  className={`text-center text-xs ${active ? "font-sans-semibold text-primary-foreground" : "text-muted-foreground"}`}
+                  className={`text-center text-xs ${active ? 'font-sans-semibold text-primary-foreground' : 'text-muted-foreground'}`}
                 >
-                  {f === "INSTANT"
-                    ? "Instant"
-                    : f === "DAILY"
-                      ? "Daily"
-                      : "Weekly"}
+                  {f === 'INSTANT'
+                    ? 'Instant'
+                    : f === 'DAILY'
+                      ? 'Daily'
+                      : 'Weekly'}
                 </Text>
               </Pressable>
             );

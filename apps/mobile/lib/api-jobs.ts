@@ -1,4 +1,4 @@
-import { api } from "@/lib/api";
+import { api } from '@/lib/api';
 
 // Job board API. Mirrors the web board's /api/mobile/jobs endpoints. These are
 // public (no auth) — browsing is open; applying requires a session.
@@ -15,7 +15,7 @@ export type MobileJobCard = {
   workMode: string;
   workModeLabel: string;
   contractLengthDays: number | null;
-  source: "NATIVE" | "AGGREGATED";
+  source: 'NATIVE' | 'AGGREGATED';
   postedAt: string;
 };
 
@@ -53,7 +53,7 @@ export type JobsResult = {
 };
 
 export const fetchJobs = async (query: JobsQuery = {}): Promise<JobsResult> => {
-  const { data } = await api.get<JobsResult>("/api/mobile/jobs", {
+  const { data } = await api.get<JobsResult>('/api/mobile/jobs', {
     params: query,
   });
   return {
@@ -77,20 +77,20 @@ export const applyToJob = async (
   jobId: string,
   message?: string,
 ): Promise<void> => {
-  await api.post("/api/mobile/applications", { jobId, message });
+  await api.post('/api/mobile/applications', { jobId, message });
 };
 
 // Per-application AI tailoring (premium). Returns a tailored cover note + "why
 // this fits" bullets grounded only in the contractor's parsed CV. The status
 // drives the UI (no CV / not premium / ok / transient error).
 export type PitchResult =
-  | { status: "no_cv" }
-  | { status: "not_premium" }
-  | { status: "error" }
-  | { status: "ok"; whyMatched: string[]; pitch: string };
+  | { status: 'no_cv' }
+  | { status: 'not_premium' }
+  | { status: 'error' }
+  | { status: 'ok'; whyMatched: string[]; pitch: string };
 
 // Optional adjustment to re-run the draft with: rephrase / shorten / make formal.
-export type PitchMode = "rephrase" | "shorten" | "formal";
+export type PitchMode = 'rephrase' | 'shorten' | 'formal';
 
 export const fetchJobPitch = async (
   jobId: string,
@@ -122,7 +122,7 @@ export type PostJobInput = {
   dayRate: [number] | [number, number];
   howToApply: string;
   applicationEmail: string;
-  workMode: "REMOTE" | "HYBRID" | "ON_SITE";
+  workMode: 'REMOTE' | 'HYBRID' | 'ON_SITE';
   ir35Signal?: string;
 };
 
@@ -130,7 +130,7 @@ export const postJob = async (
   input: PostJobInput,
 ): Promise<{ jobId: string; paymentStatus: string }> => {
   const { data } = await api.post<{ jobId: string; paymentStatus: string }>(
-    "/api/mobile/jobs",
+    '/api/mobile/jobs',
     input,
   );
   return data;

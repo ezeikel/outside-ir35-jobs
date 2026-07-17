@@ -1,18 +1,18 @@
-import { faCheck, faXmark } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useRef } from "react";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
-import * as Haptics from "expo-haptics";
-import CandidateSwipeCard from "@/components/CandidateSwipeCard";
-import ErrorState from "@/components/ErrorState";
-import SwipeDeck, { type SwipeDeckHandle } from "@/components/SwipeDeck";
+import { faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import * as Haptics from 'expo-haptics';
+import { useCallback, useRef } from 'react';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import CandidateSwipeCard from '@/components/CandidateSwipeCard';
+import ErrorState from '@/components/ErrorState';
+import SwipeDeck, { type SwipeDeckHandle } from '@/components/SwipeDeck';
 import {
   type ApplicantStatus,
   type CandidateCard,
   fetchApplicants,
   setApplicationStatus,
-} from "@/lib/api-applicants";
+} from '@/lib/api-applicants';
 
 // The recruiter candidate deck: swipe the untriaged (NEW) applicants on the
 // caller's jobs. RIGHT = shortlist, LEFT = pass — the poster's own decision,
@@ -21,10 +21,10 @@ import {
 //
 // Colours match the seeker deck's mapping: GREEN = the positive action
 // (shortlist), RED = the negative (pass).
-const SHORTLIST_GREEN = "#1f5d43";
-const PASS_RED = "#dc2626";
+const SHORTLIST_GREEN = '#1f5d43';
+const PASS_RED = '#dc2626';
 
-const APPLICANTS_KEY = ["applicants", "NEW"] as const;
+const APPLICANTS_KEY = ['applicants', 'NEW'] as const;
 
 const ActionButton = ({
   icon,
@@ -48,17 +48,17 @@ const ActionButton = ({
   </Pressable>
 );
 
-const Hint = ({ label, tone }: { label: string; tone: "yes" | "no" }) => (
+const Hint = ({ label, tone }: { label: string; tone: 'yes' | 'no' }) => (
   <View
     className="rounded-xl border-2 px-4 py-2"
     style={{
-      borderColor: tone === "yes" ? SHORTLIST_GREEN : PASS_RED,
-      transform: [{ rotate: tone === "yes" ? "-12deg" : "12deg" }],
+      borderColor: tone === 'yes' ? SHORTLIST_GREEN : PASS_RED,
+      transform: [{ rotate: tone === 'yes' ? '-12deg' : '12deg' }],
     }}
   >
     <Text
       className="font-sans-semibold text-xl uppercase"
-      style={{ color: tone === "yes" ? SHORTLIST_GREEN : PASS_RED }}
+      style={{ color: tone === 'yes' ? SHORTLIST_GREEN : PASS_RED }}
     >
       {label}
     </Text>
@@ -68,9 +68,14 @@ const Hint = ({ label, tone }: { label: string; tone: "yes" | "no" }) => (
 const CandidateDeck = ({ bottomInset }: { bottomInset: number }) => {
   const queryClient = useQueryClient();
 
-  const { data: candidates = [], isLoading, isError, refetch } = useQuery({
+  const {
+    data: candidates = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: APPLICANTS_KEY,
-    queryFn: () => fetchApplicants("NEW"),
+    queryFn: () => fetchApplicants('NEW'),
   });
 
   // Triage = set status. We don't optimistically remove from the list (the deck's
@@ -93,14 +98,14 @@ const CandidateDeck = ({ bottomInset }: { bottomInset: number }) => {
   const onSwipeRight = useCallback(
     (c: CandidateCard) => {
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      triage.mutate({ id: c.applicationId, status: "SHORTLISTED" });
+      triage.mutate({ id: c.applicationId, status: 'SHORTLISTED' });
     },
     [triage],
   );
   const onSwipeLeft = useCallback(
     (c: CandidateCard) => {
       void Haptics.selectionAsync();
-      triage.mutate({ id: c.applicationId, status: "PASSED" });
+      triage.mutate({ id: c.applicationId, status: 'PASSED' });
     },
     [triage],
   );
@@ -144,7 +149,8 @@ const CandidateDeck = ({ bottomInset }: { bottomInset: number }) => {
           No one to review
         </Text>
         <Text className="mt-2 text-center text-sm text-muted-foreground">
-          New applicants to your contracts will appear here to shortlist or pass.
+          New applicants to your contracts will appear here to shortlist or
+          pass.
         </Text>
       </View>
     );
@@ -153,7 +159,10 @@ const CandidateDeck = ({ bottomInset }: { bottomInset: number }) => {
   return (
     <View className="flex-1" style={{ paddingBottom: bottomInset }}>
       <View className="flex-1 items-center justify-center px-5 pb-3 pt-2">
-        <View className="w-full flex-1" style={{ maxWidth: 500, maxHeight: 560 }}>
+        <View
+          className="w-full flex-1"
+          style={{ maxWidth: 500, maxHeight: 560 }}
+        >
           <SwipeDeck<CandidateCard>
             items={candidates}
             keyExtractor={(c) => c.applicationId}

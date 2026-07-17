@@ -1,7 +1,7 @@
-import { usePostHog } from "posthog-react-native";
-import { useCallback } from "react";
-import { Platform } from "react-native";
-import type { AnalyticsEvent } from "@/constants/analytics";
+import { usePostHog } from 'posthog-react-native';
+import { useCallback } from 'react';
+import { Platform } from 'react-native';
+import type { AnalyticsEvent } from '@/constants/analytics';
 
 // Every event carries `environment` + `platform` (+ `surface: 'mobile'`) so the
 // shared PostHog project can split web vs mobile and iOS vs Android while funnels
@@ -9,12 +9,12 @@ import type { AnalyticsEvent } from "@/constants/analytics";
 // <PostHogProvider> in providers.tsx (key-gated — absent key ⇒ no provider), so
 // `usePostHog()` returns undefined when analytics is disabled and every call
 // below no-ops safely.
-const environment = process.env.EXPO_PUBLIC_ENVIRONMENT ?? "development";
+const environment = process.env.EXPO_PUBLIC_ENVIRONMENT ?? 'development';
 
 const baseProps = {
   environment,
   platform: Platform.OS,
-  surface: "mobile" as const,
+  surface: 'mobile' as const,
 };
 
 /**

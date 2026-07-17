@@ -1,3 +1,4 @@
+import { isDatabaseConfigured } from '@outside-ir35-jobs/db';
 import type { MetadataRoute } from 'next';
 import { getJobs, getSeoSkills } from '@/app/actions';
 import { skillToSlug } from '@/lib/seo/skill-slug';
@@ -13,7 +14,11 @@ export const revalidate = 3600;
 // per-skill landing pages. Only pages that actually exist are listed — the skill
 // pages are gated on MIN_SAMPLE, so we never advertise thin content.
 const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
-  const [jobs, skills] = await Promise.all([getJobs(), getSeoSkills()]);
+  // DB-less builds (fresh clone, CI): static routes only. Every deployed env
+  // has DATABASE_URL, so the live sitemap always includes jobs + skill pages.
+  const [jobs, skills] = isDatabaseConfigured()
+    ? await Promise.all([getJobs(), getSeoSkills()])
+    : [[], []];
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${SITE}/`, changeFrequency: 'daily', priority: 1 },

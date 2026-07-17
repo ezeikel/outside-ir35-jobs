@@ -2,17 +2,17 @@ import {
   faArrowsRotate,
   faHeart,
   faXmark,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Pressable, Text, View } from "react-native";
-import * as Haptics from "expo-haptics";
-import JobSwipeCard from "@/components/JobSwipeCard";
-import SwipeDeck, { type SwipeDeckHandle } from "@/components/SwipeDeck";
-import { useSavedJobs } from "@/hooks/useSavedJobs";
-import type { MobileJobCard } from "@/lib/api-jobs";
-import { useDismissedJobsStore } from "@/stores/dismissedJobsStore";
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
+import JobSwipeCard from '@/components/JobSwipeCard';
+import SwipeDeck, { type SwipeDeckHandle } from '@/components/SwipeDeck';
+import { useSavedJobs } from '@/hooks/useSavedJobs';
+import type { MobileJobCard } from '@/lib/api-jobs';
+import { useDismissedJobsStore } from '@/stores/dismissedJobsStore';
 
 // The swipeable card deck — the seeker's default board view. RIGHT = save (into
 // the real saved-jobs system), LEFT = dismiss (local "not interested", hidden from
@@ -49,20 +49,20 @@ const ActionButton = ({
 
 // Swipe-feedback colours: GREEN = save (right), RED = dismiss (left). The
 // universal mapping (Tinder etc.) so direction reads instantly.
-const SAVE_GREEN = "#1f5d43";
-const DISMISS_RED = "#dc2626";
+const SAVE_GREEN = '#1f5d43';
+const DISMISS_RED = '#dc2626';
 
-const Hint = ({ label, tone }: { label: string; tone: "save" | "dismiss" }) => (
+const Hint = ({ label, tone }: { label: string; tone: 'save' | 'dismiss' }) => (
   <View
     className="rounded-xl border-2 px-4 py-2"
     style={{
-      borderColor: tone === "save" ? SAVE_GREEN : DISMISS_RED,
-      transform: [{ rotate: tone === "save" ? "-12deg" : "12deg" }],
+      borderColor: tone === 'save' ? SAVE_GREEN : DISMISS_RED,
+      transform: [{ rotate: tone === 'save' ? '-12deg' : '12deg' }],
     }}
   >
     <Text
       className="font-sans-semibold text-xl uppercase"
-      style={{ color: tone === "save" ? SAVE_GREEN : DISMISS_RED }}
+      style={{ color: tone === 'save' ? SAVE_GREEN : DISMISS_RED }}
     >
       {label}
     </Text>
@@ -104,9 +104,8 @@ const JobDeck = ({
   // deck — clear the exhausted flag so we don't show the "you've been through it"
   // empty state over cards the user hasn't seen. Keyed on the id signature so it
   // only resets when the actual cards change, not on every render.
-  const deckSignature = deck.map((j) => j.id).join(",");
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reset only when the
-  // id signature changes, not when the array identity does.
+  const deckSignature = deck.map((j) => j.id).join(',');
+  // (Intentionally depends on deckSignature, not the deck array identity.)
   useEffect(() => {
     setExhausted(false);
   }, [deckSignature]);
@@ -159,13 +158,13 @@ const JobDeck = ({
         <FontAwesomeIcon icon={faHeart} size={40} color="#a3a09e" />
         <Text className="mt-5 text-center font-display text-2xl text-foreground">
           {exhausted || dismissedIds.length > 0
-            ? "That’s everyone for now"
-            : "No contracts match"}
+            ? 'That’s everyone for now'
+            : 'No contracts match'}
         </Text>
         <Text className="mt-2 text-center text-sm text-muted-foreground">
           {exhausted || dismissedIds.length > 0
-            ? "You’ve been through the deck. Widen your search or check back as new contracts land."
-            : "Try a broader search or clear some filters to build your deck."}
+            ? 'You’ve been through the deck. Widen your search or check back as new contracts land.'
+            : 'Try a broader search or clear some filters to build your deck.'}
         </Text>
         <Pressable
           className="mt-6 rounded-lg bg-primary px-5 py-3 active:opacity-90"
@@ -209,20 +208,20 @@ const JobDeck = ({
           style={{ maxWidth: 500, maxHeight: 560 }}
         >
           <SwipeDeck<MobileJobCard>
-          items={deck}
-          keyExtractor={(j) => j.id}
-          renderCard={renderCard}
-          onCardPress={onCardPress}
-          onSwipeRight={onSwipeRight}
-          onSwipeLeft={onSwipeLeft}
-          // Fires when the LAST card is swiped, in EITHER direction — the reliable
-          // signal that the deck is done (a right/save swipe leaves the card in
-          // `deck`, so we can't infer "done" from deck.length).
-          onEmpty={() => setExhausted(true)}
-          onReady={onReady}
-          showCounter
-          rightHint={<Hint label="Save" tone="save" />}
-          leftHint={<Hint label="Dismiss" tone="dismiss" />}
+            items={deck}
+            keyExtractor={(j) => j.id}
+            renderCard={renderCard}
+            onCardPress={onCardPress}
+            onSwipeRight={onSwipeRight}
+            onSwipeLeft={onSwipeLeft}
+            // Fires when the LAST card is swiped, in EITHER direction — the reliable
+            // signal that the deck is done (a right/save swipe leaves the card in
+            // `deck`, so we can't infer "done" from deck.length).
+            onEmpty={() => setExhausted(true)}
+            onReady={onReady}
+            showCounter
+            rightHint={<Hint label="Save" tone="save" />}
+            leftHint={<Hint label="Dismiss" tone="dismiss" />}
           />
         </View>
       </View>

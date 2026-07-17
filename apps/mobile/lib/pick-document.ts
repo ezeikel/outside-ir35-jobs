@@ -1,10 +1,10 @@
-import * as DocumentPicker from "expo-document-picker";
-import * as ImagePicker from "expo-image-picker";
+import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
 import {
   ALLOWED_MIME_TYPES,
   MAX_UPLOAD_BYTES,
   type PickedFile,
-} from "@/lib/api-documents";
+} from '@/lib/api-documents';
 
 // Pick a compliance document — a PDF/image via the document picker, or a photo
 // from the library — and validate it against the same MIME + size rules the
@@ -15,20 +15,20 @@ const isAllowed = (mime: string): boolean =>
   (ALLOWED_MIME_TYPES as readonly string[]).includes(mime);
 
 const guessMimeFromName = (name: string): string => {
-  const ext = name.split(".").pop()?.toLowerCase();
-  if (ext === "pdf") return "application/pdf";
-  if (ext === "png") return "image/png";
-  if (ext === "jpg" || ext === "jpeg") return "image/jpeg";
-  if (ext === "webp") return "image/webp";
-  return "application/octet-stream";
+  const ext = name.split('.').pop()?.toLowerCase();
+  if (ext === 'pdf') return 'application/pdf';
+  if (ext === 'png') return 'image/png';
+  if (ext === 'jpg' || ext === 'jpeg') return 'image/jpeg';
+  if (ext === 'webp') return 'image/webp';
+  return 'application/octet-stream';
 };
 
 const validate = (file: PickedFile): PickedFile => {
   if (!isAllowed(file.mimeType)) {
-    throw new Error("Please choose a PDF, PNG, JPEG or WebP file.");
+    throw new Error('Please choose a PDF, PNG, JPEG or WebP file.');
   }
   if (file.size > MAX_UPLOAD_BYTES) {
-    throw new Error("That file is over the 10 MB limit.");
+    throw new Error('That file is over the 10 MB limit.');
   }
   return file;
 };
@@ -44,8 +44,8 @@ export const pickDocumentFile = async (): Promise<PickedFile | null> => {
   const a = res.assets[0];
   return validate({
     uri: a.uri,
-    name: a.name ?? "document",
-    mimeType: a.mimeType ?? guessMimeFromName(a.name ?? ""),
+    name: a.name ?? 'document',
+    mimeType: a.mimeType ?? guessMimeFromName(a.name ?? ''),
     size: a.size ?? 0,
   });
 };
@@ -54,16 +54,16 @@ export const pickDocumentFile = async (): Promise<PickedFile | null> => {
 export const pickImageFile = async (): Promise<PickedFile | null> => {
   const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!perm.granted) {
-    throw new Error("Photo access is needed to choose an image.");
+    throw new Error('Photo access is needed to choose an image.');
   }
   const res = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ["images"],
+    mediaTypes: ['images'],
     quality: 0.9,
     allowsMultipleSelection: false,
   });
   if (res.canceled || !res.assets?.length) return null;
   const a = res.assets[0];
-  const name = a.fileName ?? `photo-${a.assetId ?? "upload"}.jpg`;
+  const name = a.fileName ?? `photo-${a.assetId ?? 'upload'}.jpg`;
   return validate({
     uri: a.uri,
     name,

@@ -1,28 +1,28 @@
-import { initStripe, useStripe } from "@stripe/stripe-react-native";
-import { useForm } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
-import { useState } from "react";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { toast } from "sonner-native";
-import { z } from "zod";
-import ContentColumn from "@/components/ContentColumn";
-import FormField from "@/components/FormField";
-import DayRateField from "@/components/post/DayRateField";
-import PostLocationField from "@/components/post/PostLocationField";
-import RichTextField from "@/components/RichTextField";
-import { ANALYTICS_EVENTS } from "@/constants/analytics";
-import { useAuth } from "@/contexts/AuthContext";
-import { useAnalytics } from "@/lib/analytics";
+import { initStripe, useStripe } from '@stripe/stripe-react-native';
+import { useForm } from '@tanstack/react-form';
+import { useMutation } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { toast } from 'sonner-native';
+import { z } from 'zod';
+import ContentColumn from '@/components/ContentColumn';
+import FormField from '@/components/FormField';
+import DayRateField from '@/components/post/DayRateField';
+import PostLocationField from '@/components/post/PostLocationField';
+import RichTextField from '@/components/RichTextField';
+import { ANALYTICS_EVENTS } from '@/constants/analytics';
+import { useAuth } from '@/contexts/AuthContext';
+import { useAnalytics } from '@/lib/analytics';
 import {
   createJobPaymentIntent,
   type PostJobInput,
   postJob,
-} from "@/lib/api-jobs";
-import type { GeoSuggestion } from "@/lib/api-mapbox";
-import { parseDayRate } from "@/lib/day-rate";
+} from '@/lib/api-jobs';
+import type { GeoSuggestion } from '@/lib/api-mapbox';
+import { parseDayRate } from '@/lib/day-rate';
 
 // Post a contract from mobile (any onboarded user). Mirrors the web PostJobForm but
 // mobile-focused: the description + how-to-apply are Enriched rich text (HTML out,
@@ -34,25 +34,25 @@ import { parseDayRate } from "@/lib/day-rate";
 // never trust the client to mark it paid.
 
 const WORK_MODES = [
-  { value: "REMOTE", label: "Remote" },
-  { value: "HYBRID", label: "Hybrid" },
-  { value: "ON_SITE", label: "On-site" },
+  { value: 'REMOTE', label: 'Remote' },
+  { value: 'HYBRID', label: 'Hybrid' },
+  { value: 'ON_SITE', label: 'On-site' },
 ] as const;
 
 // Honest IR35 framing: we capture the CLIENT's stated position (attributed), and
 // the poster must confirm it reflects the client's claim — we never assert it.
 const IR35_SIGNALS = [
-  { value: "CLIENT_INTENDS_OUTSIDE", label: "Client states outside IR35" },
-  { value: "SDS_ISSUED", label: "SDS issued (outside)" },
-  { value: "SMALL_CLIENT_EXEMPT", label: "Small-client exempt" },
-  { value: "UNKNOWN", label: "Not stated yet" },
+  { value: 'CLIENT_INTENDS_OUTSIDE', label: 'Client states outside IR35' },
+  { value: 'SDS_ISSUED', label: 'SDS issued (outside)' },
+  { value: 'SMALL_CLIENT_EXEMPT', label: 'Small-client exempt' },
+  { value: 'UNKNOWN', label: 'Not stated yet' },
 ] as const;
 
 const formSchema = z.object({
-  companyName: z.string().trim().min(1, "Required"),
-  position: z.string().trim().min(1, "Required"),
+  companyName: z.string().trim().min(1, 'Required'),
+  position: z.string().trim().min(1, 'Required'),
   keywords: z.string(),
-  applicationEmail: z.string().trim().email("Enter a valid email"),
+  applicationEmail: z.string().trim().email('Enter a valid email'),
 });
 
 const PostJobScreen = () => {
@@ -65,17 +65,16 @@ const PostJobScreen = () => {
   // Rich-text + picker fields live outside the TanStack form (the editor is
   // uncontrolled / native; pickers are simple state). The form validates the
   // plain text fields; submit assembles the full payload.
-  const [description, setDescription] = useState("");
-  const [howToApply, setHowToApply] = useState("");
-  const [workMode, setWorkMode] =
-    useState<PostJobInput["workMode"]>("REMOTE");
-  const [ir35Signal, setIr35Signal] = useState("CLIENT_INTENDS_OUTSIDE");
+  const [description, setDescription] = useState('');
+  const [howToApply, setHowToApply] = useState('');
+  const [workMode, setWorkMode] = useState<PostJobInput['workMode']>('REMOTE');
+  const [ir35Signal, setIr35Signal] = useState('CLIENT_INTENDS_OUTSIDE');
   const [attested, setAttested] = useState(false);
 
   // Day rate as raw text (min required, max optional for a range). Parsed into
   // the Int[] payload on submit. A single min → [min]; min + max → [min, max].
-  const [rateMin, setRateMin] = useState("");
-  const [rateMax, setRateMax] = useState("");
+  const [rateMin, setRateMin] = useState('');
+  const [rateMax, setRateMax] = useState('');
   const [rateError, setRateError] = useState<string | null>(null);
 
   // Full geocoded location (address + Mapbox id + coords). Null = UK-wide default.
@@ -96,17 +95,17 @@ const PostJobScreen = () => {
       // there's no EXPO_PUBLIC env var to drift out of sync.
       await initStripe({
         publishableKey: intent.publishableKey,
-        merchantIdentifier: "merchant.com.chewybytes.outsideir35jobs",
+        merchantIdentifier: 'merchant.com.chewybytes.outsideir35jobs',
       });
 
       const init = await initPaymentSheet({
-        merchantDisplayName: "Outside IR35 Jobs",
+        merchantDisplayName: 'Outside IR35 Jobs',
         paymentIntentClientSecret: intent.paymentIntentClientSecret,
         customerId: intent.customerId,
         customerEphemeralKeySecret: intent.ephemeralKeySecret,
         allowsDelayedPaymentMethods: false,
-        applePay: { merchantCountryCode: "GB" },
-        googlePay: { merchantCountryCode: "GB", testEnv: __DEV__ },
+        applePay: { merchantCountryCode: 'GB' },
+        googlePay: { merchantCountryCode: 'GB', testEnv: __DEV__ },
       });
       if (init.error) {
         throw new Error(init.error.message);
@@ -116,7 +115,7 @@ const PostJobScreen = () => {
       if (error) {
         // Canceled is a soft no-op — the job stays PENDING (a future "finish
         // payment" can retry). Any other error surfaces.
-        if (error.code === "Canceled") {
+        if (error.code === 'Canceled') {
           return { jobId, paid: false };
         }
         throw new Error(error.message);
@@ -125,46 +124,46 @@ const PostJobScreen = () => {
     },
     onSuccess: (result) => {
       if (result.paid) {
-        toast.success("Payment received. Your contract is going live.");
+        toast.success('Payment received. Your contract is going live.');
         router.back();
       } else {
-        toast("Saved as a draft. Finish payment to go live.");
+        toast('Saved as a draft. Finish payment to go live.');
       }
     },
     onError: (e: unknown) => {
       const msg =
         (e as { response?: { data?: { error?: string } } })?.response?.data
           ?.error ??
-        (e instanceof Error ? e.message : "Couldn’t post the contract.");
+        (e instanceof Error ? e.message : 'Couldn’t post the contract.');
       toast.error(msg);
     },
   });
 
   const form = useForm({
     defaultValues: {
-      companyName: "",
-      position: "",
-      keywords: "",
-      applicationEmail: "",
+      companyName: '',
+      position: '',
+      keywords: '',
+      applicationEmail: '',
     },
     validators: { onChange: formSchema },
     onSubmit: ({ value }) => {
       if (!attested) {
-        toast.error("Please confirm the IR35 position reflects the client.");
+        toast.error('Please confirm the IR35 position reflects the client.');
         return;
       }
       if (!description.trim()) {
-        toast.error("Add a job description.");
+        toast.error('Add a job description.');
         return;
       }
       const dayRate = parseDayRate(rateMin, rateMax);
       if (!dayRate) {
         setRateError(
           rateMin && rateMax
-            ? "Max must be greater than or equal to min."
-            : "Enter a day rate above £0.",
+            ? 'Max must be greater than or equal to min.'
+            : 'Enter a day rate above £0.',
         );
-        toast.error("Add a valid day rate to continue.");
+        toast.error('Add a valid day rate to continue.');
         return;
       }
       setRateError(null);
@@ -193,8 +192,8 @@ const PostJobScreen = () => {
               coordinates: { lat: location.lat, lng: location.lng },
             }
           : {
-              address: "United Kingdom",
-              placeId: "",
+              address: 'United Kingdom',
+              placeId: '',
               coordinates: { lat: null, lng: null },
             },
         dayRate,
@@ -241,209 +240,213 @@ const PostJobScreen = () => {
         bottomOffset={24}
       >
         <ContentColumn style={{ gap: 14 }}>
-        <Text className="font-display text-3xl text-foreground">
-          Post a contract
-        </Text>
-        <Text className="-mt-2 text-sm text-muted-foreground">
-          Reach verified limited-company contractors. £219 per listing, live for
-          30 days.
-        </Text>
-
-        <form.Field name="companyName">
-          {(field) => (
-            <FormField field={field} label="Company name" placeholder="Acme Ltd" />
-          )}
-        </form.Field>
-        <form.Field name="position">
-          {(field) => (
-            <FormField
-              field={field}
-              label="Position"
-              placeholder="Senior React Engineer"
-            />
-          )}
-        </form.Field>
-
-        <DayRateField
-          min={rateMin}
-          max={rateMax}
-          onChangeMin={(t) => {
-            setRateMin(t);
-            if (rateError) setRateError(null);
-          }}
-          onChangeMax={(t) => {
-            setRateMax(t);
-            if (rateError) setRateError(null);
-          }}
-          error={rateError}
-        />
-
-        <PostLocationField
-          value={location?.place ?? ""}
-          onPick={setLocation}
-          onClear={() => setLocation(null)}
-        />
-
-        <RichTextField
-          label="Job description"
-          placeholder="The role, the team, the tech, the contract length…"
-          onChangeHtml={setDescription}
-        />
-
-        <RichTextField
-          label="How to apply (optional)"
-          placeholder="Application steps, or leave blank to reuse the description"
-          onChangeHtml={setHowToApply}
-        />
-
-        <form.Field name="keywords">
-          {(field) => (
-            <FormField
-              field={field}
-              label="Keywords"
-              placeholder="React, Node.js, AWS"
-              autoCapitalize="none"
-            />
-          )}
-        </form.Field>
-        <form.Field name="applicationEmail">
-          {(field) => (
-            <FormField
-              field={field}
-              label="Application email"
-              placeholder="jobs@acme.com"
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-          )}
-        </form.Field>
-
-        {/* Work mode */}
-        <View className="gap-1">
-          <Text className="text-xs font-sans-medium text-muted-foreground">
-            Work mode
+          <Text className="font-display text-3xl text-foreground">
+            Post a contract
           </Text>
-          <View className="flex-row gap-2">
-            {WORK_MODES.map((m) => (
-              <Pressable
-                key={m.value}
-                className={`flex-1 rounded-lg border px-3 py-2.5 active:opacity-80 ${
-                  workMode === m.value
-                    ? "border-primary bg-primary"
-                    : "border-border bg-background"
-                }`}
-                onPress={() => setWorkMode(m.value)}
-              >
-                <Text
-                  className={`text-center text-sm font-sans-medium ${
+          <Text className="-mt-2 text-sm text-muted-foreground">
+            Reach verified limited-company contractors. £219 per listing, live
+            for 30 days.
+          </Text>
+
+          <form.Field name="companyName">
+            {(field) => (
+              <FormField
+                field={field}
+                label="Company name"
+                placeholder="Acme Ltd"
+              />
+            )}
+          </form.Field>
+          <form.Field name="position">
+            {(field) => (
+              <FormField
+                field={field}
+                label="Position"
+                placeholder="Senior React Engineer"
+              />
+            )}
+          </form.Field>
+
+          <DayRateField
+            min={rateMin}
+            max={rateMax}
+            onChangeMin={(t) => {
+              setRateMin(t);
+              if (rateError) setRateError(null);
+            }}
+            onChangeMax={(t) => {
+              setRateMax(t);
+              if (rateError) setRateError(null);
+            }}
+            error={rateError}
+          />
+
+          <PostLocationField
+            value={location?.place ?? ''}
+            onPick={setLocation}
+            onClear={() => setLocation(null)}
+          />
+
+          <RichTextField
+            label="Job description"
+            placeholder="The role, the team, the tech, the contract length…"
+            onChangeHtml={setDescription}
+          />
+
+          <RichTextField
+            label="How to apply (optional)"
+            placeholder="Application steps, or leave blank to reuse the description"
+            onChangeHtml={setHowToApply}
+          />
+
+          <form.Field name="keywords">
+            {(field) => (
+              <FormField
+                field={field}
+                label="Keywords"
+                placeholder="React, Node.js, AWS"
+                autoCapitalize="none"
+              />
+            )}
+          </form.Field>
+          <form.Field name="applicationEmail">
+            {(field) => (
+              <FormField
+                field={field}
+                label="Application email"
+                placeholder="jobs@acme.com"
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            )}
+          </form.Field>
+
+          {/* Work mode */}
+          <View className="gap-1">
+            <Text className="text-xs font-sans-medium text-muted-foreground">
+              Work mode
+            </Text>
+            <View className="flex-row gap-2">
+              {WORK_MODES.map((m) => (
+                <Pressable
+                  key={m.value}
+                  className={`flex-1 rounded-lg border px-3 py-2.5 active:opacity-80 ${
                     workMode === m.value
-                      ? "text-primary-foreground"
-                      : "text-foreground"
+                      ? 'border-primary bg-primary'
+                      : 'border-border bg-background'
                   }`}
+                  onPress={() => setWorkMode(m.value)}
                 >
-                  {m.label}
-                </Text>
-              </Pressable>
-            ))}
+                  <Text
+                    className={`text-center text-sm font-sans-medium ${
+                      workMode === m.value
+                        ? 'text-primary-foreground'
+                        : 'text-foreground'
+                    }`}
+                  >
+                    {m.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
-        </View>
 
-        {/* IR35 signal — the CLIENT's stated position, never our assertion. */}
-        <View className="gap-1">
-          <Text className="text-xs font-sans-medium text-muted-foreground">
-            Client’s IR35 position
-          </Text>
-          <View className="flex-row flex-wrap gap-2">
-            {IR35_SIGNALS.map((s) => (
-              <Pressable
-                key={s.value}
-                className={`rounded-lg border px-3 py-2 active:opacity-80 ${
-                  ir35Signal === s.value
-                    ? "border-primary bg-secondary"
-                    : "border-border bg-background"
-                }`}
-                onPress={() => setIr35Signal(s.value)}
-              >
-                <Text className="text-sm text-foreground">{s.label}</Text>
-              </Pressable>
-            ))}
+          {/* IR35 signal — the CLIENT's stated position, never our assertion. */}
+          <View className="gap-1">
+            <Text className="text-xs font-sans-medium text-muted-foreground">
+              Client’s IR35 position
+            </Text>
+            <View className="flex-row flex-wrap gap-2">
+              {IR35_SIGNALS.map((s) => (
+                <Pressable
+                  key={s.value}
+                  className={`rounded-lg border px-3 py-2 active:opacity-80 ${
+                    ir35Signal === s.value
+                      ? 'border-primary bg-secondary'
+                      : 'border-border bg-background'
+                  }`}
+                  onPress={() => setIr35Signal(s.value)}
+                >
+                  <Text className="text-sm text-foreground">{s.label}</Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
-        </View>
 
-        {/* Attestation — honesty guard: poster confirms it's the client's claim. */}
-        <Pressable
-          className="mt-1 flex-row items-start gap-3 active:opacity-80"
-          onPress={() => setAttested((v) => !v)}
-          accessibilityRole="checkbox"
-          accessibilityState={{ checked: attested }}
-          accessibilityLabel="I confirm this reflects the client’s stated IR35 position"
-        >
-          <View
-            className={`mt-0.5 h-5 w-5 items-center justify-center rounded border-2 ${
-              attested ? "border-primary bg-primary" : "border-ink-400"
-            }`}
+          {/* Attestation — honesty guard: poster confirms it's the client's claim. */}
+          <Pressable
+            className="mt-1 flex-row items-start gap-3 active:opacity-80"
+            onPress={() => setAttested((v) => !v)}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: attested }}
+            accessibilityLabel="I confirm this reflects the client’s stated IR35 position"
           >
-            {attested ? (
-              <Text className="text-xs text-primary-foreground">✓</Text>
-            ) : null}
-          </View>
-          <Text className="flex-1 text-sm text-muted-foreground">
-            I confirm this reflects the client’s stated IR35 position. Outside IR35
-            Jobs never asserts a role’s status.
-          </Text>
-        </Pressable>
-
-        <form.Subscribe selector={(s) => s.canSubmit}>
-          {(canSubmit) => {
-            // Everything that must be true to pay. We gate the button on ALL of
-            // it (not just the form) so the blocker is obvious — the button greys
-            // out and the helper line below names what's missing.
-            const ready =
-              canSubmit &&
-              attested &&
-              !!description.trim() &&
-              parseDayRate(rateMin, rateMax) !== null &&
-              !post.isPending;
-            return (
-            <Pressable
-              className={`mt-3 rounded-lg p-4 ${
-                ready ? "bg-primary active:opacity-90" : "bg-ink-300"
+            <View
+              className={`mt-0.5 h-5 w-5 items-center justify-center rounded border-2 ${
+                attested ? 'border-primary bg-primary' : 'border-ink-400'
               }`}
-              disabled={!ready}
-              onPress={() => void form.handleSubmit()}
             >
-              {post.isPending ? (
-                <ActivityIndicator color="#fbfaf9" />
-              ) : (
-                <Text className="text-center font-sans-semibold text-primary-foreground">
-                  Continue · £219
-                </Text>
-              )}
-            </Pressable>
-            );
-          }}
-        </form.Subscribe>
+              {attested ? (
+                <Text className="text-xs text-primary-foreground">✓</Text>
+              ) : null}
+            </View>
+            <Text className="flex-1 text-sm text-muted-foreground">
+              I confirm this reflects the client’s stated IR35 position. Outside
+              IR35 Jobs never asserts a role’s status.
+            </Text>
+          </Pressable>
 
-        {/* Name the remaining blocker right under the button, so it's obvious why
+          <form.Subscribe selector={(s) => s.canSubmit}>
+            {(canSubmit) => {
+              // Everything that must be true to pay. We gate the button on ALL of
+              // it (not just the form) so the blocker is obvious — the button greys
+              // out and the helper line below names what's missing.
+              const ready =
+                canSubmit &&
+                attested &&
+                !!description.trim() &&
+                parseDayRate(rateMin, rateMax) !== null &&
+                !post.isPending;
+              return (
+                <Pressable
+                  className={`mt-3 rounded-lg p-4 ${
+                    ready ? 'bg-primary active:opacity-90' : 'bg-ink-300'
+                  }`}
+                  disabled={!ready}
+                  onPress={() => void form.handleSubmit()}
+                >
+                  {post.isPending ? (
+                    <ActivityIndicator color="#fbfaf9" />
+                  ) : (
+                    <Text className="text-center font-sans-semibold text-primary-foreground">
+                      Continue · £219
+                    </Text>
+                  )}
+                </Pressable>
+              );
+            }}
+          </form.Subscribe>
+
+          {/* Name the remaining blocker right under the button, so it's obvious why
             Continue is disabled (no more far-away toast). */}
-        {parseDayRate(rateMin, rateMax) === null ? (
-          <Text className="-mt-1 text-center text-xs text-muted-foreground">
-            Add a day rate to continue.
-          </Text>
-        ) : !attested ? (
-          <Text className="-mt-1 text-center text-xs text-muted-foreground">
-            Confirm the IR35 position above to continue.
-          </Text>
-        ) : !description.trim() ? (
-          <Text className="-mt-1 text-center text-xs text-muted-foreground">
-            Add a job description to continue.
-          </Text>
-        ) : null}
+          {parseDayRate(rateMin, rateMax) === null ? (
+            <Text className="-mt-1 text-center text-xs text-muted-foreground">
+              Add a day rate to continue.
+            </Text>
+          ) : !attested ? (
+            <Text className="-mt-1 text-center text-xs text-muted-foreground">
+              Confirm the IR35 position above to continue.
+            </Text>
+          ) : !description.trim() ? (
+            <Text className="-mt-1 text-center text-xs text-muted-foreground">
+              Add a job description to continue.
+            </Text>
+          ) : null}
 
-        <Text className="text-center text-xs text-muted-foreground">
-          Pay securely by card (company cards welcome). You’ll get a receipt, and
-          your listing goes live once payment clears.
-        </Text>
+          <Text className="text-center text-xs text-muted-foreground">
+            Pay securely by card (company cards welcome). You’ll get a receipt,
+            and your listing goes live once payment clears.
+          </Text>
         </ContentColumn>
       </KeyboardAwareScrollView>
     </View>

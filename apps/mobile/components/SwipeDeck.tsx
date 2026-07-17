@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Dimensions, Text, View } from "react-native";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Dimensions, Text, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   interpolate,
   runOnJS,
@@ -8,7 +8,7 @@ import Animated, {
   useSharedValue,
   withSpring,
   withTiming,
-} from "react-native-reanimated";
+} from 'react-native-reanimated';
 
 // A generic, gesture-driven card stack (Reanimated 4 UI-thread worklets +
 // gesture-handler Pan). The TOP card follows the finger with a slight rotation;
@@ -25,7 +25,7 @@ import Animated, {
 // aren't reliably scriptable in a simulator), so the parent ALSO renders explicit
 // buttons that call the imperative swipeLeft/swipeRight handed back via onReady.
 
-const SCREEN_W = Dimensions.get("window").width;
+const SCREEN_W = Dimensions.get('window').width;
 // Past this horizontal drag (as a fraction of screen width) a release commits the
 // swipe instead of springing back.
 const SWIPE_THRESHOLD = 0.28;
@@ -106,8 +106,8 @@ const SwipeDeck = <T,>({
   // Mark the top card swiped + fire the callback. Runs on the JS thread (state
   // update) — called via runOnJS after the fling animation.
   const advance = useCallback(
-    (direction: "left" | "right", item: T) => {
-      if (direction === "right") onSwipeRight(item);
+    (direction: 'left' | 'right', item: T) => {
+      if (direction === 'right') onSwipeRight(item);
       else onSwipeLeft(item);
       setSwiped((s) => {
         const nextSet = new Set(s);
@@ -120,16 +120,24 @@ const SwipeDeck = <T,>({
       translateX.value = 0;
       translateY.value = 0;
     },
-    [onSwipeRight, onSwipeLeft, onEmpty, items, keyExtractor, translateX, translateY],
+    [
+      onSwipeRight,
+      onSwipeLeft,
+      onEmpty,
+      items,
+      keyExtractor,
+      translateX,
+      translateY,
+    ],
   );
 
   // Fling the current top card off-screen in `direction`, then advance. Used by
   // both the gesture (on release past threshold) and the buttons.
   const commit = useCallback(
-    (direction: "left" | "right") => {
+    (direction: 'left' | 'right') => {
       const item = queue[0];
       if (!item) return;
-      const toX = direction === "right" ? FLING_X : -FLING_X;
+      const toX = direction === 'right' ? FLING_X : -FLING_X;
       translateX.value = withTiming(toX, { duration: 220 }, (finished) => {
         if (finished) runOnJS(advance)(direction, item);
       });
@@ -150,8 +158,8 @@ const SwipeDeck = <T,>({
         translateY.value = withSpring(0, { damping: 18, stiffness: 180 });
         return;
       }
-      const direction = translateX.value > 0 ? "right" : "left";
-      const toX = direction === "right" ? FLING_X : -FLING_X;
+      const direction = translateX.value > 0 ? 'right' : 'left';
+      const toX = direction === 'right' ? FLING_X : -FLING_X;
       translateX.value = withTiming(toX, { duration: 200 }, (finished) => {
         if (finished && top) runOnJS(advance)(direction, top);
       });
@@ -207,14 +215,14 @@ const SwipeDeck = <T,>({
   const rightHintStyle = useAnimatedStyle(() => {
     const d = Math.max(translateX.value, 0);
     return {
-      opacity: interpolate(d, [0, SCREEN_W * 0.18], [0, 1], "clamp"),
+      opacity: interpolate(d, [0, SCREEN_W * 0.18], [0, 1], 'clamp'),
       transform: [
         {
           scale: interpolate(
             d,
             [0, SCREEN_W * 0.18, SCREEN_W * SWIPE_THRESHOLD],
             [0.7, 1, 1.18],
-            "clamp",
+            'clamp',
           ),
         },
       ],
@@ -223,14 +231,14 @@ const SwipeDeck = <T,>({
   const leftHintStyle = useAnimatedStyle(() => {
     const d = Math.max(-translateX.value, 0);
     return {
-      opacity: interpolate(d, [0, SCREEN_W * 0.18], [0, 1], "clamp"),
+      opacity: interpolate(d, [0, SCREEN_W * 0.18], [0, 1], 'clamp'),
       transform: [
         {
           scale: interpolate(
             d,
             [0, SCREEN_W * 0.18, SCREEN_W * SWIPE_THRESHOLD],
             [0.7, 1, 1.18],
-            "clamp",
+            'clamp',
           ),
         },
       ],
@@ -245,7 +253,7 @@ const SwipeDeck = <T,>({
       translateX.value,
       [0, SCREEN_W * SWIPE_THRESHOLD],
       [0, 0.22],
-      "clamp",
+      'clamp',
     ),
   }));
   const passTintStyle = useAnimatedStyle(() => ({
@@ -253,7 +261,7 @@ const SwipeDeck = <T,>({
       translateX.value,
       [-SCREEN_W * SWIPE_THRESHOLD, 0],
       [0.22, 0],
-      "clamp",
+      'clamp',
     ),
   }));
 
@@ -262,8 +270,8 @@ const SwipeDeck = <T,>({
   // (i.e. when the top card advances), so the buttons always act on the live card.
   useEffect(() => {
     onReady?.({
-      swipeRight: () => commit("right"),
-      swipeLeft: () => commit("left"),
+      swipeRight: () => commit('right'),
+      swipeLeft: () => commit('left'),
     });
   }, [onReady, commit]);
 
@@ -276,10 +284,13 @@ const SwipeDeck = <T,>({
       {showCounter && total > 0 ? (
         <View
           className="absolute z-10 self-center rounded-full px-3 py-1"
-          style={{ top: 4, backgroundColor: "rgba(26,24,21,0.82)" }}
+          style={{ top: 4, backgroundColor: 'rgba(26,24,21,0.82)' }}
           pointerEvents="none"
         >
-          <Text className="font-sans-medium text-xs" style={{ color: "#ffffff" }}>
+          <Text
+            className="font-sans-medium text-xs"
+            style={{ color: '#ffffff' }}
+          >
             {position} of {total}
           </Text>
         </View>
@@ -290,7 +301,7 @@ const SwipeDeck = <T,>({
         <Animated.View
           key={keyExtractor(next)}
           style={[
-            { position: "absolute", width: "100%", height: "100%" },
+            { position: 'absolute', width: '100%', height: '100%' },
             nextStyle,
           ]}
           pointerEvents="none"
@@ -303,7 +314,7 @@ const SwipeDeck = <T,>({
       <GestureDetector gesture={composed}>
         <Animated.View
           key={keyExtractor(top)}
-          style={[{ width: "100%", height: "100%" }, topStyle]}
+          style={[{ width: '100%', height: '100%' }, topStyle]}
         >
           {renderCard(top)}
 
@@ -312,13 +323,13 @@ const SwipeDeck = <T,>({
           <Animated.View
             style={[
               {
-                position: "absolute",
+                position: 'absolute',
                 top: 0,
                 left: 0,
                 right: 0,
                 bottom: 0,
                 borderRadius: 28,
-                backgroundColor: "#1f5d43",
+                backgroundColor: '#1f5d43',
               },
               saveTintStyle,
             ]}
@@ -327,14 +338,14 @@ const SwipeDeck = <T,>({
           <Animated.View
             style={[
               {
-                position: "absolute",
+                position: 'absolute',
                 top: 0,
                 left: 0,
                 right: 0,
                 bottom: 0,
                 borderRadius: 28,
                 // Red wash for dismiss (left) — pairs with the green save wash.
-                backgroundColor: "#dc2626",
+                backgroundColor: '#dc2626',
               },
               passTintStyle,
             ]}
@@ -345,7 +356,7 @@ const SwipeDeck = <T,>({
           {rightHint ? (
             <Animated.View
               style={[
-                { position: "absolute", top: 24, left: 24 },
+                { position: 'absolute', top: 24, left: 24 },
                 rightHintStyle,
               ]}
               pointerEvents="none"
@@ -356,7 +367,7 @@ const SwipeDeck = <T,>({
           {leftHint ? (
             <Animated.View
               style={[
-                { position: "absolute", top: 24, right: 24 },
+                { position: 'absolute', top: 24, right: 24 },
                 leftHintStyle,
               ]}
               pointerEvents="none"

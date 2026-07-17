@@ -12,6 +12,8 @@ export const revalidate = 3600; // hourly — benchmarks/listings change slowly
 
 // Only generate pages for skills that clear the day-rate sample gate — every
 // programmatic page is data-backed (no thin content). Other slugs 404.
+// (In DB-less builds getSeoSkills returns [] — nothing is prerendered and
+// pages render on demand at runtime instead, dynamicParams defaults to true.)
 export const generateStaticParams = async () => {
   const skills = await getSeoSkills();
   return skills.map((skill) => ({ skill: skillToSlug(skill) }));

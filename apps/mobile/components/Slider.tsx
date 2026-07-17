@@ -1,11 +1,11 @@
-import { useState } from "react";
-import { View } from "react-native";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { useState } from 'react';
+import { View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
-} from "react-native-reanimated";
+} from 'react-native-reanimated';
 
 // A minimal brand-styled slider built on gesture-handler + reanimated (already
 // in the native build — no new native dependency, so no prebuild needed). Used
@@ -22,8 +22,8 @@ type Props = {
 
 const THUMB = 20;
 const TRACK_H = 6;
-const VERIFIED = "#1f5d43";
-const TRACK_BG = "#e8e7e5";
+const VERIFIED = '#1f5d43';
+const TRACK_BG = '#e8e7e5';
 
 const clamp = (n: number, lo: number, hi: number) =>
   Math.max(lo, Math.min(hi, n));
@@ -106,14 +106,14 @@ const Slider = ({ min, max, step = 1, value, onChange }: Props) => {
         <Animated.View
           style={[
             {
-              position: "absolute",
+              position: 'absolute',
               width: THUMB,
               height: THUMB,
               borderRadius: THUMB / 2,
               backgroundColor: VERIFIED,
               borderWidth: 2,
-              borderColor: "#ffffff",
-              shadowColor: "#000",
+              borderColor: '#ffffff',
+              shadowColor: '#000',
               shadowOpacity: 0.2,
               shadowRadius: 3,
               shadowOffset: { width: 0, height: 1 },

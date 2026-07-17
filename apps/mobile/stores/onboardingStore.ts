@@ -1,7 +1,7 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
-import type { OnboardingInput } from "@/lib/api-account";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import type { OnboardingInput } from '@/lib/api-account';
 
 // Persisted onboarding state. Onboarding is a one-time, sign-in-FREE intro (value-
 // prop carousel → "how will you use it?" role pick → the paywall). It never asks
@@ -37,7 +37,7 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
       reset: () => set({ hasCompleted: false, pendingRole: null }),
     }),
     {
-      name: "onboarding-store",
+      name: 'onboarding-store',
       storage: createJSONStorage(() => AsyncStorage),
     },
   ),

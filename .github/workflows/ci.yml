@@ -1,0 +1,150 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        env:
+          FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type check
+        run: pnpm check-types
+
+      # Unit tests (Vitest) are the deploy gate. They run across every
+      # workspace (web, worker, mobile, packages) via turbo.
+      - name: Unit tests
+        run: pnpm test
+
+      # Build the web app and its workspace deps only — NOT the mobile app
+      # (native builds belong on EAS) and not the worker (tsx runtime, no build
+      # step). `web...` = web + upstream packages (@outside-ir35-jobs/db,
+      # @outside-ir35-jobs/storage). Matches the go-unbeaten/cadem CI pattern.
+      - name: Build
+        run: pnpm build --filter=@outside-ir35-jobs/web...
+
+  # Gate e2e on the seed DB secret existing. Without it the job is SKIPPED (the
+  # run stays green) rather than a confusing red — until PLAYWRIGHT_DATABASE_URL
+  # exists, e2e simply doesn't run. (Pattern mirrors chunky-crayon/cadem.)
+  #
+  # PLAYWRIGHT_DATABASE_URL points at a PERSISTENT, CI-owned Neon branch
+  # (`ci-e2e`), NOT a throwaway. Fork it from `development` ONCE; thereafter the
+  # e2e job runs `prisma migrate deploy` every run so its schema auto-tracks
+  # main's committed migration history, and global-setup's user seeding is
+  # idempotent (upserts). Do NOT point it at the dev or production branch.
+  e2e-precheck:
+    name: e2e precheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      has_db: ${{ steps.check.outputs.has_db }}
+    steps:
+      - id: check
+        env:
+          PLAYWRIGHT_DATABASE_URL: ${{ secrets.PLAYWRIGHT_DATABASE_URL }}
+        run: |
+          if [ -n "$PLAYWRIGHT_DATABASE_URL" ]; then
+            echo "has_db=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_db=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::PLAYWRIGHT_DATABASE_URL not set — e2e skipped. Add it (a persistent ci-e2e Neon branch) to enable Playwright in CI."
+          fi
+
+  e2e:
+    name: Playwright e2e (non-blocking)
+    runs-on: ubuntu-latest
+    needs: e2e-precheck
+    if: ${{ needs.e2e-precheck.outputs.has_db == 'true' }}
+    timeout-minutes: 30
+    # E2E is slower + browser-dependent, so it's visible but does NOT block the
+    # deploy — the unit suite is the real gate (matches chunky-crayon/cadem).
+    continue-on-error: true
+    env:
+      DATABASE_URL: ${{ secrets.PLAYWRIGHT_DATABASE_URL }}
+      DATABASE_URL_UNPOOLED: ${{ secrets.PLAYWRIGHT_DATABASE_URL }}
+      # NextAuth needs a secret to boot; the value is irrelevant to the specs
+      # (global-setup signs in via the E2E-only credentials provider, and the
+      # session cookie only has to verify within this same run).
+      AUTH_SECRET: 'ci_e2e_placeholder_secret'
+      E2E_TEST_LOGIN: '1'
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        env:
+          FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Playwright browsers
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: pnpm --filter @outside-ir35-jobs/web exec playwright install --with-deps chromium
+
+      - name: Install Playwright system deps (cache hit path)
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: pnpm --filter @outside-ir35-jobs/web exec playwright install-deps chromium
+
+      # Bring the ci-e2e Neon branch up to the committed schema. Idempotent.
+      # Retry migrate deploy: the ci-e2e compute auto-suspends when idle, so the
+      # first connect of a run can race its cold-start wake (Prisma P1001).
+      - name: Apply migrations to the Playwright DB
+        working-directory: ./packages/db
+        run: |
+          for attempt in 1 2 3 4 5; do
+            echo "migrate deploy attempt $attempt…"
+            if pnpm exec prisma migrate deploy; then exit 0; fi
+            echo "attempt $attempt failed (likely cold Neon compute); retrying…"
+            sleep 10
+          done
+          echo "::error::prisma migrate deploy failed after 5 attempts"; exit 1
+
+      # playwright.config.ts builds + starts a production Next server itself
+      # (webServer), and e2e/global-setup.ts seeds the test users idempotently.
+      - name: Run Playwright e2e
+        env:
+          CI: 'true'
+        run: pnpm --filter @outside-ir35-jobs/web test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 7
