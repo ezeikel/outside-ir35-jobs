@@ -42,6 +42,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# native build artifacts (EAS local builds drop these in apps/mobile)
+*.ipa
+*.apk
+*.aab
+
 # Sentry Config File
 .sentryclirc
 
