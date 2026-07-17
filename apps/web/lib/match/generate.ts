@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 // Claude Sonnet for prose quality + strong instruction-following (the honesty
 // constraint below is load-bearing). Same model as the job-spec writer.
-const MATCH_MODEL = 'claude-sonnet-4-6';
+const MATCH_MODEL = 'claude-sonnet-5';
 
 // The subset of the contractor's parsed CV we feed the model — real, stated facts.
 export type MatchProfile = {
