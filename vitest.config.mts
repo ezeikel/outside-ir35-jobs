@@ -10,6 +10,10 @@ import { defineConfig } from 'vitest/config';
  */
 export default defineConfig({
   test: {
-    projects: ['./apps/web/vitest.config.mts'],
+    projects: [
+      './apps/web/vitest.config.mts',
+      './apps/mobile/vitest.config.mts',
+      './apps/worker/vitest.config.mts',
+    ],
   },
 });
