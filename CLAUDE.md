@@ -36,6 +36,16 @@ Neon PostgreSQL with branch-based development:
 branch. `apps/web/.env.local` points `DATABASE_URL` /
 `DATABASE_URL_UNPOOLED` at the dev branch. `pgvector` is enabled on both branches.
 
+### Cost rule
+
+Compute is 0.25–1 CU (autosuspend 300s = the plan floor). The crons here are fine (~6 DB runs/day, all
+in the 04:00–07:30 window) — on this app the Neon cost driver is **crawler traffic on DB-backed pages**,
+since Googlebot hits a site with near-zero humans around the clock. `app/sitemap.ts` runs full-table
+`getJobs()` + `getSeoSkills()` queries and now has `export const revalidate = 3600` so it regenerates at
+most hourly instead of per fetch — keep it cached, and cache any new DB-backed public route the same way.
+NextAuth uses `strategy: 'database'` (a session SELECT per authed request); that scales with real traffic
+and is not the problem — don't "optimise" it. Rationale: `~/Development/CLAUDE.md` → Neon cost playbook.
+
 ### Migrations (Prisma 7)
 
 **CRITICAL rules — violating any causes dev↔prod drift:**
