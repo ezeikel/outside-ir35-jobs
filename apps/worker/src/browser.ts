@@ -31,7 +31,7 @@ export const createStagehand = async (): Promise<Stagehand> => {
         }
       : {}),
     // Stagehand's own act/extract LLM. Sonnet for cost (cron-frequency).
-    modelName: 'anthropic/claude-sonnet-4-6',
+    modelName: 'anthropic/claude-sonnet-5',
     modelClientOptions: { apiKey: process.env.ANTHROPIC_API_KEY },
     verbose: 1,
   });

@@ -18,7 +18,7 @@ import { writeClient } from './sanity.js';
 // to Sanity). If anything fails the caller ships the post with no image rather
 // than blocking publication — this path NEVER throws.
 
-const captionModel = anthropic('claude-sonnet-4-6');
+const captionModel = anthropic('claude-sonnet-5');
 const judgeModel = anthropic('claude-opus-4-8'); // Opus 4.8 vision judge
 
 // The Pexels relevance bar. Only use a stock photo the judge is clearly happy

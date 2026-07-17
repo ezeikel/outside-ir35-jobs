@@ -12,7 +12,7 @@ import { z } from 'zod';
 // check it's right" (docs/ir35-trust-model.md). We extract only the fields the
 // upload form needs (insurer, cover limit, expiry) — no identity PII.
 
-const MODEL = 'claude-sonnet-4-6';
+const MODEL = 'claude-sonnet-5';
 
 const ExtractSchema = z.object({
   insurer: z

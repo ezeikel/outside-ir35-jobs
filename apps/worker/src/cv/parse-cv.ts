@@ -87,7 +87,7 @@ export const parseCv = async (
 ): Promise<ParsedProfile | null> => {
   try {
     const { object } = await generateObject({
-      model: anthropic('claude-sonnet-4-6'),
+      model: anthropic('claude-sonnet-5'),
       schema: ParsedProfileSchema,
       system: SYSTEM,
       messages: [

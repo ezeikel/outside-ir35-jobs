@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 // Claude Sonnet drafts noticeably better prose than a small OpenAI model — same
 // model the worker uses for the blog/CV pipeline (ANTHROPIC_API_KEY).
-const DRAFT_MODEL = 'claude-sonnet-4-6';
+const DRAFT_MODEL = 'claude-sonnet-5';
 
 /**
  * AI job-spec writer for posters. Takes rough inputs and drafts a clear, attractive

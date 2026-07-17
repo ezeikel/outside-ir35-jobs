@@ -5,7 +5,7 @@ import type { DayRateBenchmark } from './benchmarks.js';
 import type { TopicResearch } from './research.js';
 import type { BlogTopic } from './topics.js';
 
-export const BLOG_MODEL = 'claude-sonnet-4-6';
+export const BLOG_MODEL = 'claude-sonnet-5';
 
 // Remove em-dashes (a tell of AI prose) — chunky-crayon parity.
 const stripEmDashes = (s: string): string =>

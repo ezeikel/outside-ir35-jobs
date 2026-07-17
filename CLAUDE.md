@@ -5,6 +5,12 @@
 > Full platform docs live in [`docs/`](./docs/README.md) — read those for
 > product/strategy; this file is the engineering operating manual.
 
+## Current AI models
+Use the latest model ids from `~/Development/Personal/scripts/model-registry/LATEST-MODELS.md`
+(live provider snapshot — supersedes training data). Fleet defaults: text = claude-sonnet-5,
+vision judge = claude-opus-4-8, image gen = gpt-image-2 (gpt-image-1.5 where speed matters),
+search = sonar. Regenerate: `tsx ~/Development/Personal/scripts/model-registry/fetch-models.ts`.
+
 ## ⚠️ The one product rule: we never assert IR35 status
 
 Only the **end-client** can legally determine a role's IR35 status (via a Status
