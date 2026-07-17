@@ -4,6 +4,11 @@ import { skillToSlug } from '@/lib/seo/skill-slug';
 
 const SITE = 'https://www.outsideir35jobs.com';
 
+// Crawlers hit /sitemap.xml around the clock; without caching every fetch runs
+// the full-table getJobs/getSeoSkills queries and wakes the Neon compute.
+// Regenerate at most hourly — same cadence as the /contracts pages.
+export const revalidate = 3600;
+
 // Sitemap: static surfaces + every live (board-visible) job + the data-backed
 // per-skill landing pages. Only pages that actually exist are listed — the skill
 // pages are gated on MIN_SAMPLE, so we never advertise thin content.
