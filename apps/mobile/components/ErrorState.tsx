@@ -1,6 +1,6 @@
-import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { Pressable, Text, View } from "react-native";
+import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Pressable, Text, View } from 'react-native';
 
 // Shared "something went wrong, try again" state. Used wherever a data fetch can
 // fail (board, day rates, saved jobs, applications, alerts). A real retry button
@@ -9,8 +9,8 @@ import { Pressable, Text, View } from "react-native";
 // state that reads as "you have nothing" (it lies about why the list is empty).
 
 const ErrorState = ({
-  title = "Something went wrong",
-  body = "We couldn’t load this. Check your connection and try again.",
+  title = 'Something went wrong',
+  body = 'We couldn’t load this. Check your connection and try again.',
   onRetry,
 }: {
   title?: string;

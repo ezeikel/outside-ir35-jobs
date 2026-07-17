@@ -3,9 +3,9 @@
 // component, or background/killed-state delivery is dropped). Then hand off to
 // expo-router's normal entry. Mirrors the go-unbeaten setup.
 
-import notifee, { EventType } from "@notifee/react-native";
-import messaging from "@react-native-firebase/messaging";
-import { displayFcmMessage } from "./lib/push";
+import notifee, { EventType } from '@notifee/react-native';
+import messaging from '@react-native-firebase/messaging';
+import { displayFcmMessage } from './lib/push';
 
 // Background/killed: we send DATA-only FCM messages, so the OS does NOT
 // auto-display them — this handler runs and notifee renders the rich card. Must
@@ -14,12 +14,12 @@ messaging().setBackgroundMessageHandler(async (remoteMessage) => {
   const d = remoteMessage?.data ?? {};
   try {
     await displayFcmMessage({
-      title: typeof d.title === "string" ? d.title : undefined,
-      body: typeof d.body === "string" ? d.body : undefined,
-      url: typeof d.url === "string" ? d.url : undefined,
+      title: typeof d.title === 'string' ? d.title : undefined,
+      body: typeof d.body === 'string' ? d.body : undefined,
+      url: typeof d.url === 'string' ? d.url : undefined,
     });
   } catch (e) {
-    console.warn("[push] background display failed", e);
+    console.warn('[push] background display failed', e);
   }
 });
 
@@ -33,4 +33,4 @@ notifee.onBackgroundEvent(async ({ type }) => {
 });
 
 // Hand off to expo-router.
-import "expo-router/entry";
+import 'expo-router/entry';

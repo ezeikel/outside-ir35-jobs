@@ -3,12 +3,12 @@ import {
   faLayerGroup,
   faList,
   faSliders,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { FlashList } from "@shopify/flash-list";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { FlashList } from '@shopify/flash-list';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
+import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -16,31 +16,31 @@ import {
   Text,
   TextInput,
   View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { toast } from "sonner-native";
-import { TAB_BAR_HEIGHT } from "@/components/GlassTabBar";
-import ErrorState from "@/components/ErrorState";
-import JobCard from "@/components/JobCard";
-import JobDeck from "@/components/JobDeck";
-import FilterSheet from "@/components/search/FilterSheet";
-import LocationField from "@/components/search/LocationField";
-import { useAuth } from "@/contexts/AuthContext";
-import { useSavedJobs } from "@/hooks/useSavedJobs";
-import { useViewMode } from "@/hooks/useViewMode";
-import { fetchJobs, type MobileJobCard } from "@/lib/api-jobs";
-import { saveSearch } from "@/lib/api-searches";
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { toast } from 'sonner-native';
+import ErrorState from '@/components/ErrorState';
+import { TAB_BAR_HEIGHT } from '@/components/GlassTabBar';
+import JobCard from '@/components/JobCard';
+import JobDeck from '@/components/JobDeck';
+import FilterSheet from '@/components/search/FilterSheet';
+import LocationField from '@/components/search/LocationField';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSavedJobs } from '@/hooks/useSavedJobs';
+import { useViewMode } from '@/hooks/useViewMode';
+import { fetchJobs, type MobileJobCard } from '@/lib/api-jobs';
+import { saveSearch } from '@/lib/api-searches';
 import {
   activeFilterCount,
   DEFAULT_FILTERS,
   type SearchFilters,
   toJobsQuery,
-} from "@/lib/search-filters";
-import { useBoardViewStore } from "@/stores/boardViewStore";
+} from '@/lib/search-filters';
+import { useBoardViewStore } from '@/stores/boardViewStore';
 import {
   recentSearchLabel,
   useRecentSearchesStore,
-} from "@/stores/recentSearchesStore";
+} from '@/stores/recentSearchesStore';
 
 // The board. Browse Outside IR35 contracts (public, no auth). Search splits role
 // + location and adds a filter/sort sheet; all of it maps to the SAME endpoint the
@@ -54,11 +54,11 @@ const JobsScreen = () => {
 
   // Live inputs vs committed search. We only query on submit / suggestion-pick /
   // filter-apply, not per keystroke.
-  const [role, setRole] = useState("");
-  const [location, setLocation] = useState("");
+  const [role, setRole] = useState('');
+  const [location, setLocation] = useState('');
   const [committed, setCommitted] = useState<{ q: string; location: string }>({
-    q: "",
-    location: "",
+    q: '',
+    location: '',
   });
   const [filters, setFilters] = useState<SearchFilters>(DEFAULT_FILTERS);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -81,7 +81,7 @@ const JobsScreen = () => {
   const queryParams = toJobsQuery(committed.q, committed.location, filters);
 
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
-    queryKey: ["jobs", queryParams],
+    queryKey: ['jobs', queryParams],
     queryFn: () => fetchJobs(queryParams),
   });
 
@@ -89,10 +89,9 @@ const JobsScreen = () => {
   // server order (RRF when there's a query, newest-first otherwise).
   const jobs = useMemo<MobileJobCard[]>(() => {
     const rows = data?.jobs ?? [];
-    if (filters.sort !== "newest") return rows;
+    if (filters.sort !== 'newest') return rows;
     return [...rows].sort(
-      (a, b) =>
-        new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime(),
+      (a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime(),
     );
   }, [data, filters.sort]);
 
@@ -109,7 +108,7 @@ const JobsScreen = () => {
   const save = useMutation({
     mutationFn: () =>
       saveSearch(toJobsQuery(committed.q, committed.location, filters)),
-    onSuccess: () => toast.success("Saved. We’ll email you new matches."),
+    onSuccess: () => toast.success('Saved. We’ll email you new matches.'),
     onError: (e: unknown) => {
       const err = e as {
         response?: { status?: number; data?: { error?: string } };
@@ -117,25 +116,24 @@ const JobsScreen = () => {
       // The free saved-search cap returns 402 — a natural paywall moment: they've
       // experienced the value (saved 3) and hit the limit. Send them to Premium.
       if (err?.response?.status === 402) {
-        toast.error("You’ve hit the free saved-search limit. Go premium.");
-        router.push("/premium");
+        toast.error('You’ve hit the free saved-search limit. Go premium.');
+        router.push('/premium');
         return;
       }
-      toast.error(err?.response?.data?.error ?? "Couldn’t save this search.");
+      toast.error(err?.response?.data?.error ?? 'Couldn’t save this search.');
     },
   });
 
   // Saving a search is a seeker action. Gated on the active view mode, not the
   // account role — any onboarded user can switch between finding work and hiring.
-  const canSave = isAuthenticated && mode === "seeker";
+  const canSave = isAuthenticated && mode === 'seeker';
   const filterCount = activeFilterCount(filters);
-  const showRecents =
-    !role.trim() && !location.trim() && recents.length > 0;
+  const showRecents = !role.trim() && !location.trim() && recents.length > 0;
 
   // The deck is a seeker experience (swipe-to-save). Offer it only to seekers;
   // everyone else gets the list. When the deck isn't available, force the list.
-  const deckAvailable = mode === "seeker";
-  const showDeck = deckAvailable && boardView === "deck";
+  const deckAvailable = mode === 'seeker';
+  const showDeck = deckAvailable && boardView === 'deck';
 
   return (
     <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
@@ -201,19 +199,19 @@ const JobsScreen = () => {
           >
             <FontAwesomeIcon icon={faSliders} size={14} color="#17181a" />
             <Text className="text-sm text-foreground">
-              {filterCount > 0 ? `Filters (${filterCount})` : "Filters"}
+              {filterCount > 0 ? `Filters (${filterCount})` : 'Filters'}
             </Text>
           </Pressable>
           <Text className="text-xs text-muted-foreground">
-            {filters.sort === "newest" ? "Newest first" : "Most relevant"}
+            {filters.sort === 'newest' ? 'Newest first' : 'Most relevant'}
           </Text>
 
           {/* Deck/list segmented toggle (seekers only). */}
           {deckAvailable ? (
             <View className="ml-auto flex-row rounded-lg border border-border bg-card p-0.5">
               <Pressable
-                className={`rounded-md p-1.5 ${showDeck ? "bg-secondary" : ""}`}
-                onPress={() => setBoardView("deck")}
+                className={`rounded-md p-1.5 ${showDeck ? 'bg-secondary' : ''}`}
+                onPress={() => setBoardView('deck')}
                 accessibilityRole="button"
                 accessibilityLabel="Card deck view"
                 accessibilityState={{ selected: showDeck }}
@@ -221,12 +219,12 @@ const JobsScreen = () => {
                 <FontAwesomeIcon
                   icon={faLayerGroup}
                   size={14}
-                  color={showDeck ? "#17181a" : "#a3a09e"}
+                  color={showDeck ? '#17181a' : '#a3a09e'}
                 />
               </Pressable>
               <Pressable
-                className={`rounded-md p-1.5 ${!showDeck ? "bg-secondary" : ""}`}
-                onPress={() => setBoardView("list")}
+                className={`rounded-md p-1.5 ${!showDeck ? 'bg-secondary' : ''}`}
+                onPress={() => setBoardView('list')}
                 accessibilityRole="button"
                 accessibilityLabel="List view"
                 accessibilityState={{ selected: !showDeck }}
@@ -234,7 +232,7 @@ const JobsScreen = () => {
                 <FontAwesomeIcon
                   icon={faList}
                   size={14}
-                  color={!showDeck ? "#17181a" : "#a3a09e"}
+                  color={!showDeck ? '#17181a' : '#a3a09e'}
                 />
               </Pressable>
             </View>
@@ -295,8 +293,8 @@ const JobsScreen = () => {
               >
                 <Text className="text-sm text-foreground">
                   {save.isPending
-                    ? "Saving…"
-                    : "＋ Save this search & get alerts"}
+                    ? 'Saving…'
+                    : '＋ Save this search & get alerts'}
                 </Text>
               </Pressable>
             ) : null}
@@ -304,7 +302,7 @@ const JobsScreen = () => {
                 natural context: "what do these contracts pay?"). */}
             <Pressable
               className="self-start rounded-lg border border-border bg-card px-3 py-2 active:opacity-70"
-              onPress={() => router.push("/day-rates")}
+              onPress={() => router.push('/day-rates')}
               accessibilityRole="button"
               accessibilityLabel="See day rate benchmarks"
             >
@@ -313,7 +311,7 @@ const JobsScreen = () => {
             {/* Take-home calculator — same context: "what do these pay AFTER tax?" */}
             <Pressable
               className="self-start rounded-lg border border-border bg-card px-3 py-2 active:opacity-70"
-              onPress={() => router.push("/take-home-calculator")}
+              onPress={() => router.push('/take-home-calculator')}
               accessibilityRole="button"
               accessibilityLabel="Open the take-home calculator"
             >
@@ -328,7 +326,7 @@ const JobsScreen = () => {
       {earlyAccessApplied && !isLoading && !isError ? (
         <Pressable
           className="mx-4 mb-2 flex-row items-center gap-2.5 rounded-lg border border-border bg-secondary/50 px-3 py-2.5 active:opacity-80"
-          onPress={() => router.push("/premium")}
+          onPress={() => router.push('/premium')}
           accessibilityRole="button"
           accessibilityLabel="Get early access to new contracts with Premium"
         >

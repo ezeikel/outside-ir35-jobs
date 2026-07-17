@@ -1,9 +1,9 @@
-import { useEffect } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
-import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Paywall from "@/components/Paywall";
-import { usePremium } from "@/lib/api-premium";
+import { useEffect } from 'react';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Paywall from '@/components/Paywall';
+import { usePremium } from '@/lib/api-premium';
 
 // The paywall step shown once, at the end of onboarding, AFTER a contractor has
 // picked their role (the value props in the carousel are the "aha" that earns

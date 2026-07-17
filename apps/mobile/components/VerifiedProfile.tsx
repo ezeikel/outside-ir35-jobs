@@ -1,8 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
-import CVManager from "@/components/CVManager";
-import DocumentUpload from "@/components/DocumentUpload";
-import { fetchProfile, type MobileProfile } from "@/lib/api-profile";
+import { useQuery } from '@tanstack/react-query';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import CVManager from '@/components/CVManager';
+import DocumentUpload from '@/components/DocumentUpload';
+import { fetchProfile, type MobileProfile } from '@/lib/api-profile';
 
 // The contractor's verified compliance pack. Surfaces only objective facts: the
 // trust tier, register-checked companies (attributed + dated), documents on file
@@ -10,8 +10,13 @@ import { fetchProfile, type MobileProfile } from "@/lib/api-profile";
 // (docs/ir35-trust-model.md). Documents are uploadable in-app; company
 // verification + IR35-insurance editing still live on web.
 const VerifiedProfile = () => {
-  const { data: profile, isLoading, isError, refetch } = useQuery({
-    queryKey: ["profile"],
+  const {
+    data: profile,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: ['profile'],
     queryFn: fetchProfile,
   });
 
@@ -78,7 +83,7 @@ const VerifiedProfile = () => {
 };
 
 const dateLabel = (iso: string | null): string =>
-  iso ? new Date(iso).toLocaleDateString("en-GB") : "-";
+  iso ? new Date(iso).toLocaleDateString('en-GB') : '-';
 
 const Section = ({
   title,
@@ -189,8 +194,8 @@ const Documents = ({ profile }: { profile: MobileProfile }) => {
               <Text className="text-xs text-muted-foreground">
                 {d.insurer}
                 {d.coverLimit
-                  ? ` · £${d.coverLimit.toLocaleString("en-GB")} cover`
-                  : ""}
+                  ? ` · £${d.coverLimit.toLocaleString('en-GB')} cover`
+                  : ''}
               </Text>
             ) : null}
             {d.expiresAt ? (
@@ -214,13 +219,13 @@ const DocStatusBadge = ({
   label: string;
 }) => {
   const tone =
-    status === "ON_FILE"
-      ? "bg-verified-muted text-verified"
-      : status === "EXPIRING"
-        ? "bg-aging-muted text-aging"
-        : status === "FAILED"
-          ? "bg-destructive/10 text-destructive"
-          : "bg-secondary text-muted-foreground";
+    status === 'ON_FILE'
+      ? 'bg-verified-muted text-verified'
+      : status === 'EXPIRING'
+        ? 'bg-aging-muted text-aging'
+        : status === 'FAILED'
+          ? 'bg-destructive/10 text-destructive'
+          : 'bg-secondary text-muted-foreground';
   return (
     <Text className={`rounded-full px-2 py-1 text-xs ${tone}`}>{label}</Text>
   );
@@ -232,9 +237,9 @@ const Compliance = ({ profile }: { profile: MobileProfile }) => (
       <View className="flex-row items-center justify-between rounded-lg border border-border bg-card p-4">
         <Text className="text-sm text-foreground">Right to work</Text>
         <Text
-          className={`text-sm ${profile.rightToWorkConfirmed ? "text-verified" : "text-muted-foreground"}`}
+          className={`text-sm ${profile.rightToWorkConfirmed ? 'text-verified' : 'text-muted-foreground'}`}
         >
-          {profile.rightToWorkConfirmed ? "Confirmed" : "Not confirmed"}
+          {profile.rightToWorkConfirmed ? 'Confirmed' : 'Not confirmed'}
         </Text>
       </View>
       <View className="flex-row items-center justify-between rounded-lg border border-border bg-card p-4">
@@ -245,14 +250,14 @@ const Compliance = ({ profile }: { profile: MobileProfile }) => (
               {profile.ir35Insurance.provider}
               {profile.ir35Insurance.expiresAt
                 ? ` · expires ${dateLabel(profile.ir35Insurance.expiresAt)}`
-                : ""}
+                : ''}
             </Text>
           ) : null}
         </View>
         <Text
-          className={`text-sm ${profile.ir35Insurance.held ? "text-verified" : "text-muted-foreground"}`}
+          className={`text-sm ${profile.ir35Insurance.held ? 'text-verified' : 'text-muted-foreground'}`}
         >
-          {profile.ir35Insurance.held ? "Held" : "Not held"}
+          {profile.ir35Insurance.held ? 'Held' : 'Not held'}
         </Text>
       </View>
     </View>

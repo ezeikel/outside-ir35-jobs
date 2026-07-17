@@ -1,8 +1,8 @@
-import { faWandMagicSparkles } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Linking,
@@ -11,25 +11,25 @@ import {
   Text,
   TextInput,
   View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { toast } from "sonner-native";
-import AIPitchUpsell from "@/components/AIPitchUpsell";
-import ContentColumn from "@/components/ContentColumn";
-import RichText from "@/components/RichText";
-import SaveHeart from "@/components/SaveHeart";
-import { ANALYTICS_EVENTS } from "@/constants/analytics";
-import { useAuth } from "@/contexts/AuthContext";
-import { useSavedJobs } from "@/hooks/useSavedJobs";
-import { useAnalytics } from "@/lib/analytics";
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { toast } from 'sonner-native';
+import AIPitchUpsell from '@/components/AIPitchUpsell';
+import ContentColumn from '@/components/ContentColumn';
+import RichText from '@/components/RichText';
+import SaveHeart from '@/components/SaveHeart';
+import { ANALYTICS_EVENTS } from '@/constants/analytics';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSavedJobs } from '@/hooks/useSavedJobs';
+import { useAnalytics } from '@/lib/analytics';
 import {
   type ApplyEligibility,
   applyToJob,
   fetchJob,
   fetchJobPitch,
   type PitchMode,
-} from "@/lib/api-jobs";
-import { formatDayRate } from "@/lib/format";
+} from '@/lib/api-jobs';
+import { formatDayRate } from '@/lib/format';
 
 // Job detail. Shows the role, the attributed IR35 claim (when the client states
 // outside — never our assertion), the description, and an apply control whose
@@ -41,7 +41,7 @@ const JobDetailScreen = () => {
   const { canSave, isSaved, toggle } = useSavedJobs();
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["job", id],
+    queryKey: ['job', id],
     queryFn: () => fetchJob(id),
     enabled: !!id,
   });
@@ -73,64 +73,66 @@ const JobDetailScreen = () => {
       contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom + 32 }}
     >
       <ContentColumn>
-      <View className="flex-row items-start justify-between gap-3">
-        <View className="min-w-0 flex-1">
-          <Text className="text-xs text-muted-foreground">
-            {job.companyName} · {job.location}
-          </Text>
-          <Text className="mt-1 font-display text-2xl text-foreground">
-            {job.position}
-          </Text>
+        <View className="flex-row items-start justify-between gap-3">
+          <View className="min-w-0 flex-1">
+            <Text className="text-xs text-muted-foreground">
+              {job.companyName} · {job.location}
+            </Text>
+            <Text className="mt-1 font-display text-2xl text-foreground">
+              {job.position}
+            </Text>
+          </View>
+
+          {/* Save toggle (seeker view only). Shares state with the board + My Jobs. */}
+          {canSave ? (
+            <SaveHeart saved={saved} onToggle={() => toggle(job)} size={22} />
+          ) : null}
         </View>
 
-        {/* Save toggle (seeker view only). Shares state with the board + My Jobs. */}
-        {canSave ? (
-          <SaveHeart saved={saved} onToggle={() => toggle(job)} size={22} />
-        ) : null}
-      </View>
-
-      <View className="mt-3 flex-row flex-wrap items-center gap-2">
-        <Chip label={job.ir35Label} />
-        <Chip label={job.workModeLabel} />
-        {job.contractLengthDays ? (
-          <Chip label={`${job.contractLengthDays}d`} />
-        ) : null}
-      </View>
-
-      <Text className="mt-4 font-sans-semibold text-lg text-foreground">
-        {formatDayRate(job.dayRate)}
-      </Text>
-
-      {job.ir35Claim ? (
-        <View className="mt-4 rounded-lg border border-verified bg-verified-muted p-3">
-          <Text className="text-sm text-foreground">{job.ir35Claim.text}</Text>
-          <Text className="mt-1 text-xs text-muted-foreground">
-            Stated by {job.ir35Claim.attributedTo}. The platform does not
-            determine or verify IR35 status; the SDS is the client’s legal
-            responsibility.
-          </Text>
+        <View className="mt-3 flex-row flex-wrap items-center gap-2">
+          <Chip label={job.ir35Label} />
+          <Chip label={job.workModeLabel} />
+          {job.contractLengthDays ? (
+            <Chip label={`${job.contractLengthDays}d`} />
+          ) : null}
         </View>
-      ) : null}
 
-      <Text className="mt-6 font-sans-semibold text-base text-foreground">
-        About the role
-      </Text>
-      {job.descriptionHtml?.trim() ? (
-        <View className="mt-2">
-          <RichText html={job.descriptionHtml} />
-        </View>
-      ) : (
-        <Text className="mt-2 text-sm leading-6 text-foreground">
-          {job.descriptionText || "No description provided."}
+        <Text className="mt-4 font-sans-semibold text-lg text-foreground">
+          {formatDayRate(job.dayRate)}
         </Text>
-      )}
 
-      <ApplyControl
-        jobId={job.id}
-        source={job.source}
-        sourceUrl={job.sourceUrl}
-        eligibility={apply}
-      />
+        {job.ir35Claim ? (
+          <View className="mt-4 rounded-lg border border-verified bg-verified-muted p-3">
+            <Text className="text-sm text-foreground">
+              {job.ir35Claim.text}
+            </Text>
+            <Text className="mt-1 text-xs text-muted-foreground">
+              Stated by {job.ir35Claim.attributedTo}. The platform does not
+              determine or verify IR35 status; the SDS is the client’s legal
+              responsibility.
+            </Text>
+          </View>
+        ) : null}
+
+        <Text className="mt-6 font-sans-semibold text-base text-foreground">
+          About the role
+        </Text>
+        {job.descriptionHtml?.trim() ? (
+          <View className="mt-2">
+            <RichText html={job.descriptionHtml} />
+          </View>
+        ) : (
+          <Text className="mt-2 text-sm leading-6 text-foreground">
+            {job.descriptionText || 'No description provided.'}
+          </Text>
+        )}
+
+        <ApplyControl
+          jobId={job.id}
+          source={job.source}
+          sourceUrl={job.sourceUrl}
+          eligibility={apply}
+        />
       </ContentColumn>
     </ScrollView>
   );
@@ -149,7 +151,7 @@ const ApplyControl = ({
   eligibility,
 }: {
   jobId: string;
-  source: "NATIVE" | "AGGREGATED";
+  source: 'NATIVE' | 'AGGREGATED';
   sourceUrl: string | null;
   eligibility?: ApplyEligibility;
 }) => {
@@ -157,7 +159,7 @@ const ApplyControl = ({
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const { trackEvent } = useAnalytics();
-  const [note, setNote] = useState("");
+  const [note, setNote] = useState('');
   // The note field grows with content (so the whole AI draft is readable) up to a
   // cap, then scrolls internally.
   const [noteHeight, setNoteHeight] = useState(96);
@@ -173,13 +175,13 @@ const ApplyControl = ({
         source,
         hasMessage: Boolean(note.trim()),
       });
-      toast.success("Applied. The poster can see your verified profile.");
-      void queryClient.invalidateQueries({ queryKey: ["job", jobId] });
+      toast.success('Applied. The poster can see your verified profile.');
+      void queryClient.invalidateQueries({ queryKey: ['job', jobId] });
     },
     onError: (e: unknown) => {
       const msg =
         (e as { response?: { data?: { error?: string } } })?.response?.data
-          ?.error ?? "Couldn’t apply right now.";
+          ?.error ?? 'Couldn’t apply right now.';
       toast.error(msg);
     },
   });
@@ -191,22 +193,22 @@ const ApplyControl = ({
   const pitch = useMutation({
     mutationFn: (mode?: PitchMode) => fetchJobPitch(jobId, mode),
     onSuccess: (result) => {
-      if (result.status === "ok") {
+      if (result.status === 'ok') {
         setNote(result.pitch);
         setHasDraft(true);
-      } else if (result.status === "not_premium") {
+      } else if (result.status === 'not_premium') {
         setUpsellOpen(true);
-      } else if (result.status === "no_cv") {
-        toast("Add a CV to your profile to draft a pitch.");
+      } else if (result.status === 'no_cv') {
+        toast('Add a CV to your profile to draft a pitch.');
       } else {
-        toast.error("Couldn’t draft a pitch. Try again.");
+        toast.error('Couldn’t draft a pitch. Try again.');
       }
     },
-    onError: () => toast.error("Couldn’t draft a pitch. Try again."),
+    onError: () => toast.error('Couldn’t draft a pitch. Try again.'),
   });
 
   // Aggregated roles link out (no on-platform owner to receive an application).
-  if (source === "AGGREGATED") {
+  if (source === 'AGGREGATED') {
     if (!sourceUrl) return null;
     return (
       <Pressable
@@ -225,7 +227,7 @@ const ApplyControl = ({
     return (
       <Pressable
         className="mt-6 rounded-lg border border-border bg-card p-4 active:opacity-80"
-        onPress={() => router.push("/(tabs)/profile")}
+        onPress={() => router.push('/(tabs)/profile')}
       >
         <Text className="text-center font-sans-semibold text-foreground">
           Sign in to apply
@@ -271,7 +273,7 @@ const ApplyControl = ({
               />
             )}
             <Text className="text-xs font-sans-semibold text-primary-foreground">
-              {pitch.isPending ? "Generating…" : "Draft with AI"}
+              {pitch.isPending ? 'Generating…' : 'Draft with AI'}
             </Text>
           </Pressable>
         </View>
@@ -287,10 +289,13 @@ const ApplyControl = ({
           // scrolls internally (so a long pitch never gets clipped to 3 lines).
           onContentSizeChange={(e) =>
             setNoteHeight(
-              Math.min(Math.max(96, e.nativeEvent.contentSize.height + 24), 320),
+              Math.min(
+                Math.max(96, e.nativeEvent.contentSize.height + 24),
+                320,
+              ),
             )
           }
-          style={{ height: noteHeight, textAlignVertical: "top" }}
+          style={{ height: noteHeight, textAlignVertical: 'top' }}
           scrollEnabled
         />
 
@@ -299,9 +304,9 @@ const ApplyControl = ({
           <View className="mt-2 flex-row flex-wrap gap-2">
             {(
               [
-                { mode: "rephrase", label: "Rephrase" },
-                { mode: "shorten", label: "Shorten" },
-                { mode: "formal", label: "More formal" },
+                { mode: 'rephrase', label: 'Rephrase' },
+                { mode: 'shorten', label: 'Shorten' },
+                { mode: 'formal', label: 'More formal' },
               ] as const
             ).map((a) => (
               <Pressable
@@ -343,7 +348,7 @@ const ApplyControl = ({
           onClose={() => setUpsellOpen(false)}
           onUpgrade={() => {
             setUpsellOpen(false);
-            router.push("/premium");
+            router.push('/premium');
           }}
         />
       </View>
@@ -354,9 +359,9 @@ const ApplyControl = ({
   return (
     <View className="mt-6 rounded-lg border border-border bg-card p-4">
       <Text className="text-center text-sm text-muted-foreground">
-        {eligibility?.reason === "not_contractor"
-          ? "Only contractor accounts can apply."
-          : "This role isn’t open for applications."}
+        {eligibility?.reason === 'not_contractor'
+          ? 'Only contractor accounts can apply.'
+          : 'This role isn’t open for applications.'}
       </Text>
     </View>
   );

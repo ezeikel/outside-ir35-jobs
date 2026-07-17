@@ -1,8 +1,8 @@
-import { ModalBottomSheet } from "@swmansion/react-native-bottom-sheet";
-import * as Haptics from "expo-haptics";
-import { useCallback } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ModalBottomSheet } from '@swmansion/react-native-bottom-sheet';
+import * as Haptics from 'expo-haptics';
+import { useCallback } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Brand-styled replacement for the iOS system Alert.alert([Cancel, Destroy])
 // confirm. Destructive/irreversible actions get an in-app bottom sheet instead
@@ -12,13 +12,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 // no Alert.alert on mobile — toasts for feedback, a sheet for confirms.)
 
 const COLORS = {
-  surface: "#ffffff",
-  foreground: "#17181a",
-  muted: "#767370",
-  border: "#e8e7e5",
-  destructive: "#cc2827",
-  destructiveFg: "#fefefe",
-  handle: "#d6d4d1",
+  surface: '#ffffff',
+  foreground: '#17181a',
+  muted: '#767370',
+  border: '#e8e7e5',
+  destructive: '#cc2827',
+  destructiveFg: '#fefefe',
+  handle: '#d6d4d1',
 };
 
 type ConfirmSheetProps = {
@@ -30,7 +30,7 @@ type ConfirmSheetProps = {
   confirmLabel: string;
   cancelLabel?: string;
   /** Tints the confirm button red when destructive (default), ink otherwise. */
-  tone?: "destructive" | "default";
+  tone?: 'destructive' | 'default';
   onConfirm: () => void;
 };
 
@@ -40,8 +40,8 @@ const ConfirmSheet = ({
   title,
   description,
   confirmLabel,
-  cancelLabel = "Cancel",
-  tone = "destructive",
+  cancelLabel = 'Cancel',
+  tone = 'destructive',
   onConfirm,
 }: ConfirmSheetProps) => {
   const insets = useSafeAreaInsets();
@@ -65,7 +65,7 @@ const ConfirmSheet = ({
   if (!isOpen) return null;
 
   const confirmBg =
-    tone === "destructive" ? COLORS.destructive : COLORS.foreground;
+    tone === 'destructive' ? COLORS.destructive : COLORS.foreground;
 
   return (
     <ModalBottomSheet
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   handle: {
-    alignSelf: "center",
+    alignSelf: 'center',
     width: 36,
     height: 4,
     borderRadius: 2,
@@ -134,18 +134,18 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
-    fontFamily: "InterTight-SemiBold",
+    fontFamily: 'InterTight-SemiBold',
     fontSize: 18,
     color: COLORS.foreground,
   },
   description: {
-    fontFamily: "InterTight-Regular",
+    fontFamily: 'InterTight-Regular',
     fontSize: 14,
     lineHeight: 20,
     color: COLORS.muted,
   },
   actions: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 10,
     marginTop: 12,
   },
@@ -153,8 +153,8 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 12,
     paddingVertical: 14,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cancelButton: {
     backgroundColor: COLORS.surface,
@@ -165,12 +165,12 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   cancelText: {
-    fontFamily: "InterTight-SemiBold",
+    fontFamily: 'InterTight-SemiBold',
     fontSize: 15,
     color: COLORS.foreground,
   },
   confirmText: {
-    fontFamily: "InterTight-SemiBold",
+    fontFamily: 'InterTight-SemiBold',
     fontSize: 15,
     color: COLORS.destructiveFg,
   },

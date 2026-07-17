@@ -1,5 +1,5 @@
-@import 'tailwindcss';
-@import 'nativewind/theme';
+@import "tailwindcss";
+@import "nativewind/theme";
 
 /* Design tokens mirrored from the web app's @theme in apps/web/global.css.
    The web uses OKLCH primitives behind shadcn semantic tokens; here they're
@@ -15,12 +15,12 @@
   /* Fonts: Inter Tight sans, Instrument Serif display, Geist Mono mono — same
      families as web. Registered via expo-font once the .ttf files land in
      assets/fonts. */
-  --font-sans: 'InterTight-Regular';
-  --font-sans-medium: 'InterTight-Medium';
-  --font-sans-semibold: 'InterTight-SemiBold';
-  --font-sans-bold: 'InterTight-Bold';
-  --font-display: 'InstrumentSerif-Regular';
-  --font-mono: 'GeistMono-Regular';
+  --font-sans: "InterTight-Regular";
+  --font-sans-medium: "InterTight-Medium";
+  --font-sans-semibold: "InterTight-SemiBold";
+  --font-sans-bold: "InterTight-Bold";
+  --font-display: "InstrumentSerif-Regular";
+  --font-mono: "GeistMono-Regular";
 
   /* Neutral ink ramp — the data workhorse. */
   --color-ink-50: #fbfaf9;

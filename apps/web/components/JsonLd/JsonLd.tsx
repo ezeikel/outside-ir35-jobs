@@ -12,7 +12,6 @@ type Props = {
 const JsonLd = ({ data }: Props) => (
   <script
     type="application/ld+json"
-    // biome-ignore lint/security/noDangerouslySetInnerHtml: our own static data, not user input
     dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
   />
 );

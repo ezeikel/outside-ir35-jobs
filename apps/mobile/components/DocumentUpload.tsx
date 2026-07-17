@@ -1,24 +1,24 @@
-import { useForm } from "@tanstack/react-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
-import { toast } from "sonner-native";
-import { z } from "zod";
-import ConfirmSheet from "@/components/ConfirmSheet";
-import FormField from "@/components/FormField";
-import DocViewer from "@/components/DocViewer";
-import { useDocViewer } from "@/hooks/useDocViewer";
+import { useForm } from '@tanstack/react-form';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { toast } from 'sonner-native';
+import { z } from 'zod';
+import ConfirmSheet from '@/components/ConfirmSheet';
+import DocViewer from '@/components/DocViewer';
+import FormField from '@/components/FormField';
+import { useDocViewer } from '@/hooks/useDocViewer';
 import {
   deleteDocument,
   extractDocFacts,
   getDocumentViewUrl,
   type PickedFile,
-  type UploadMeta,
   UPLOADABLE_DOC_TYPES,
+  type UploadMeta,
   uploadDocument,
-} from "@/lib/api-documents";
-import type { MobileProfile } from "@/lib/api-profile";
-import { pickDocumentFile, pickImageFile } from "@/lib/pick-document";
+} from '@/lib/api-documents';
+import type { MobileProfile } from '@/lib/api-profile';
+import { pickDocumentFile, pickImageFile } from '@/lib/pick-document';
 
 // Validation for the expiry-doc metadata. Insurer + cover are optional (RTW docs
 // don't show them); when given, cover must be a plain number and expiry must be a
@@ -28,16 +28,19 @@ const metaSchema = z.object({
   insurer: z.string(),
   coverLimit: z
     .string()
-    .refine((v) => v === "" || /^\d+$/.test(v.trim()), "Numbers only (e.g. 1000000)"),
+    .refine(
+      (v) => v === '' || /^\d+$/.test(v.trim()),
+      'Numbers only (e.g. 1000000)',
+    ),
   expiresAt: z
     .string()
     .refine(
-      (v) => v === "" || /^\d{4}-\d{2}-\d{2}$/.test(v.trim()),
-      "Use YYYY-MM-DD",
+      (v) => v === '' || /^\d{4}-\d{2}-\d{2}$/.test(v.trim()),
+      'Use YYYY-MM-DD',
     )
     .refine(
-      (v) => v === "" || !Number.isNaN(Date.parse(v.trim())),
-      "Not a real date",
+      (v) => v === '' || !Number.isNaN(Date.parse(v.trim())),
+      'Not a real date',
     ),
 });
 
@@ -108,13 +111,12 @@ const DocRow = ({
       setExpanded(false);
       setPicked(null);
       form.reset();
-      void queryClient.invalidateQueries({ queryKey: ["profile"] });
+      void queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
     onError: (e: unknown) => {
       const msg =
         (e as { response?: { data?: { error?: string } } })?.response?.data
-          ?.error ??
-        (e instanceof Error ? e.message : "Upload failed.");
+          ?.error ?? (e instanceof Error ? e.message : 'Upload failed.');
       toast.error(msg);
     },
   });
@@ -123,7 +125,7 @@ const DocRow = ({
   // with zod on change; submit fires the upload with the picked file + trimmed
   // values. Non-expiry docs skip this entirely and upload immediately on pick.
   const form = useForm({
-    defaultValues: { insurer: "", coverLimit: "", expiresAt: "" },
+    defaultValues: { insurer: '', coverLimit: '', expiresAt: '' },
     validators: { onChange: metaSchema },
     onSubmit: ({ value }) => {
       if (!picked) return;
@@ -140,15 +142,15 @@ const DocRow = ({
     mutationFn: () => deleteDocument(docType),
     onSuccess: () => {
       toast.success(`${label} removed.`);
-      void queryClient.invalidateQueries({ queryKey: ["profile"] });
+      void queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
-    onError: () => toast.error("Couldn’t remove. Try again."),
+    onError: () => toast.error('Couldn’t remove. Try again.'),
   });
 
-  const choose = async (kind: "file" | "photo") => {
+  const choose = async (kind: 'file' | 'photo') => {
     try {
       const file =
-        kind === "file" ? await pickDocumentFile() : await pickImageFile();
+        kind === 'file' ? await pickDocumentFile() : await pickImageFile();
       if (!file) return;
       setPicked(file);
       // Non-expiry docs upload immediately; expiry docs wait for the metadata.
@@ -169,26 +171,26 @@ const DocRow = ({
         let filledAny = false;
         const cur = form.state.values;
         if (facts.insurer && !cur.insurer.trim()) {
-          form.setFieldValue("insurer", facts.insurer);
+          form.setFieldValue('insurer', facts.insurer);
           filledAny = true;
         }
         if (facts.coverLimit && !cur.coverLimit.trim()) {
-          form.setFieldValue("coverLimit", String(facts.coverLimit));
+          form.setFieldValue('coverLimit', String(facts.coverLimit));
           filledAny = true;
         }
         if (facts.expiresAt && !cur.expiresAt.trim()) {
-          form.setFieldValue("expiresAt", facts.expiresAt);
+          form.setFieldValue('expiresAt', facts.expiresAt);
           filledAny = true;
         }
         if (filledAny) {
           setPrefilled(true);
-          toast("Read from your document. Check it’s right before you upload.");
+          toast('Read from your document. Check it’s right before you upload.');
         }
       } finally {
         setExtracting(false);
       }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn’t pick that file.");
+      toast.error(e instanceof Error ? e.message : 'Couldn’t pick that file.');
     }
   };
 
@@ -211,160 +213,161 @@ const DocRow = ({
   return (
     <>
       <View className="mb-2 rounded-lg border border-border bg-card p-3">
-      <View className="flex-row items-center justify-between">
-        <View className="min-w-0 flex-1 pr-3">
-          <Text className="font-sans-semibold text-foreground">{label}</Text>
-          <Text className="text-xs text-muted-foreground">
-            {hasFile ? "On file" : "Not provided"}
-          </Text>
-        </View>
-        <View className="flex-row gap-2">
-          {hasFile ? (
+        <View className="flex-row items-center justify-between">
+          <View className="min-w-0 flex-1 pr-3">
+            <Text className="font-sans-semibold text-foreground">{label}</Text>
+            <Text className="text-xs text-muted-foreground">
+              {hasFile ? 'On file' : 'Not provided'}
+            </Text>
+          </View>
+          <View className="flex-row gap-2">
+            {hasFile ? (
+              <Pressable
+                className="rounded-lg border border-border px-3 py-2 active:opacity-70"
+                disabled={busy}
+                onPress={onView}
+                accessibilityRole="button"
+                accessibilityLabel={`View ${label}`}
+              >
+                <Text className="text-sm text-foreground">View</Text>
+              </Pressable>
+            ) : null}
+            {hasFile ? (
+              <Pressable
+                className="rounded-lg px-3 py-2 active:opacity-70"
+                disabled={busy}
+                onPress={confirmRemove}
+              >
+                <Text className="text-sm text-destructive">Remove</Text>
+              </Pressable>
+            ) : null}
             <Pressable
               className="rounded-lg border border-border px-3 py-2 active:opacity-70"
               disabled={busy}
-              onPress={onView}
-              accessibilityRole="button"
-              accessibilityLabel={`View ${label}`}
+              onPress={() => {
+                if (tracksExpiry) toggleExpiry();
+                else choose('file');
+              }}
             >
-              <Text className="text-sm text-foreground">View</Text>
-            </Pressable>
-          ) : null}
-          {hasFile ? (
-            <Pressable
-              className="rounded-lg px-3 py-2 active:opacity-70"
-              disabled={busy}
-              onPress={confirmRemove}
-            >
-              <Text className="text-sm text-destructive">Remove</Text>
-            </Pressable>
-          ) : null}
-          <Pressable
-            className="rounded-lg border border-border px-3 py-2 active:opacity-70"
-            disabled={busy}
-            onPress={() => {
-              if (tracksExpiry) toggleExpiry();
-              else choose("file");
-            }}
-          >
-            {busy ? (
-              <ActivityIndicator color="#17181a" size="small" />
-            ) : (
-              <Text className="text-sm text-foreground">
-                {hasFile ? "Replace" : "Add"}
-              </Text>
-            )}
-          </Pressable>
-        </View>
-      </View>
-
-      {expanded && tracksExpiry ? (
-        <View className="mt-3 gap-2">
-          {/* Extraction status — INSURANCE docs only. Identity docs aren't sent to
-              AI, so we never show the "we'll read it" copy for them. */}
-          {extractable && extracting ? (
-            <View className="flex-row items-center gap-2 rounded-lg bg-secondary px-3 py-2">
-              <ActivityIndicator size="small" color="#17181a" />
-              <Text className="text-xs text-muted-foreground">
-                Reading your document to fill these in…
-              </Text>
-            </View>
-          ) : extractable && prefilled ? (
-            <Text className="rounded-lg bg-verified-muted px-3 py-2 text-xs text-foreground">
-              We filled these from your document. Check they’re right, then upload.
-            </Text>
-          ) : extractable ? (
-            <Text className="text-xs text-muted-foreground">
-              Pick the file first and we’ll read the insurer, cover and expiry off
-              it for you to confirm.
-            </Text>
-          ) : (
-            <Text className="text-xs text-muted-foreground">
-              Add the file and the expiry date. We never send identity documents to
-              AI.
-            </Text>
-          )}
-          {docType !== "RIGHT_TO_WORK" ? (
-            <>
-              <form.Field name="insurer">
-                {(field) => (
-                  <FormField
-                    field={field}
-                    label="Insurer"
-                    placeholder="e.g. Qdos, Markel"
-                  />
-                )}
-              </form.Field>
-              <form.Field name="coverLimit">
-                {(field) => (
-                  <FormField
-                    field={field}
-                    label="Cover limit (£)"
-                    placeholder="e.g. 1000000"
-                    keyboardType="number-pad"
-                  />
-                )}
-              </form.Field>
-            </>
-          ) : null}
-          <form.Field name="expiresAt">
-            {(field) => (
-              <FormField
-                field={field}
-                label="Expiry date"
-                placeholder="YYYY-MM-DD"
-                autoCapitalize="none"
-              />
-            )}
-          </form.Field>
-          {picked ? (
-            <Text className="text-xs text-muted-foreground">
-              Selected: {picked.name}
-            </Text>
-          ) : null}
-          <View className="flex-row gap-2">
-            <Pressable
-              className="flex-1 rounded-lg border border-border px-3 py-2 active:opacity-70"
-              disabled={busy}
-              onPress={() => choose("file")}
-              accessibilityRole="button"
-              accessibilityLabel={`Choose a ${label} file`}
-            >
-              <Text className="text-center text-sm text-foreground">
-                Choose file
-              </Text>
-            </Pressable>
-            <Pressable
-              className="flex-1 rounded-lg border border-border px-3 py-2 active:opacity-70"
-              disabled={busy}
-              onPress={() => choose("photo")}
-              accessibilityRole="button"
-              accessibilityLabel={`Take or choose a ${label} photo`}
-            >
-              <Text className="text-center text-sm text-foreground">
-                Take/choose photo
-              </Text>
+              {busy ? (
+                <ActivityIndicator color="#17181a" size="small" />
+              ) : (
+                <Text className="text-sm text-foreground">
+                  {hasFile ? 'Replace' : 'Add'}
+                </Text>
+              )}
             </Pressable>
           </View>
-          <form.Subscribe selector={(s) => s.canSubmit}>
-            {(canSubmit) => (
-              <Pressable
-                className={`rounded-lg p-3 ${picked && canSubmit ? "bg-primary active:opacity-90" : "bg-ink-300"}`}
-                disabled={!picked || !canSubmit || busy}
-                onPress={() => void form.handleSubmit()}
-              >
-                {upload.isPending ? (
-                  <ActivityIndicator color="#fbfaf9" size="small" />
-                ) : (
-                  <Text className="text-center font-sans-semibold text-primary-foreground">
-                    Upload
-                  </Text>
-                )}
-              </Pressable>
-            )}
-          </form.Subscribe>
         </View>
-      ) : null}
+
+        {expanded && tracksExpiry ? (
+          <View className="mt-3 gap-2">
+            {/* Extraction status — INSURANCE docs only. Identity docs aren't sent to
+              AI, so we never show the "we'll read it" copy for them. */}
+            {extractable && extracting ? (
+              <View className="flex-row items-center gap-2 rounded-lg bg-secondary px-3 py-2">
+                <ActivityIndicator size="small" color="#17181a" />
+                <Text className="text-xs text-muted-foreground">
+                  Reading your document to fill these in…
+                </Text>
+              </View>
+            ) : extractable && prefilled ? (
+              <Text className="rounded-lg bg-verified-muted px-3 py-2 text-xs text-foreground">
+                We filled these from your document. Check they’re right, then
+                upload.
+              </Text>
+            ) : extractable ? (
+              <Text className="text-xs text-muted-foreground">
+                Pick the file first and we’ll read the insurer, cover and expiry
+                off it for you to confirm.
+              </Text>
+            ) : (
+              <Text className="text-xs text-muted-foreground">
+                Add the file and the expiry date. We never send identity
+                documents to AI.
+              </Text>
+            )}
+            {docType !== 'RIGHT_TO_WORK' ? (
+              <>
+                <form.Field name="insurer">
+                  {(field) => (
+                    <FormField
+                      field={field}
+                      label="Insurer"
+                      placeholder="e.g. Qdos, Markel"
+                    />
+                  )}
+                </form.Field>
+                <form.Field name="coverLimit">
+                  {(field) => (
+                    <FormField
+                      field={field}
+                      label="Cover limit (£)"
+                      placeholder="e.g. 1000000"
+                      keyboardType="number-pad"
+                    />
+                  )}
+                </form.Field>
+              </>
+            ) : null}
+            <form.Field name="expiresAt">
+              {(field) => (
+                <FormField
+                  field={field}
+                  label="Expiry date"
+                  placeholder="YYYY-MM-DD"
+                  autoCapitalize="none"
+                />
+              )}
+            </form.Field>
+            {picked ? (
+              <Text className="text-xs text-muted-foreground">
+                Selected: {picked.name}
+              </Text>
+            ) : null}
+            <View className="flex-row gap-2">
+              <Pressable
+                className="flex-1 rounded-lg border border-border px-3 py-2 active:opacity-70"
+                disabled={busy}
+                onPress={() => choose('file')}
+                accessibilityRole="button"
+                accessibilityLabel={`Choose a ${label} file`}
+              >
+                <Text className="text-center text-sm text-foreground">
+                  Choose file
+                </Text>
+              </Pressable>
+              <Pressable
+                className="flex-1 rounded-lg border border-border px-3 py-2 active:opacity-70"
+                disabled={busy}
+                onPress={() => choose('photo')}
+                accessibilityRole="button"
+                accessibilityLabel={`Take or choose a ${label} photo`}
+              >
+                <Text className="text-center text-sm text-foreground">
+                  Take/choose photo
+                </Text>
+              </Pressable>
+            </View>
+            <form.Subscribe selector={(s) => s.canSubmit}>
+              {(canSubmit) => (
+                <Pressable
+                  className={`rounded-lg p-3 ${picked && canSubmit ? 'bg-primary active:opacity-90' : 'bg-ink-300'}`}
+                  disabled={!picked || !canSubmit || busy}
+                  onPress={() => void form.handleSubmit()}
+                >
+                  {upload.isPending ? (
+                    <ActivityIndicator color="#fbfaf9" size="small" />
+                  ) : (
+                    <Text className="text-center font-sans-semibold text-primary-foreground">
+                      Upload
+                    </Text>
+                  )}
+                </Pressable>
+              )}
+            </form.Subscribe>
+          </View>
+        ) : null}
       </View>
       <ConfirmSheet
         isOpen={confirmOpen}

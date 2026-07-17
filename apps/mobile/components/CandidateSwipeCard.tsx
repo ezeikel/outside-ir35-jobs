@@ -3,10 +3,10 @@ import {
   faCircleCheck,
   faShieldHalved,
   faStar,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { Text, View } from "react-native";
-import type { CandidateCard } from "@/lib/api-applicants";
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Text, View } from 'react-native';
+import type { CandidateCard } from '@/lib/api-applicants';
 
 // The card a recruiter swipes in the candidate deck. It shows ONLY objective,
 // self-attested facts about the contractor — trust tier (which verifications
@@ -25,9 +25,9 @@ const Fact = ({
   on: boolean;
 }) => (
   <View className="flex-row items-center gap-1.5 rounded-full bg-secondary px-3 py-2">
-    <FontAwesomeIcon icon={icon} size={12} color={on ? "#1f5d43" : "#a3a09e"} />
+    <FontAwesomeIcon icon={icon} size={12} color={on ? '#1f5d43' : '#a3a09e'} />
     <Text
-      className={`text-xs font-sans-medium ${on ? "text-foreground" : "text-muted-foreground"}`}
+      className={`text-xs font-sans-medium ${on ? 'text-foreground' : 'text-muted-foreground'}`}
     >
       {label}
     </Text>
@@ -41,14 +41,14 @@ const SkillChip = ({ label }: { label: string }) => (
 );
 
 const CandidateSwipeCard = ({ candidate }: { candidate: CandidateCard }) => {
-  const initial = (candidate.name?.trim()?.[0] ?? "?").toUpperCase();
+  const initial = (candidate.name?.trim()?.[0] ?? '?').toUpperCase();
   const verified = candidate.verifiedCompanies[0];
 
   return (
     <View
       className="flex-1 overflow-hidden rounded-[28px] border border-border bg-card"
       style={{
-        shadowColor: "#000",
+        shadowColor: '#000',
         shadowOpacity: 0.08,
         shadowRadius: 20,
         shadowOffset: { width: 0, height: 8 },
@@ -58,7 +58,9 @@ const CandidateSwipeCard = ({ candidate }: { candidate: CandidateCard }) => {
       {/* Header: avatar, name, trust tier (attributed status, not a score). */}
       <View className="flex-row items-center gap-3 px-6 pt-6">
         <View className="h-12 w-12 items-center justify-center rounded-2xl bg-secondary">
-          <Text className="font-display text-xl text-foreground">{initial}</Text>
+          <Text className="font-display text-xl text-foreground">
+            {initial}
+          </Text>
         </View>
         <View className="min-w-0 flex-1">
           <Text
@@ -104,7 +106,7 @@ const CandidateSwipeCard = ({ candidate }: { candidate: CandidateCard }) => {
                 : null,
             ]
               .filter(Boolean)
-              .join(" · ")}
+              .join(' · ')}
           </Text>
         ) : null}
 

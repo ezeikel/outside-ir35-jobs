@@ -1,9 +1,9 @@
-import { api } from "@/lib/api";
-import type { JobsQuery } from "@/lib/api-jobs";
+import { api } from '@/lib/api';
+import type { JobsQuery } from '@/lib/api-jobs';
 
 // Saved searches + alerts. Mirrors the web /alerts surface.
 
-export type AlertFrequency = "INSTANT" | "DAILY" | "WEEKLY";
+export type AlertFrequency = 'INSTANT' | 'DAILY' | 'WEEKLY';
 
 export type SavedSearch = {
   id: string;
@@ -19,14 +19,14 @@ export type SavedSearch = {
 
 export const fetchSavedSearches = async (): Promise<SavedSearch[]> => {
   const { data } = await api.get<{ searches: SavedSearch[] }>(
-    "/api/mobile/saved-searches",
+    '/api/mobile/saved-searches',
   );
   return data.searches;
 };
 
 export const saveSearch = async (query: JobsQuery): Promise<SavedSearch> => {
   const { data } = await api.post<{ search: SavedSearch }>(
-    "/api/mobile/saved-searches",
+    '/api/mobile/saved-searches',
     query,
   );
   return data.search;
@@ -55,8 +55,8 @@ export const searchLabel = (s: SavedSearch): string => {
   const parts: string[] = [];
   if (s.query) parts.push(s.query);
   if (s.location) parts.push(s.location);
-  if (s.mode) parts.push(s.mode.toLowerCase().replace("_", "-"));
+  if (s.mode) parts.push(s.mode.toLowerCase().replace('_', '-'));
   if (s.minRate) parts.push(`£${s.minRate}+/day`);
-  if (s.ir35 === "outside") parts.push("outside only");
-  return parts.length ? parts.join(" · ") : "All outside-IR35 contracts";
+  if (s.ir35 === 'outside') parts.push('outside only');
+  return parts.length ? parts.join(' · ') : 'All outside-IR35 contracts';
 };

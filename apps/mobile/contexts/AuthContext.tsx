@@ -1,17 +1,18 @@
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { useQueryClient } from "@tanstack/react-query";
-import * as AppleAuthentication from "expo-apple-authentication";
-import { AccessToken, LoginManager } from "react-native-fbsdk-next";
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { useQueryClient } from '@tanstack/react-query';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import {
   createContext,
+  type ReactNode,
   useCallback,
   useContext,
   useEffect,
   useState,
-  type ReactNode,
-} from "react";
-import { toast } from "sonner-native";
-import { ANALYTICS_EVENTS } from "@/constants/analytics";
+} from 'react';
+import { AccessToken, LoginManager } from 'react-native-fbsdk-next';
+import { toast } from 'sonner-native';
+import { ANALYTICS_EVENTS } from '@/constants/analytics';
+import { useAnalytics } from '@/lib/analytics';
 import {
   type AuthUser,
   getAuthMe,
@@ -22,11 +23,10 @@ import {
   signInWithGoogle,
   testLogin,
   verifyMagicLink,
-} from "@/lib/api-auth";
-import { useAnalytics } from "@/lib/analytics";
-import { clearSession, getSessionToken, setSession } from "@/lib/auth";
-import { registerForPush } from "@/lib/push";
-import { initializeRevenueCat } from "@/lib/revenuecat";
+} from '@/lib/api-auth';
+import { clearSession, getSessionToken, setSession } from '@/lib/auth';
+import { registerForPush } from '@/lib/push';
+import { initializeRevenueCat } from '@/lib/revenuecat';
 
 // App-wide auth state. Browsing is public; this context is what unlocks the
 // authed surfaces (apply, alerts, premium). Sign-in is native Google / Apple →
@@ -43,10 +43,12 @@ type AuthContextType = {
   // Magic-link: request emails a deep link; verify redeems the token the deep
   // link carries and finishes sign-in (called by the /auth/magic-link screen).
   requestMagicLinkHandler: (email: string) => Promise<boolean>;
-  verifyMagicLinkHandler: (token: string) => Promise<OAuthSignInResponse | null>;
+  verifyMagicLinkHandler: (
+    token: string,
+  ) => Promise<OAuthSignInResponse | null>;
   // DEV/TEST-ONLY (no-ops in prod). Signs in as a seeded test user via the gated
   // test-login route, so the simulator + Maestro can reach authed surfaces.
-  devSignInHandler: (role: "seeker" | "poster") => Promise<void>;
+  devSignInHandler: (role: 'seeker' | 'poster') => Promise<void>;
   signOut: () => Promise<void>;
   refreshAuth: () => Promise<void>;
 };
@@ -147,13 +149,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         await GoogleSignin.hasPlayServices();
         const userInfo = await GoogleSignin.signIn();
         const idToken = userInfo.data?.idToken;
-        if (!idToken) throw new Error("No ID token returned from Google");
+        if (!idToken) throw new Error('No ID token returned from Google');
         const res = await signInWithGoogle(idToken);
         await finishSignIn(res);
         return res;
       } catch (error: unknown) {
         const message =
-          error instanceof Error ? error.message : "Couldn't sign in with Google";
+          error instanceof Error
+            ? error.message
+            : "Couldn't sign in with Google";
         toast.error(message);
         return null;
       } finally {
@@ -172,7 +176,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           ],
         });
         if (!credential.identityToken) {
-          throw new Error("No identity token returned from Apple");
+          throw new Error('No identity token returned from Apple');
         }
         const res = await signInWithApple(credential.identityToken, {
           givenName: credential.fullName?.givenName ?? undefined,
@@ -184,14 +188,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // User-cancelled Apple sheet throws ERR_REQUEST_CANCELED — stay quiet.
         if (
           error &&
-          typeof error === "object" &&
-          "code" in error &&
-          error.code === "ERR_REQUEST_CANCELED"
+          typeof error === 'object' &&
+          'code' in error &&
+          error.code === 'ERR_REQUEST_CANCELED'
         ) {
           return null;
         }
         const message =
-          error instanceof Error ? error.message : "Couldn't sign in with Apple";
+          error instanceof Error
+            ? error.message
+            : "Couldn't sign in with Apple";
         toast.error(message);
         return null;
       } finally {
@@ -204,13 +210,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         setIsLoading(true);
         const result = await LoginManager.logInWithPermissions([
-          "public_profile",
-          "email",
+          'public_profile',
+          'email',
         ]);
         if (result.isCancelled) return null;
         const tokenData = await AccessToken.getCurrentAccessToken();
         if (!tokenData?.accessToken) {
-          throw new Error("No access token returned from Facebook");
+          throw new Error('No access token returned from Facebook');
         }
         const res = await signInWithFacebook(tokenData.accessToken.toString());
         await finishSignIn(res);
@@ -236,7 +242,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return true;
       } catch (error: unknown) {
         const message =
-          error instanceof Error ? error.message : "Couldn't send the sign-in link";
+          error instanceof Error
+            ? error.message
+            : "Couldn't send the sign-in link";
         toast.error(message);
         return false;
       }
@@ -257,7 +265,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const message =
           error instanceof Error
             ? error.message
-            : "This sign-in link is invalid or has expired";
+            : 'This sign-in link is invalid or has expired';
         toast.error(message);
         return null;
       } finally {
@@ -271,7 +279,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // (no OAuth), so the simulator + Maestro can drive authed surfaces. No-ops in a
   // prod build (__DEV__ is false) and the server route 404s without E2E_TEST_LOGIN.
   const devSignInHandler = useCallback(
-    async (role: "seeker" | "poster") => {
+    async (role: 'seeker' | 'poster') => {
       if (!__DEV__) return;
       try {
         setIsLoading(true);
@@ -281,7 +289,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         void queryClient.invalidateQueries();
       } catch (error: unknown) {
         const message =
-          error instanceof Error ? error.message : "Dev sign-in failed";
+          error instanceof Error ? error.message : 'Dev sign-in failed';
         toast.error(message);
       } finally {
         setIsLoading(false);

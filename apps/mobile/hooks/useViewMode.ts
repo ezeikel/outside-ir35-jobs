@@ -1,9 +1,9 @@
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from '@/contexts/AuthContext';
 import {
   roleToMode,
-  type ViewMode,
   useViewModeStore,
-} from "@/stores/viewModeStore";
+  type ViewMode,
+} from '@/stores/viewModeStore';
 
 // Resolve the EFFECTIVE view mode: the user's explicit override if set, otherwise
 // the default derived from their onboarding role. Plus the setter + a flag for

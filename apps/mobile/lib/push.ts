@@ -1,11 +1,11 @@
 import notifee, {
   AndroidImportance,
   AuthorizationStatus,
-} from "@notifee/react-native";
-import messaging from "@react-native-firebase/messaging";
-import * as Device from "expo-device";
-import { Platform } from "react-native";
-import { api } from "@/lib/api";
+} from '@notifee/react-native';
+import messaging from '@react-native-firebase/messaging';
+import * as Device from 'expo-device';
+import { Platform } from 'react-native';
+import { api } from '@/lib/api';
 
 // Push notifications — FCM transport + notifee display. Asks for permission,
 // fetches the FCM token, registers it against the signed-in user via the bearer
@@ -13,14 +13,14 @@ import { api } from "@/lib/api";
 // throughout — never throws into the UI. Mirrors the go-unbeaten setup.
 
 // Must match the server's CHANNEL_ID in apps/web/lib/push/send.ts.
-const ANDROID_CHANNEL = "alerts";
-const INK = "#17181a";
+const ANDROID_CHANNEL = 'alerts';
+const INK = '#17181a';
 
 const deviceTimezone = (): string => {
   try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
   } catch {
-    return "UTC";
+    return 'UTC';
   }
 };
 
@@ -29,7 +29,7 @@ const deviceTimezone = (): string => {
 const ensureChannel = async (): Promise<string> =>
   notifee.createChannel({
     id: ANDROID_CHANNEL,
-    name: "Job alerts",
+    name: 'Job alerts',
     importance: AndroidImportance.HIGH,
     lightColor: INK,
   });
@@ -45,13 +45,13 @@ export const displayFcmMessage = async (data: {
 }): Promise<void> => {
   const channelId = await ensureChannel();
   await notifee.displayNotification({
-    title: data.title ?? "Outside IR35 Jobs",
-    body: data.body ?? "",
-    data: { url: data.url ?? "" },
+    title: data.title ?? 'Outside IR35 Jobs',
+    body: data.body ?? '',
+    data: { url: data.url ?? '' },
     android: {
       channelId,
       color: INK,
-      pressAction: { id: "default" },
+      pressAction: { id: 'default' },
     },
     ios: {},
   });
@@ -63,7 +63,7 @@ const hasPermission = async (): Promise<boolean> => {
   if (!Device.isDevice) return false;
   // notifee owns the Android 13+ POST_NOTIFICATIONS permission (the one that
   // gates display). On iOS, messaging() reflects APNs auth.
-  if (Platform.OS === "android") {
+  if (Platform.OS === 'android') {
     const settings = await notifee.getNotificationSettings();
     return settings.authorizationStatus === AuthorizationStatus.AUTHORIZED;
   }
@@ -75,7 +75,7 @@ const hasPermission = async (): Promise<boolean> => {
 };
 
 const requestPermission = async (): Promise<boolean> => {
-  if (Platform.OS === "android") {
+  if (Platform.OS === 'android') {
     const settings = await notifee.requestPermission();
     return settings.authorizationStatus === AuthorizationStatus.AUTHORIZED;
   }
@@ -90,7 +90,7 @@ const requestPermission = async (): Promise<boolean> => {
 // true on success.
 const sendSubscription = async (fcmToken: string): Promise<boolean> => {
   try {
-    await api.post("/api/mobile/push/subscribe", {
+    await api.post('/api/mobile/push/subscribe', {
       fcmToken,
       platform: Platform.OS,
       timezone: deviceTimezone(),
@@ -115,7 +115,7 @@ export const registerForPush = async (): Promise<boolean> => {
     if (!granted) return false;
 
     // iOS needs the device registered for remote messages before getToken.
-    if (Platform.OS === "ios") {
+    if (Platform.OS === 'ios') {
       await messaging().registerDeviceForRemoteMessages();
     }
     const token = await messaging().getToken();

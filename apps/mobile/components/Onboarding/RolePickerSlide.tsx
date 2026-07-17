@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
-import type { OnboardingInput } from "@/lib/api-account";
+import { useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
+import type { OnboardingInput } from '@/lib/api-account';
 
 // The final onboarding slide: pick contractor (JOB_SEEKER) or hiring (JOB_POSTER)
 // — hiring also picks direct vs recruiter — then Continue. This is SIGN-IN FREE:
@@ -16,17 +16,17 @@ const RolePickerSlide = ({
   onPickRole: (input: OnboardingInput) => void;
   onSkip: () => void;
 }) => {
-  const [role, setRole] = useState<"JOB_SEEKER" | "JOB_POSTER" | null>(null);
-  const [posterType, setPosterType] = useState<"DIRECT" | "RECRUITER" | null>(
+  const [role, setRole] = useState<'JOB_SEEKER' | 'JOB_POSTER' | null>(null);
+  const [posterType, setPosterType] = useState<'DIRECT' | 'RECRUITER' | null>(
     null,
   );
 
   const ready =
-    role === "JOB_SEEKER" || (role === "JOB_POSTER" && !!posterType);
+    role === 'JOB_SEEKER' || (role === 'JOB_POSTER' && !!posterType);
 
   const onContinue = () => {
-    if (role === "JOB_SEEKER") onPickRole({ role });
-    else if (role === "JOB_POSTER" && posterType) {
+    if (role === 'JOB_SEEKER') onPickRole({ role });
+    else if (role === 'JOB_POSTER' && posterType) {
       onPickRole({ role, posterType });
     }
   };
@@ -34,7 +34,7 @@ const RolePickerSlide = ({
   return (
     <View
       className="flex-1 justify-center px-8"
-      pointerEvents={isActive ? "auto" : "none"}
+      pointerEvents={isActive ? 'auto' : 'none'}
     >
       <Text className="text-center font-display text-3xl text-foreground">
         How will you use it?
@@ -47,21 +47,21 @@ const RolePickerSlide = ({
         <Option
           title="I’m a contractor"
           subtitle="Build a verified profile and find Outside IR35 contracts."
-          selected={role === "JOB_SEEKER"}
+          selected={role === 'JOB_SEEKER'}
           onPress={() => {
-            setRole("JOB_SEEKER");
+            setRole('JOB_SEEKER');
             setPosterType(null);
           }}
         />
         <Option
           title="I’m hiring"
           subtitle="Post roles and reach verified limited-company contractors."
-          selected={role === "JOB_POSTER"}
-          onPress={() => setRole("JOB_POSTER")}
+          selected={role === 'JOB_POSTER'}
+          onPress={() => setRole('JOB_POSTER')}
         />
       </View>
 
-      {role === "JOB_POSTER" ? (
+      {role === 'JOB_POSTER' ? (
         <View className="mt-5">
           <Text className="text-sm font-sans-semibold text-foreground">
             Hiring directly or recruiting?
@@ -69,13 +69,13 @@ const RolePickerSlide = ({
           <View className="mt-3 gap-3">
             <Option
               title="Hiring directly (end client)"
-              selected={posterType === "DIRECT"}
-              onPress={() => setPosterType("DIRECT")}
+              selected={posterType === 'DIRECT'}
+              onPress={() => setPosterType('DIRECT')}
             />
             <Option
               title="Recruiter / agency"
-              selected={posterType === "RECRUITER"}
-              onPress={() => setPosterType("RECRUITER")}
+              selected={posterType === 'RECRUITER'}
+              onPress={() => setPosterType('RECRUITER')}
             />
           </View>
         </View>
@@ -86,7 +86,7 @@ const RolePickerSlide = ({
           sign-in here; that lives on the dedicated /signin screen. */}
       <View className="mt-8">
         <Pressable
-          className={`rounded-lg bg-primary p-4 ${ready ? "active:opacity-90" : "opacity-40"}`}
+          className={`rounded-lg bg-primary p-4 ${ready ? 'active:opacity-90' : 'opacity-40'}`}
           disabled={!ready}
           onPress={onContinue}
         >
@@ -97,10 +97,7 @@ const RolePickerSlide = ({
       </View>
 
       {/* Browse-first escape — explore the board without picking a role. */}
-      <Pressable
-        className="mt-5 p-2 active:opacity-70"
-        onPress={onSkip}
-      >
+      <Pressable className="mt-5 p-2 active:opacity-70" onPress={onSkip}>
         <Text className="text-center text-sm text-muted-foreground">
           Browse first
         </Text>
@@ -123,7 +120,7 @@ const Option = ({
   <Pressable
     onPress={onPress}
     className={`rounded-lg border p-4 ${
-      selected ? "border-primary bg-secondary" : "border-border bg-card"
+      selected ? 'border-primary bg-secondary' : 'border-border bg-card'
     }`}
   >
     <Text className="font-sans-semibold text-foreground">{title}</Text>

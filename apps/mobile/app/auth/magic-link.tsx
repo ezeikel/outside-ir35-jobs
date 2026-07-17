@@ -1,8 +1,8 @@
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useAuth } from "@/contexts/AuthContext";
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Deep-link target for the email sign-in link: the /api/mobile/auth/magic-link
 // route emails outsideir35://auth/magic-link?token=... and tapping it opens this
@@ -14,14 +14,14 @@ const MagicLinkScreen = () => {
   const insets = useSafeAreaInsets();
   const { token } = useLocalSearchParams<{ token?: string }>();
   const { verifyMagicLinkHandler } = useAuth();
-  const [status, setStatus] = useState<"verifying" | "error">("verifying");
+  const [status, setStatus] = useState<'verifying' | 'error'>('verifying');
   // Guard against double-redemption if the screen re-renders/re-opens.
   const redeemed = useRef(false);
 
   useEffect(() => {
     if (redeemed.current) return;
     if (!token) {
-      setStatus("error");
+      setStatus('error');
       return;
     }
     redeemed.current = true;
@@ -29,9 +29,9 @@ const MagicLinkScreen = () => {
       if (res) {
         // Signed in. Onboarding already ran on first launch, so go to the board;
         // the profile "finish setting up" prompt handles role selection if needed.
-        router.replace("/(tabs)");
+        router.replace('/(tabs)');
       } else {
-        setStatus("error");
+        setStatus('error');
       }
     });
   }, [token, verifyMagicLinkHandler, router]);
@@ -41,7 +41,7 @@ const MagicLinkScreen = () => {
       className="flex-1 items-center justify-center bg-background px-8"
       style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
     >
-      {status === "verifying" ? (
+      {status === 'verifying' ? (
         <>
           <ActivityIndicator size="large" color="#17181a" />
           <Text className="mt-4 text-center text-base text-muted-foreground">
@@ -59,7 +59,7 @@ const MagicLinkScreen = () => {
           </Text>
           <Pressable
             className="mt-6 rounded-lg bg-primary p-4 active:opacity-90"
-            onPress={() => router.replace("/onboarding")}
+            onPress={() => router.replace('/onboarding')}
           >
             <Text className="text-center font-sans-semibold text-primary-foreground">
               Back to sign in

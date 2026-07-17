@@ -1,4 +1,4 @@
-import { api } from "@/lib/api";
+import { api } from '@/lib/api';
 
 // The contractor's verified compliance pack (the moat). Read-only on mobile for
 // now — upload comes later. Mirrors the web profile's honest data model.
@@ -38,7 +38,7 @@ export type MobileProfile = {
 
 export const fetchProfile = async (): Promise<MobileProfile | null> => {
   const { data } = await api.get<{ profile: MobileProfile | null }>(
-    "/api/mobile/profile",
+    '/api/mobile/profile',
   );
   return data.profile;
 };

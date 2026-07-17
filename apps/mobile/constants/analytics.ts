@@ -15,23 +15,23 @@
  */
 export const ANALYTICS_EVENTS = {
   // ── Auth (shared with web) ──
-  SIGNIN_COMPLETED_MOBILE: "signin_completed_mobile",
+  SIGNIN_COMPLETED_MOBILE: 'signin_completed_mobile',
 
   // ── Application (shared conversion — web fires application_submitted too) ──
-  APPLICATION_SUBMITTED_MOBILE: "application_submitted_mobile",
+  APPLICATION_SUBMITTED_MOBILE: 'application_submitted_mobile',
 
   // ── Premium (top of the RevenueCat purchase funnel) ──
-  PREMIUM_PAYWALL_VIEWED_MOBILE: "premium_paywall_viewed_mobile",
+  PREMIUM_PAYWALL_VIEWED_MOBILE: 'premium_paywall_viewed_mobile',
 
   // ── Job posting (native paid-listing funnel entry) ──
-  JOB_POST_STARTED_MOBILE: "job_post_started_mobile",
+  JOB_POST_STARTED_MOBILE: 'job_post_started_mobile',
 
   // ── Onboarding (MOBILE-ONLY — role pick in the native carousel) ──
-  ONBOARDING_ROLE_SELECTED: "onboarding_role_selected",
+  ONBOARDING_ROLE_SELECTED: 'onboarding_role_selected',
 
   // ── Take-home calculator (shared with web — same string as
   //    apps/web/constants.ts CALCULATOR_USED; a day-rate-benchmark signal) ──
-  CALCULATOR_USED: "calculator_used",
+  CALCULATOR_USED: 'calculator_used',
 } as const;
 
 export type AnalyticsEvent =

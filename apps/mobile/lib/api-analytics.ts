@@ -1,4 +1,4 @@
-import { api } from "@/lib/api";
+import { api } from '@/lib/api';
 
 // Per-listing analytics for the recruiter's own job — the applicant funnel + a
 // 14-day applications trend. Ownership-gated server-side (404 if not the caller's

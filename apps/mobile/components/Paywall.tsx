@@ -1,38 +1,38 @@
 import {
   faBolt,
   faChartLine,
-  faEye,
   faCrown,
+  faEye,
   faStar,
   faWandMagicSparkles,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Linking,
   Pressable,
   Text,
   View,
-} from "react-native";
-import type { PurchasesPackage } from "react-native-purchases";
-import { toast } from "sonner-native";
-import { fetchPremium, usePremium } from "@/lib/api-premium";
+} from 'react-native';
+import type { PurchasesPackage } from 'react-native-purchases';
+import { toast } from 'sonner-native';
+import { fetchPremium, usePremium } from '@/lib/api-premium';
 import {
   getPremiumOffering,
   hasActiveEntitlement,
   purchasePackage,
   restorePurchases,
   STORE_SUBSCRIPTIONS_URL,
-} from "@/lib/revenuecat";
+} from '@/lib/revenuecat';
 
-const GREEN = "#1f5d43";
+const GREEN = '#1f5d43';
 
 // Legal pages are public + stable, so always open the PRODUCTION marketing site
 // (not the dev loopback in API_BASE_URL, which points at a local Next server that
 // may not be running on-device). /terms and /privacy are live web routes.
-const WEB_BASE_URL = "https://www.outsideir35jobs.com";
+const WEB_BASE_URL = 'https://www.outsideir35jobs.com';
 const openLegal = (path: string) => {
   void Linking.openURL(`${WEB_BASE_URL}${path}`);
 };
@@ -48,44 +48,44 @@ const openLegal = (path: string) => {
 const PERKS = [
   {
     icon: faEye,
-    title: "See who viewed you",
-    subtitle: "Know which hirers opened your applications.",
+    title: 'See who viewed you',
+    subtitle: 'Know which hirers opened your applications.',
     badge: null as string | null,
   },
   {
     icon: faStar,
-    title: "Get seen first",
-    subtitle: "Your profile surfaces above other applicants.",
-    badge: "Featured",
+    title: 'Get seen first',
+    subtitle: 'Your profile surfaces above other applicants.',
+    badge: 'Featured',
   },
   {
     icon: faBolt,
-    title: "Early access to new contracts",
-    subtitle: "See and apply 24 hours before free users.",
-    badge: "24h head-start",
+    title: 'Early access to new contracts',
+    subtitle: 'See and apply 24 hours before free users.',
+    badge: '24h head-start',
   },
   {
     icon: faWandMagicSparkles,
-    title: "AI pitch on every role",
-    subtitle: "A tailored cover note + why you match, per contract.",
+    title: 'AI pitch on every role',
+    subtitle: 'A tailored cover note + why you match, per contract.',
     badge: null,
   },
   {
     icon: faChartLine,
-    title: "Full day-rate data",
-    subtitle: "The range and sample, not just the median.",
+    title: 'Full day-rate data',
+    subtitle: 'The range and sample, not just the median.',
     badge: null,
   },
 ];
 
 const fmtDate = (iso: string | null): string =>
   iso
-    ? new Date(iso).toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
+    ? new Date(iso).toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
       })
-    : "";
+    : '';
 
 const Paywall = () => {
   const queryClient = useQueryClient();
@@ -118,7 +118,7 @@ const Paywall = () => {
     for (const delay of [0, 1500, 2000, 3000, 4000, 5000]) {
       if (delay) await new Promise((r) => setTimeout(r, delay));
       const fresh = await queryClient.fetchQuery({
-        queryKey: ["premium"],
+        queryKey: ['premium'],
         queryFn: fetchPremium,
       });
       if (fresh.isPremium) return true;
@@ -128,7 +128,7 @@ const Paywall = () => {
 
   const buy = async () => {
     if (!pkg) {
-      toast.error("Subscriptions aren’t available right now.");
+      toast.error('Subscriptions aren’t available right now.');
       return;
     }
     setBuying(true);
@@ -138,16 +138,16 @@ const Paywall = () => {
       // Optimistic: RC says it's active immediately; the backend catches up via
       // the webhook, which pollUntilPremium waits for.
       if (hasActiveEntitlement(info)) {
-        toast.success("You’re premium. Thanks!");
+        toast.success('You’re premium. Thanks!');
       }
       const confirmed = await pollUntilPremium();
       if (!confirmed) {
         toast.error(
-          "Payment went through. Your premium will appear in a moment.",
+          'Payment went through. Your premium will appear in a moment.',
         );
       }
     } catch {
-      toast.error("Couldn’t complete the purchase.");
+      toast.error('Couldn’t complete the purchase.');
     } finally {
       setBuying(false);
     }
@@ -160,9 +160,9 @@ const Paywall = () => {
       // Only claim success if an entitlement was actually restored.
       if (info && hasActiveEntitlement(info)) {
         await pollUntilPremium();
-        toast.success("Subscription restored.");
+        toast.success('Subscription restored.');
       } else {
-        toast.error("No previous subscription found for this account.");
+        toast.error('No previous subscription found for this account.');
       }
     } finally {
       setBuying(false);
@@ -189,13 +189,14 @@ const Paywall = () => {
             ? `Ends on ${fmtDate(status.currentPeriodEnd)}.`
             : status?.currentPeriodEnd
               ? `Renews on ${fmtDate(status.currentPeriodEnd)}.`
-              : "Your subscription is active."}
+              : 'Your subscription is active.'}
         </Text>
-        {status?.provider === "REVENUECAT" ? (
+        {status?.provider === 'REVENUECAT' ? (
           <Pressable
             className="mt-4 rounded-lg border border-border bg-card p-3 active:opacity-80"
             onPress={() =>
-              STORE_SUBSCRIPTIONS_URL && Linking.openURL(STORE_SUBSCRIPTIONS_URL)
+              STORE_SUBSCRIPTIONS_URL &&
+              Linking.openURL(STORE_SUBSCRIPTIONS_URL)
             }
           >
             <Text className="text-center font-sans-semibold text-foreground">
@@ -211,7 +212,7 @@ const Paywall = () => {
     );
   }
 
-  const price = priceLabel ?? "£29";
+  const price = priceLabel ?? '£29';
 
   return (
     <View>
@@ -221,7 +222,7 @@ const Paywall = () => {
           <FontAwesomeIcon icon={faCrown} size={24} color={GREEN} />
         </View>
         <Text className="text-center font-display text-3xl leading-tight text-foreground">
-          Win more contracts,{"\n"}faster
+          Win more contracts,{'\n'}faster
         </Text>
         <Text className="mt-2 text-center text-sm leading-5 text-muted-foreground">
           A business tool for limited-company contractors. Get seen first, know
@@ -284,7 +285,7 @@ const Paywall = () => {
 
       {/* CTA */}
       <Pressable
-        className={`mt-4 rounded-2xl p-4 ${pkg || __DEV__ ? "bg-primary active:opacity-90" : "bg-ink-300"}`}
+        className={`mt-4 rounded-2xl p-4 ${pkg || __DEV__ ? 'bg-primary active:opacity-90' : 'bg-ink-300'}`}
         disabled={!pkg || buying || !offeringLoaded}
         onPress={buy}
       >
@@ -298,7 +299,7 @@ const Paywall = () => {
                 this only affects the visual, never a real purchase. On prod/preview
                 the offering loads and this branch is never hit. */}
             {offeringLoaded && !pkg && !__DEV__
-              ? "Unavailable right now"
+              ? 'Unavailable right now'
               : `Get Premium · ${price}/mo`}
           </Text>
         )}
@@ -321,14 +322,14 @@ const Paywall = () => {
         <Text className="text-muted-foreground">·</Text>
         <Pressable
           className="p-1 active:opacity-70"
-          onPress={() => openLegal("/terms")}
+          onPress={() => openLegal('/terms')}
         >
           <Text className="text-xs text-muted-foreground">Terms</Text>
         </Pressable>
         <Text className="text-muted-foreground">·</Text>
         <Pressable
           className="p-1 active:opacity-70"
-          onPress={() => openLegal("/privacy")}
+          onPress={() => openLegal('/privacy')}
         >
           <Text className="text-xs text-muted-foreground">Privacy</Text>
         </Pressable>

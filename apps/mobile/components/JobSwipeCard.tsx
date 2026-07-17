@@ -3,11 +3,11 @@ import {
   faClock,
   faLocationDot,
   faShieldHalved,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { Text, View } from "react-native";
-import type { MobileJobCard } from "@/lib/api-jobs";
-import { formatDayRate, postedLabel } from "@/lib/format";
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Text, View } from 'react-native';
+import type { MobileJobCard } from '@/lib/api-jobs';
+import { formatDayRate, postedLabel } from '@/lib/format';
 
 // The card a seeker swipes in the deck. It IS the whole decision surface, so it's
 // built like a poster: a calm body that leads with the role + the money, a quiet
@@ -20,13 +20,7 @@ import { formatDayRate, postedLabel } from "@/lib/format";
 // the badge shows the client's STATED position, attributed — never a platform
 // "verified outside" claim.
 
-const FactChip = ({
-  icon,
-  label,
-}: {
-  icon: typeof faClock;
-  label: string;
-}) => (
+const FactChip = ({ icon, label }: { icon: typeof faClock; label: string }) => (
   <View className="flex-row items-center gap-1.5 rounded-full bg-secondary px-3 py-2">
     <FontAwesomeIcon icon={icon} size={12} color="#78716c" />
     <Text className="text-xs font-sans-medium text-foreground">{label}</Text>
@@ -34,14 +28,14 @@ const FactChip = ({
 );
 
 const JobSwipeCard = ({ job }: { job: MobileJobCard }) => {
-  const initial = (job.companyName?.trim()?.[0] ?? "?").toUpperCase();
+  const initial = (job.companyName?.trim()?.[0] ?? '?').toUpperCase();
 
   return (
     <View
       className="flex-1 overflow-hidden rounded-[28px] border border-border bg-card"
       style={{
         // Soft elevation so the top card lifts off the deck.
-        shadowColor: "#000",
+        shadowColor: '#000',
         shadowOpacity: 0.08,
         shadowRadius: 20,
         shadowOffset: { width: 0, height: 8 },
@@ -51,7 +45,9 @@ const JobSwipeCard = ({ job }: { job: MobileJobCard }) => {
       {/* Header: company avatar + name + posted. Quiet, sets context. */}
       <View className="flex-row items-center gap-3 px-6 pt-6">
         <View className="h-11 w-11 items-center justify-center rounded-2xl bg-secondary">
-          <Text className="font-display text-lg text-foreground">{initial}</Text>
+          <Text className="font-display text-lg text-foreground">
+            {initial}
+          </Text>
         </View>
         <View className="min-w-0 flex-1">
           <Text

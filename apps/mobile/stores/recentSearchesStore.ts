@@ -1,6 +1,6 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 // Recent searches — a small local history of role + location pairs the user has
 // searched, so they can re-run one with a tap. Local-only (AsyncStorage); the
@@ -47,7 +47,7 @@ export const useRecentSearchesStore = create<
       clear: () => set({ recents: [] }),
     }),
     {
-      name: "recent-searches-store",
+      name: 'recent-searches-store',
       storage: createJSONStorage(() => AsyncStorage),
     },
   ),
@@ -56,5 +56,5 @@ export const useRecentSearchesStore = create<
 // Human label for a recent search chip, e.g. "React · London" / "London" / "React".
 export const recentSearchLabel = (s: RecentSearch): string => {
   const parts = [s.q.trim(), s.location.trim()].filter(Boolean);
-  return parts.join(" · ");
+  return parts.join(' · ');
 };

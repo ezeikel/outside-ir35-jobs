@@ -1,30 +1,30 @@
-import { faLock } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { FlashList } from "@shopify/flash-list";
-import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
+import { faLock } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { FlashList } from '@shopify/flash-list';
+import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
 import {
   ActivityIndicator,
   Pressable,
   RefreshControl,
   Text,
   View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import ErrorState from "@/components/ErrorState";
-import { type DayRateRow, fetchDayRates } from "@/lib/api-day-rates";
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import ErrorState from '@/components/ErrorState';
+import { type DayRateRow, fetchDayRates } from '@/lib/api-day-rates';
 
 // Day-rate benchmarks — median UK day rates by skill, split by the IR35 position
 // each listing STATES (never our assertion). The server hard-gates on a minimum
 // sample, so a rate only ever appears once enough listings back it (honesty —
 // docs/ir35-trust-model.md). Mirrors the web /day-rates page.
-const fmt = (n: number) => `£${n.toLocaleString("en-GB")}`;
+const fmt = (n: number) => `£${n.toLocaleString('en-GB')}`;
 
 const DayRatesScreen = () => {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
-    queryKey: ["dayRates"],
+    queryKey: ['dayRates'],
     queryFn: fetchDayRates,
   });
 
@@ -78,9 +78,9 @@ const DayRatesScreen = () => {
             Not enough data yet
           </Text>
           <Text className="mt-2 text-center text-sm text-muted-foreground">
-            We publish a day rate only once a skill has at least {data.minSample}{" "}
-            live listings, so the numbers mean something. The board is still
-            filling. Check back soon.
+            We publish a day rate only once a skill has at least{' '}
+            {data.minSample} live listings, so the numbers mean something. The
+            board is still filling. Check back soon.
           </Text>
         </View>
       </View>
@@ -97,7 +97,7 @@ const DayRatesScreen = () => {
           <>
             {Header}
             {data.locked ? (
-              <UpsellBanner onPress={() => router.push("/premium")} />
+              <UpsellBanner onPress={() => router.push('/premium')} />
             ) : null}
           </>
         }
@@ -129,7 +129,7 @@ const RateRow = ({ row }: { row: DayRateRow }) => {
             {row.skillLabel}
           </Text>
           <Text
-            className={`mt-0.5 text-xs ${row.tone === "verified" ? "text-verified" : "text-muted-foreground"}`}
+            className={`mt-0.5 text-xs ${row.tone === 'verified' ? 'text-verified' : 'text-muted-foreground'}`}
           >
             {row.ir35Label}
           </Text>
@@ -159,7 +159,7 @@ const RateRow = ({ row }: { row: DayRateRow }) => {
       ) : (
         <Text className="mt-2 text-xs text-muted-foreground">
           Median of {row.sampleSize} listing
-          {row.sampleSize === 1 ? "" : "s"} · range {fmt(row.min as number)}–
+          {row.sampleSize === 1 ? '' : 's'} · range {fmt(row.min as number)}–
           {fmt(row.max as number)}
         </Text>
       )}
@@ -191,9 +191,9 @@ const UpsellBanner = ({ onPress }: { onPress: () => void }) => (
 
 const Disclaimer = ({ totalSample }: { totalSample: number }) => (
   <Text className="mt-3 px-1 text-xs leading-5 text-muted-foreground">
-    Based on {totalSample} live listing{totalSample === 1 ? "" : "s"} aggregated
-    on this board, grouped by skill and the IR35 position the listing states. Day
-    rates are midpoints of any stated range. This is a snapshot of current
+    Based on {totalSample} live listing{totalSample === 1 ? '' : 's'} aggregated
+    on this board, grouped by skill and the IR35 position the listing states.
+    Day rates are midpoints of any stated range. This is a snapshot of current
     listings, not a market authority. Sanity-check against your own sources.
   </Text>
 );

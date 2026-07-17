@@ -1,14 +1,14 @@
-import { faHeart } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import * as Haptics from "expo-haptics";
-import { Pressable } from "react-native";
+import { faHeart } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import * as Haptics from 'expo-haptics';
+import { Pressable } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSequence,
   withSpring,
   withTiming,
-} from "react-native-reanimated";
+} from 'react-native-reanimated';
 
 // The save toggle used on job cards + the job detail screen. Filled orange when
 // saved, muted grey when not. On a SAVE it pops (scale up then settle) and fires a
@@ -16,8 +16,8 @@ import Animated, {
 // Pairs with useSavedJobs' optimistic id set so the colour flips with no network
 // wait — the animation rides on that instant state change.
 
-const SAVED = "#c2410c";
-const UNSAVED = "#d6d4d1";
+const SAVED = '#c2410c';
+const UNSAVED = '#d6d4d1';
 
 const SaveHeart = ({
   saved,
@@ -61,7 +61,7 @@ const SaveHeart = ({
       hitSlop={12}
       onPress={handlePress}
       accessibilityRole="button"
-      accessibilityLabel={saved ? "Remove from saved" : "Save this job"}
+      accessibilityLabel={saved ? 'Remove from saved' : 'Save this job'}
       accessibilityState={{ selected: saved }}
     >
       <Animated.View style={animatedStyle}>

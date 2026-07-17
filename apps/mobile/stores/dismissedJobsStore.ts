@@ -1,6 +1,6 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 // Jobs the seeker swiped LEFT (dismissed) in the card deck. Local-first: this is a
 // pure UI signal ("don't show me this again"), persisted on-device so a dismissed
@@ -31,11 +31,12 @@ export const useDismissedJobsStore = create<
       dismiss: (jobId) =>
         set((s) => (s.ids.includes(jobId) ? s : { ids: [...s.ids, jobId] })),
       // Undo a dismissal (e.g. an "undo" affordance after a left swipe).
-      undo: (jobId) => set((s) => ({ ids: s.ids.filter((id) => id !== jobId) })),
+      undo: (jobId) =>
+        set((s) => ({ ids: s.ids.filter((id) => id !== jobId) })),
       clear: () => set({ ids: [] }),
     }),
     {
-      name: "dismissed-jobs-store",
+      name: 'dismissed-jobs-store',
       storage: createJSONStorage(() => AsyncStorage),
     },
   ),

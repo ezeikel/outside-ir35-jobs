@@ -20,7 +20,7 @@ export type GeoSuggestion = {
 // substring ILIKE on the stored job address (e.g. "London, UK"), so searching by
 // the verbose full label would never match — we search by the primary place.
 export const primaryPlace = (label: string): string =>
-  label.split(",")[0]?.trim() ?? label.trim();
+  label.split(',')[0]?.trim() ?? label.trim();
 
 type MapboxFeature = {
   id: string;

@@ -1,8 +1,8 @@
-import { faLocationDot, faXmark } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { useEffect, useRef, useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
-import { geocodePlaces, type GeoSuggestion } from "@/lib/api-mapbox";
+import { faLocationDot, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { useEffect, useRef, useState } from 'react';
+import { Pressable, Text, TextInput, View } from 'react-native';
+import { type GeoSuggestion, geocodePlaces } from '@/lib/api-mapbox';
 
 // Location picker for the post-a-job form. Unlike the search LocationField (which
 // only needs the address STRING to filter the board), a posted job stores the full
@@ -62,7 +62,7 @@ const PostLocationField = ({
   };
 
   const clear = () => {
-    setQuery("");
+    setQuery('');
     setSuggestions([]);
     onClear();
   };
@@ -105,7 +105,7 @@ const PostLocationField = ({
             <Pressable
               key={s.id}
               className={`px-3 py-3 active:bg-secondary ${
-                i > 0 ? "border-t border-border" : ""
+                i > 0 ? 'border-t border-border' : ''
               }`}
               onPress={() => pick(s)}
               accessibilityRole="button"

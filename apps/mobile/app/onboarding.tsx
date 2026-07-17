@@ -1,12 +1,12 @@
-import { useRouter } from "expo-router";
-import { useCallback, useState } from "react";
-import OnboardingCarousel from "@/components/Onboarding/OnboardingCarousel";
-import OnboardingPaywall from "@/components/Onboarding/OnboardingPaywall";
-import { ANALYTICS_EVENTS } from "@/constants/analytics";
-import { useAuth } from "@/contexts/AuthContext";
-import { useAnalytics } from "@/lib/analytics";
-import { type OnboardingInput, submitOnboarding } from "@/lib/api-account";
-import { useOnboardingStore } from "@/stores/onboardingStore";
+import { useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
+import OnboardingCarousel from '@/components/Onboarding/OnboardingCarousel';
+import OnboardingPaywall from '@/components/Onboarding/OnboardingPaywall';
+import { ANALYTICS_EVENTS } from '@/constants/analytics';
+import { useAuth } from '@/contexts/AuthContext';
+import { useAnalytics } from '@/lib/analytics';
+import { type OnboardingInput, submitOnboarding } from '@/lib/api-account';
+import { useOnboardingStore } from '@/stores/onboardingStore';
 
 // First-launch onboarding: a value-prop carousel → "how will you use it?" role
 // pick → (contractors only) the one-time paywall, then into the board. It is
@@ -30,7 +30,7 @@ const OnboardingScreen = () => {
   // Mark onboarding seen + go to the board.
   const enterApp = useCallback(() => {
     complete();
-    router.replace("/(tabs)");
+    router.replace('/(tabs)');
   }, [complete, router]);
 
   // "Browse first" — same destination; role stays unset.
@@ -43,7 +43,7 @@ const OnboardingScreen = () => {
     async (input: OnboardingInput) => {
       trackEvent(ANALYTICS_EVENTS.ONBOARDING_ROLE_SELECTED, {
         role: input.role,
-        posterType: input.role === "JOB_POSTER" ? input.posterType : null,
+        posterType: input.role === 'JOB_POSTER' ? input.posterType : null,
       });
       if (isAuthenticated) {
         await submitOnboarding(input);
@@ -52,7 +52,7 @@ const OnboardingScreen = () => {
       } else {
         setPendingRole(input);
       }
-      if (input.role === "JOB_SEEKER") setShowPaywall(true);
+      if (input.role === 'JOB_SEEKER') setShowPaywall(true);
       else enterApp();
     },
     [

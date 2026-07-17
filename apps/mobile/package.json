@@ -5,7 +5,7 @@
   "private": true,
   "expo": {
     "install": {
-      "//": "Expo SDK 56 bundles @shopify/react-native-skia 2.6.2, but that version's podspec header glob breaks under use_frameworks!:static (which @react-native-firebase forces) → Skia fails to compile ('third_party/base64.h' not found). Fixed upstream in Skia 2.6.3 (PR #3853); we pin 2.6.9. Excluding it here stops expo-doctor/expo-install reverting us to the broken 2.6.2.",
+      "//": "Expo SDK 56 bundles @shopify/react-native-skia 2.6.2, but that version's podspec header glob breaks under use_frameworks!:static (which @react-native-firebase forces) \u2192 Skia fails to compile ('third_party/base64.h' not found). Fixed upstream in Skia 2.6.3 (PR #3853); we pin 2.6.9. Excluding it here stops expo-doctor/expo-install reverting us to the broken 2.6.2.",
       "exclude": [
         "@shopify/react-native-skia"
       ]
@@ -42,10 +42,11 @@
     "eas:submit:production": "eas submit --profile production",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "expo lint",
+    "lint": "biome lint .",
     "check-types": "tsc --noEmit",
     "env:pull": "eas env:pull --environment development",
-    "doctor": "npx react-doctor@latest"
+    "doctor": "npx react-doctor@latest",
+    "lint:fix": "biome lint --write ."
   },
   "dependencies": {
     "@expo-google-fonts/geist-mono": "^0.4.2",
@@ -116,14 +117,9 @@
   "devDependencies": {
     "@evennit/notifee-expo-plugin": "^3.8.0",
     "@tailwindcss/postcss": "4.1.18",
-    "@tanstack/eslint-plugin-query": "^5.61.6",
     "@types/node": "^22.10.2",
     "@types/react": "19.2.14",
-    "eslint-config-expo": "~55.0.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.2.1",
     "postcss": "^8",
-    "prettier": "^3.4.1",
     "tailwindcss": "4.1.18",
     "typescript": "~6.0.3",
     "vitest": "^3.2.6"

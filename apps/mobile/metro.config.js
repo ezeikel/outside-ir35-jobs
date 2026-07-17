@@ -1,8 +1,8 @@
 // Replaces `const { getDefaultConfig } = require('expo/metro-config')` — uses
 // Sentry's wrapper so source maps upload on EAS builds.
-const path = require("path");
-const { getSentryExpoConfig } = require("@sentry/react-native/metro");
-const { withNativeWind } = require("nativewind/metro");
+const path = require('path');
+const { getSentryExpoConfig } = require('@sentry/react-native/metro');
+const { withNativeWind } = require('nativewind/metro');
 
 const config = getSentryExpoConfig(__dirname);
 
@@ -17,16 +17,16 @@ const config = getSentryExpoConfig(__dirname);
 // source entry and delegate the rest. (Carried over from the sibling apps;
 // remove if rn-screens gains an `exports` map.)
 const RN_SCREENS_EXPERIMENTAL = path.join(
-  path.dirname(require.resolve("react-native-screens/package.json")),
-  "src/experimental/index.ts",
+  path.dirname(require.resolve('react-native-screens/package.json')),
+  'src/experimental/index.ts',
 );
 const baseResolveRequest = config.resolver.resolveRequest;
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  if (moduleName === "react-native-screens/experimental") {
-    return { type: "sourceFile", filePath: RN_SCREENS_EXPERIMENTAL };
+  if (moduleName === 'react-native-screens/experimental') {
+    return { type: 'sourceFile', filePath: RN_SCREENS_EXPERIMENTAL };
   }
   const next = baseResolveRequest ?? context.resolveRequest;
   return next(context, moduleName, platform);
 };
 
-module.exports = withNativeWind(config, { input: "./global.css" });
+module.exports = withNativeWind(config, { input: './global.css' });

@@ -1,4 +1,4 @@
-import { api } from "@/lib/api";
+import { api } from '@/lib/api';
 
 // Recruiter side: the applicants on the caller's own jobs, for the candidate swipe
 // deck. Honesty-safe facts only (no platform score). Right swipe = shortlist, left
@@ -7,7 +7,7 @@ import { api } from "@/lib/api";
 export type CandidateCard = {
   applicationId: string;
   applicantId: string;
-  status: "NEW" | "SHORTLISTED" | "PASSED";
+  status: 'NEW' | 'SHORTLISTED' | 'PASSED';
   appliedAt: string;
   message: string | null;
   // Premium contractor — shows a "Featured" badge + sorts first. A paid signal-
@@ -26,13 +26,13 @@ export type CandidateCard = {
   verifiedCompanies: { name: string; verifiedAt: string | null }[];
 };
 
-export type ApplicantStatus = "NEW" | "SHORTLISTED" | "PASSED";
+export type ApplicantStatus = 'NEW' | 'SHORTLISTED' | 'PASSED';
 
 export const fetchApplicants = async (
-  status: ApplicantStatus | "ALL" = "NEW",
+  status: ApplicantStatus | 'ALL' = 'NEW',
 ): Promise<CandidateCard[]> => {
   const { data } = await api.get<{ applicants: CandidateCard[] }>(
-    "/api/mobile/posts/applicants",
+    '/api/mobile/posts/applicants',
     { params: { status } },
   );
   return data.applicants;
@@ -42,5 +42,7 @@ export const setApplicationStatus = async (
   applicationId: string,
   status: ApplicantStatus,
 ): Promise<void> => {
-  await api.post(`/api/mobile/applications/${applicationId}/status`, { status });
+  await api.post(`/api/mobile/applications/${applicationId}/status`, {
+    status,
+  });
 };

@@ -1,9 +1,9 @@
 import {
   faChevronRight,
   type IconDefinition,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { Pressable, Text, View } from "react-native";
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Pressable, Text, View } from 'react-native';
 
 // A single tappable settings row: leading icon, title (+ optional subtitle), and
 // a trailing chevron (or nothing for non-navigating rows). Rows group inside a
@@ -25,11 +25,11 @@ const SettingsRow = ({
   showChevron?: boolean;
   isLast?: boolean;
 }) => {
-  const titleColor = destructive ? "text-destructive" : "text-foreground";
+  const titleColor = destructive ? 'text-destructive' : 'text-foreground';
   return (
     <Pressable
       className={`flex-row items-center gap-3 px-4 py-3.5 active:opacity-70 ${
-        isLast ? "" : "border-b border-border"
+        isLast ? '' : 'border-b border-border'
       }`}
       onPress={onPress}
       disabled={!onPress}
@@ -40,7 +40,7 @@ const SettingsRow = ({
         <FontAwesomeIcon
           icon={icon}
           size={16}
-          color={destructive ? "#cc2827" : "#767370"}
+          color={destructive ? '#cc2827' : '#767370'}
         />
       ) : null}
       <View className="min-w-0 flex-1">
