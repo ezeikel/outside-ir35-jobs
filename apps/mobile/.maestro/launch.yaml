@@ -1,0 +1,30 @@
+# Shared sub-flow: cold-launch the dev app into its Metro bundle and dismiss the
+# DEV-BUILD-ONLY overlays (Expo dev-client confirmation, RN LogBox), leaving the
+# app on its first real screen.
+#
+# NOTE on dev builds: `launchApp` cold-starts the Expo dev client into its
+# server-PICK launcher, not the app. We deep-link straight to the Metro bundle
+# (EXPO_DEV_SERVER, default http://localhost:8081), then clear the overlays.
+appId: com.chewybytes.outsideir35jobs.app.dev
+---
+- stopApp
+- openLink:
+    link: 'outsideir35://expo-development-client/?url=${EXPO_DEV_SERVER}'
+# Expo dev-client deep-link confirmation ("Open in 'OIR35 Dev'?").
+- tapOn:
+    text: '.*Open.*'
+    optional: true
+# dev-tools intro sheet, if shown.
+- tapOn:
+    text: '.*Continue.*'
+    optional: true
+# Dev-only RN LogBox errors (dev bundle id vs prod-only config, etc). Dismiss any
+# that are stacked — none of this exists in production.
+- repeat:
+    times: 4
+    commands:
+      - runFlow:
+          when:
+            visible: '.*Console Error.*'
+          commands:
+            - tapOn: '.*Dismiss.*'

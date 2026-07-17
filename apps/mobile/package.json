@@ -53,6 +53,7 @@
     "eas:submit:production": "eas submit --profile production",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "maestro test .maestro",
     "lint": "biome lint .",
     "check-types": "tsc --noEmit",
     "env:pull": "eas env:pull --environment development",

@@ -1,0 +1,17 @@
+# Maestro config for Outside IR35 Jobs mobile E2E flows.
+# Run all flows:  maestro --device <ios-udid> test apps/mobile/.maestro
+# Run one:        maestro --device <ios-udid> test apps/mobile/.maestro/smoke.yaml
+#
+# Requires the dev app installed on a booted simulator + Metro running:
+#   cd apps/mobile && pnpm exec expo run:ios   (then `pnpm start` for Metro)
+#
+# These flows drive the DEV build (com.chewybytes.outsideir35jobs.app.dev). They
+# tolerate the dev-only overlays (Expo dev-client launcher, RN LogBox) that don't
+# exist in production, then assert on real app content.
+flows:
+  - '*.yaml'
+
+# Maestro treats selector text as a REGEX with an implicit full match, and RN
+# accessibility nodes sometimes join sibling text, so flows use ".*needle.*".
+ios:
+  snapshotKeyHonorModalViews: false
