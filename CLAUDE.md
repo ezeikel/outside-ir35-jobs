@@ -91,8 +91,10 @@ re-baseline.
 ## Project Structure
 
 **Monorepo** using Turborepo + pnpm workspaces (mirrors the sister project
-`chunky-crayon`'s conventions). On-disk folder may still be `outside-ir35-jobs-web`
-pending a rename to `outside-ir35-jobs`.
+`chunky-crayon`'s conventions). The repo and on-disk folder are `outside-ir35-jobs` —
+renamed from `outside-ir35-jobs-web` on 2026-07-18, since this is a monorepo
+(`apps/web` + `apps/worker` + `apps/mobile`), not a website. Note the Vercel and
+Sentry projects deliberately keep the `-web` suffix — those are per-service.
 
 - `apps/web` — Next.js 16 web app (`@outside-ir35-jobs/web`)
 - `apps/mobile` — React Native / Expo app (planned, not yet scaffolded)
