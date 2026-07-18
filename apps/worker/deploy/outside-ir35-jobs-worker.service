@@ -7,9 +7,15 @@ Type=simple
 User=root
 WorkingDirectory=/opt/outside-ir35-jobs/apps/worker
 EnvironmentFile=/opt/outside-ir35-jobs/apps/worker/.env
-# xvfb-run gives a headless X display for the local Playwright fallback. When
-# scraping via Browserbase (remote browser) it's harmless. Run via Bun (Hetzner).
-ExecStart=/usr/bin/xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" /root/.bun/bin/bun run src/index.ts
+# Runs under NODE/tsx, NOT Bun — Stagehand's Playwright does not support Bun.
+# This is the one worker on the box that is not a bun process; do not "align" it
+# with the others. No xvfb either: scraping goes through Browserbase (a remote
+# browser), so there is no local Chromium needing a display.
+#
+# NOTE: this file is reference only — the deploy workflow does NOT install it.
+# It drifted from the live unit until 2026-07-18 (it had the generic bun+xvfb
+# template, which would have broken Stagehand if anyone had applied it).
+ExecStart=/opt/outside-ir35-jobs/node_modules/.bin/tsx src/index.ts
 Restart=always
 RestartSec=5
 Environment=NODE_ENV=production

@@ -41,7 +41,7 @@ jobs:
             set -e
 
             ACTION="${{ inputs.action || 'deploy-and-restart' }}"
-            cd /opt/outside-ir35-jobs-web
+            cd /opt/outside-ir35-jobs
 
             if [[ "$ACTION" == deploy* ]]; then
               echo "Pulling latest code..."
@@ -84,7 +84,7 @@ jobs:
               echo "Generating Prisma client..."
               cd packages/db
               /root/.bun/bin/bunx prisma generate
-              cd /opt/outside-ir35-jobs-web
+              cd /opt/outside-ir35-jobs
               echo "Prisma client generated"
             fi
 
