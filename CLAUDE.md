@@ -182,3 +182,14 @@ cron, CI. See [`docs/README.md`](./docs/README.md).
 ## GitHub CLI
 
 Use `gh` for GitHub operations on repos I own. (Remote: `ezeikel/contract-jobs-web`.)
+
+## Hetzner box runbook
+
+This project deploys a worker to the shared Hetzner box. The runbook is **not** in this repo — it has
+one home: [`chewy-bytes-docs/HETZNER_BOX.md`](https://github.com/ezeikel/chewy-bytes-docs/blob/main/HETZNER_BOX.md)
+(local: `~/Development/docs/HETZNER_BOX.md`).
+
+**Read it before touching the worker deploy, SSHing into the box, or adding a new project to the host.**
+It covers current inhabitants, port allocation, systemd unit templates, the deploy workflow pattern, and
+known gotchas. It used to be copied into every repo and kept "byte-identical" by hand; the copies drifted,
+so there is now exactly one.
