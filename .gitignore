@@ -54,3 +54,7 @@ next-env.d.ts
 .claude/
 
 .auth-secrets/
+
+# Editor / AI-assistant config — machine-local, never committed
+.cursor/
+.codex/
