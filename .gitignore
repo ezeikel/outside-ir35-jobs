@@ -58,3 +58,7 @@ next-env.d.ts
 # Editor / AI-assistant config — machine-local, never committed
 .cursor/
 .codex/
+.vscode/
+.zed/
+.idea/
+.mcp.json
