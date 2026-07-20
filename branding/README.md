@@ -13,6 +13,16 @@
 | **Store Screenshots** | (fill as needed) |
 | **Social** | (fill as needed) |
 
+### Type
+
+| Role | Face | Notes |
+|---|---|---|
+| **Wordmark / display** | **Instrument Serif** (Regular) | Logo lockups, marketing headings — matches web `font-display` |
+| UI / body | Inter Tight | App + web UI (not for wordmark) |
+| Mono | Geist Mono | Optional data/code |
+
+Do **not** set lockup wordmarks in Inter/Inter Bold — that was a scaffold mistake.
+
 Legacy: App Icon + FB Cover files — fold then delete.
 
 ## App icon variants (Expo)
