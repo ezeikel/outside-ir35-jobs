@@ -1,18 +1,27 @@
 # Outside IR35 Jobs — Brand Assets
 
-> Fleet convention: `docs` repo → `BRAND-STORE-ASSETS.md`. Salt Mammal's
-> `branding/README.md` is the reference implementation.
+> Fleet convention: `~/Development/docs/BRAND-STORE-ASSETS.md`.
 
-## Figma (logo system)
+## Figma (canonical — one file)
 
-- **[Outside IR35 Jobs — App Icon](https://www.figma.com/design/FtLba74mG1WQytsa9sEWwH)**
-- **[Outside IR35 Jobs — Facebook Cover](https://www.figma.com/design/i5ONaCpMD6BtEgBG9YW96k)**
+**[Outside IR35 Jobs — Brand](https://www.figma.com/design/9FCEuclwJ0CRH6kV0ZcgTh)**
 
-TODO — consolidate App Icon + FB Cover into one `Outside IR35 Jobs — Brand` file with the standard lockup set.
+Pages: Logo Lockups · App Icons · Store Screenshots · Social.
 
-Standard lockup set (masters + instances): `Logo / Mark / App Icon`, `Logo / Mark`
-(transparent light/dark variants), `Logo / Wordmark`, `Logo / Horizontal`, `Logo / Stacked`.
-Edit via Figma MCP; export canonical SVG/PNG into this folder and list them below.
+Legacy (fold in, then archive):
+- [App Icon](https://www.figma.com/design/FtLba74mG1WQytsa9sEWwH)
+- [Facebook Cover](https://www.figma.com/design/i5ONaCpMD6BtEgBG9YW96k)
+
+## App icon variants (Expo)
+
+| File | Env |
+|---|---|
+| `apps/mobile/assets/images/icon.png` | production |
+| `apps/mobile/assets/images/icon-preview.png` | preview → Internal (grid) |
+| `apps/mobile/assets/images/icon-dev.png` | development → Dev (code) |
+
+Also `adaptive-icon{,-preview,-dev}.png`. Regenerator:
+`~/Development/Personal/scripts/generate-app-icon-variants.sh`
 
 ## Canonical assets
 
