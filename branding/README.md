@@ -11,7 +11,9 @@
 | **Logo Lockups** | App icon + on-dark / white / mono marks; horizontal, stacked, wordmark |
 | **App Icons** | Production / Internal (purple+grid) / Dev (teal+code) 1024² |
 | **Store Screenshots** | (fill as needed) |
-| **Social** | (fill as needed) |
+| **Social** | FB Cover 1640×664 (@2x source) — **IMAGE-verified** |
+
+Repo export: `branding/social/fb-cover.png` (also `branding/fb-cover.png`).
 
 ### Type
 
@@ -23,7 +25,14 @@
 
 Do **not** set lockup wordmarks in Inter/Inter Bold — that was a scaffold mistake.
 
-Legacy: App Icon + FB Cover files — fold then delete.
+### Legacy (fold complete — safe to archive/delete in Figma UI)
+
+| Old file | Now in Brand |
+|---|---|
+| [Outside IR35 — FB Cover](https://www.figma.com/design/i5ONaCpMD6BtEgBG9YW96k) | **Social** page |
+| [Outside IR35 — App Icon](https://www.figma.com/design/FtLba74mG1WQytsa9sEWwH) | **App Icons** page |
+
+Social fold = export/upload with **IMAGE** fills verified. Empty frames or solid placeholders do **not** count.
 
 ## App icon variants (Expo)
 
